@@ -4,6 +4,14 @@
 <MudDialogProvider MaxWidth="MaxWidth.Medium" DisableBackdropClick="true" CloseOnEscapeKey="false" />
 <MudSnackbarProvider></MudSnackbarProvider>
 <MudLayout>
+    <MudAppBar Color="Color.Primary" Elevation="4">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle" />
+        <MudText Typo="Typo.h6" Class="ml-2">Warehouse Assistant</MudText>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Never" Variant="DrawerVariant.Persistent">
+        <NavMenu OnClick="DrawerToggle" />
+    </MudDrawer>
     <MudMainContent>
         <MudContainer Class="body">
             @Body
@@ -15,6 +23,8 @@
     // ReSharper disable once NullableWarningSuppressionIsUsed
     private MudThemeProvider _mudThemeProvider = null!;
 
+    private bool _drawerOpen = true;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -22,5 +32,10 @@
             _isDarkMode = await _mudThemeProvider.GetSystemPreference();
             StateHasChanged();
         }
+    }
+
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
     }
 }

@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarehouseAssistant.MAUI", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarehouseAssistant.WebUI", "WarehouseAssistant.WebUI\WarehouseAssistant.WebUI.csproj", "{C0279DED-C1E8-4A92-8A58-B5515995DA36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarehouseAssistant.WASM", "WarehouseAssistant.WASM\WarehouseAssistant.WASM.csproj", "{8DBD5290-96FE-4523-9833-3D61911C0AF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarehouseAssistant.WASM", "WarehouseAssistant.WASM\WarehouseAssistant.WASM.csproj", "{8DBD5290-96FE-4523-9833-3D61911C0AF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
