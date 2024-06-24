@@ -1,5 +1,26 @@
 ﻿@inherits LayoutComponentBase
 
-<main>
-    @Body
-</main>
+<MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode"></MudThemeProvider>
+<MudDialogProvider MaxWidth="MaxWidth.Medium" DisableBackdropClick="true" CloseOnEscapeKey="false" />
+<MudSnackbarProvider></MudSnackbarProvider>
+<MudLayout>
+    <MudMainContent>
+        <MudContainer Class="body">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+@code {
+    private bool             _isDarkMode;
+    // ReSharper disable once NullableWarningSuppressionIsUsed
+    private MudThemeProvider _mudThemeProvider = null!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+            StateHasChanged();
+        }
+    }
+}

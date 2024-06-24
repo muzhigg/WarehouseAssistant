@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using MudBlazor.Services;
 using WarehouseAssistant.Data.Repositories;
 
 namespace WarehouseAssistant.WebUI
@@ -10,6 +11,7 @@ namespace WarehouseAssistant.WebUI
         {
             services.AddScoped<ProductRepository>();
             services.AddScoped<MarketingMaterialRepository>();
+            services.AddMudServices();
 
             return services;
         }
