@@ -1,53 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using WarehouseAssistant.Data.DbContexts;
+﻿using System.Net.Http.Json;
 using WarehouseAssistant.Data.Models;
 
 namespace WarehouseAssistant.Data.Repositories
 {
-    internal class ProductRepository : IRepository<Product>
+    public sealed class ProductRepository(HttpClient httpClient) : IRepository<Product>
     {
-        private readonly WarehouseDbContext _context;
+        private const string Uri = "https://warehouseassistantdbapi.onrender.com/api/products";
 
-        public ProductRepository(WarehouseDbContext context)
+        public async Task<Product?> GetByArticleAsync(string article)
         {
-            _context = context;
+            return string.IsNullOrEmpty(article) ? null : await httpClient.GetFromJsonAsync<Product>($"{Uri}/{article}");
         }
 
-        public async Task<Product> GetByArticleAsync(string article)
+        public async Task<IEnumerable<Product>?> GetAllAsync()
         {
-            return await _context.Products.FindAsync(article);
-        }
-
-        public async Task<IEnumerable<Product>> GetAllAsync()
-        {
-            return await _context.Products.ToListAsync();
+            return await httpClient.GetFromJsonAsync<List<Product>>(Uri);
         }
 
         public async Task AddAsync(Product product)
         {
-            await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
+            await httpClient.PostAsJsonAsync(Uri, product);
         }
 
         public async Task UpdateAsync(Product product)
         {
-            _context.Products.Update(product);
-            await _context.SaveChangesAsync();
+            await httpClient.PutAsJsonAsync($"{Uri}/{product.Article}", product);
         }
 
         public async Task DeleteAsync(string article)
         {
-            var product = await _context.Products.FindAsync(article);
-            if (product != null)
-            {
-                _context.Products.Remove(product);
-                await _context.SaveChangesAsync();
-            }
+            await httpClient.DeleteAsync($"{Uri}/{article}");
         }
     }
 }

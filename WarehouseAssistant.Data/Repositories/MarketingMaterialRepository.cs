@@ -1,48 +1,37 @@
-﻿using Microsoft.EntityFrameworkCore;
-using WarehouseAssistant.Data.DbContexts;
+﻿using System.Net.Http.Json;
 using WarehouseAssistant.Data.Models;
 
 namespace WarehouseAssistant.Data.Repositories
 {
-    internal class MarketingMaterialRepository : IRepository<MarketingMaterial>
+    public sealed class MarketingMaterialRepository(HttpClient httpClient) : IRepository<MarketingMaterial>
     {
-        private readonly WarehouseDbContext _context;
+        private const string Uri = "https://warehouseassistantdbapi.onrender.com/api/marketingmaterials";
 
-        public MarketingMaterialRepository(WarehouseDbContext context)
+        public async Task<MarketingMaterial?> GetByArticleAsync(string article)
         {
-            _context = context;
+            if (string.IsNullOrEmpty(article)) return null;
+
+            return await httpClient.GetFromJsonAsync<MarketingMaterial>($"{Uri}/{article}");
         }
 
-        public async Task<MarketingMaterial> GetByArticleAsync(string article)
+        public async Task<IEnumerable<MarketingMaterial>?> GetAllAsync()
         {
-            return await _context.MarketingMaterials.FindAsync(article);
-        }
-
-        public async Task<IEnumerable<MarketingMaterial>> GetAllAsync()
-        {
-            return await _context.MarketingMaterials.ToListAsync();
+            return await httpClient.GetFromJsonAsync<List<MarketingMaterial>>(Uri);
         }
 
         public async Task AddAsync(MarketingMaterial marketingMaterial)
         {
-            await _context.MarketingMaterials.AddAsync(marketingMaterial);
-            await _context.SaveChangesAsync();
+            await httpClient.PostAsJsonAsync(Uri, marketingMaterial);
         }
 
         public async Task UpdateAsync(MarketingMaterial marketingMaterial)
         {
-            _context.MarketingMaterials.Update(marketingMaterial);
-            await _context.SaveChangesAsync();
+            await httpClient.PutAsJsonAsync($"{Uri}/{marketingMaterial.Article}", marketingMaterial);
         }
 
         public async Task DeleteAsync(string article)
         {
-            var marketingMaterial = await _context.MarketingMaterials.FindAsync(article);
-            if (marketingMaterial != null)
-            {
-                _context.MarketingMaterials.Remove(marketingMaterial);
-                await _context.SaveChangesAsync();
-            }
+            await httpClient.DeleteAsync($"{Uri}/{article}");
         }
     }
 }

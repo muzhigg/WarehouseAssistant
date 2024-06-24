@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using WarehouseAssistant.WebUI;
 
 namespace WarehouseAssistant.MAUI
 {
@@ -6,7 +7,7 @@ namespace WarehouseAssistant.MAUI
     {
         public static MauiApp CreateMauiApp()
         {
-            var builder = MauiApp.CreateBuilder();
+            MauiAppBuilder builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts =>
@@ -15,10 +16,11 @@ namespace WarehouseAssistant.MAUI
                 });
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddWebUIServices();
 
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
-    		builder.Logging.AddDebug();
+            builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Logging.AddDebug();
 #endif
 
             return builder.Build();

@@ -1,12 +1,11 @@
-﻿namespace WarehouseAssistant.MAUI
-{
-    public partial class App : Application
-    {
-        public App()
-        {
-            InitializeComponent();
+﻿namespace WarehouseAssistant.MAUI;
 
-            MainPage = new MainPage();
-        }
+public partial class App
+{
+    public App()
+    {
+        InitializeComponent();
+
+        MainPage = new MainPage();
     }
 }
