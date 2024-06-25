@@ -8,7 +8,10 @@
     </MudNavGroup>
     <MudNavLink OnClick="@(() => Goto("reception"))" Icon="@Icons.Material.Filled.ShoppingCart">Прием товара</MudNavLink>
     <MudNavLink OnClick="@(() => Goto("print-tips"))" Icon="@Icons.Material.Filled.Print">Печать подсказок</MudNavLink>
-    <MudNavLink OnClick="@(() => Goto("database"))" Icon="@Icons.Material.Filled.Storage">База данных</MudNavLink>
+    <MudNavGroup Title="База данных" Icon="@Icons.Material.Filled.Storage">
+        <MudNavLink OnClick="@(() => Goto("database/products"))" >Товары</MudNavLink>
+        <MudNavLink OnClick="@(() => Goto("database/mms"))" >Маркетинговые материалы</MudNavLink>
+    </MudNavGroup>
 </MudNavMenu>
 
 @code {
