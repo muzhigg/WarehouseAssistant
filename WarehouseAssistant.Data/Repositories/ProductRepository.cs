@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using WarehouseAssistant.Data.Models;
 
 namespace WarehouseAssistant.Data.Repositories
@@ -9,7 +10,14 @@ namespace WarehouseAssistant.Data.Repositories
 
         public async Task<Product?> GetByArticleAsync(string article)
         {
-            return string.IsNullOrEmpty(article) ? null : await httpClient.GetFromJsonAsync<Product>($"{Uri}/{article}");
+            try
+            {
+                return string.IsNullOrEmpty(article) ? null : await httpClient.GetFromJsonAsync<Product>($"{Uri}/{article}");
+            }
+            catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
         }
 
         public async Task<IEnumerable<Product>?> GetAllAsync()
@@ -27,9 +35,13 @@ namespace WarehouseAssistant.Data.Repositories
             await httpClient.PutAsJsonAsync($"{Uri}/{product.Article}", product);
         }
 
-        public async Task DeleteAsync(string article)
+        public async Task DeleteAsync(string? article)
         {
-            await httpClient.DeleteAsync($"{Uri}/{article}");
+            try
+            {
+                await httpClient.DeleteAsync($"{Uri}/{article}");
+            }
+            catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.NotFound) { }
         }
     }
 }

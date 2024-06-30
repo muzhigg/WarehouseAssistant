@@ -29,7 +29,7 @@ namespace WarehouseAssistant.Data.Repositories
             await httpClient.PutAsJsonAsync($"{Uri}/{marketingMaterial.Article}", marketingMaterial);
         }
 
-        public async Task DeleteAsync(string article)
+        public async Task DeleteAsync(string? article)
         {
             await httpClient.DeleteAsync($"{Uri}/{article}");
         }

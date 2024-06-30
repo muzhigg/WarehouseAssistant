@@ -18,22 +18,22 @@ public class DataGrid<T> : MudDataGrid<T>
 
     [Parameter] public string LocalStorageKey { get; set; } = "DataGrid";
 
-    [Inject] private ISyncLocalStorageService? LocalStorage { get; set; }
+    [Inject] private ILocalStorageService LocalStorage { get; set; } = null!;
 
     private          List<FilterDataWrapper> _filterDataWrappers = [];
-    private readonly object                  _filterLock         = new();
+    private readonly object                   _filterLock         = new();
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        base.OnAfterRender(firstRender);
+        await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender)
         {
-            LoadFilters();
+            await LoadFilters();
         }
         else
         {
-            if (IsFiltersChanged()) SaveFilters();
+            if (IsFiltersChanged()) await SaveFilters();
         }
     }
 
@@ -59,48 +59,38 @@ public class DataGrid<T> : MudDataGrid<T>
         return false;
     }
 
-    private void SaveFilters()
+    private async Task SaveFilters()
     {
-        lock (_filterLock)
-        {
-            _filterDataWrappers.Clear();
+        _filterDataWrappers.Clear();
 
-            foreach (IFilterDefinition<T> filterDefinition in FilterDefinitions)
+        foreach (IFilterDefinition<T> filterDefinition in FilterDefinitions)
+            _filterDataWrappers.Add(new FilterDataWrapper()
             {
-                _filterDataWrappers.Add(new FilterDataWrapper()
-                {
-                    ColumnIndex = RenderedColumns.FindIndex(column => column == filterDefinition.Column),
-                    Guid        = filterDefinition.Id,
-                    Operator    = filterDefinition.Operator,
-                    Title       = filterDefinition.Title,
-                    Value       = filterDefinition.Value,
-                });
-            }
+                ColumnIndex = RenderedColumns.FindIndex(column => column == filterDefinition.Column),
+                Guid        = filterDefinition.Id,
+                Operator    = filterDefinition.Operator,
+                Title       = filterDefinition.Title,
+                Value       = filterDefinition.Value,
+            });
 
-            LocalStorage?.SetItem(LocalStorageKey, _filterDataWrappers);
-        }
+        await LocalStorage.SetItemAsync(LocalStorageKey, _filterDataWrappers);
     }
 
-    private void LoadFilters()
+    private async Task LoadFilters()
     {
-        lock (_filterLock)
-        {
-            _filterDataWrappers = LocalStorage?.GetItem<List<FilterDataWrapper>>(LocalStorageKey) ?? new List<FilterDataWrapper>();
+        _filterDataWrappers = await LocalStorage.GetItemAsync<List<FilterDataWrapper>>(LocalStorageKey) ?? _filterDataWrappers;
 
-            foreach (FilterDataWrapper wrapper in _filterDataWrappers)
+        foreach (FilterDataWrapper wrapper in _filterDataWrappers)
+            await AddFilterAsync(new FilterDefinition<T>()
             {
-                AddFilterAsync(new FilterDefinition<T>()
-                {
-                    Column   = RenderedColumns.ElementAt(wrapper.ColumnIndex),
-                    Id       = wrapper.Guid,
-                    Operator = wrapper.Operator,
-                    Title    = wrapper.Title,
-                    Value    = wrapper.Value,
-                });
-            }
+                Column   = RenderedColumns.ElementAt(wrapper.ColumnIndex),
+                Id       = wrapper.Guid,
+                Operator = wrapper.Operator,
+                Title    = wrapper.Title,
+                Value    = wrapper.Value,
+            });
 
-            if (_filterDataWrappers.Count > 0)
-                ToggleFiltersMenu();
-        }
+        if (_filterDataWrappers.Count > 0)
+            ToggleFiltersMenu();
     }
 }

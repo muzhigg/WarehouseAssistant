@@ -1,0 +1,16 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudForm @bind-IsValid="_isValid">
+            <MudTextField T="string?" @bind-Value="Article" Label="Артикул" Required="true"
+                          Validation="@(new Func<string, Task<string>>(ArticleValidation))"></MudTextField>
+            <MudTextField T="string?" @bind-Value="ProductName" Label="Название" Required="true"></MudTextField>
+            <MudTextField T="long?" @bind-Value="Barcode" Label="Штрих-код"></MudTextField>
+            <MudTextField T="int?" @bind-Value="QuantityPerBox" Label="Количество на коробку"></MudTextField>
+            <MudTextField T="int?" @bind-Value="QuantityPerShelf" Label="Количество на полку"></MudTextField>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="Cancel">Отмена</MudButton>                
+        <MudButton Color="Color.Primary" OnClick="Submit" ButtonType="ButtonType.Submit" Disabled="@(!_isValid)">Добавить</MudButton>
+    </DialogActions>
+</MudDialog>

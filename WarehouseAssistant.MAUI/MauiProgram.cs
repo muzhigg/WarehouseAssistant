@@ -16,13 +16,12 @@ namespace WarehouseAssistant.MAUI
                 });
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddScoped(_ => new HttpClient());
             builder.Services.AddWebUIServices();
-
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();
 #endif
-
             return builder.Build();
         }
     }

@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <_ContentIncludedByDefault Remove="Components\MainLayout.razor" />
-    <_ContentIncludedByDefault Remove="DatabaseModule\Components\DatabaseEditor.razor" />
+    <_ContentIncludedByDefault Remove="DatabaseModule\Components\AddDbProductDialog.razor" />
     <_ContentIncludedByDefault Remove="DatabaseModule\Pages\MarketingMaterialsDatabasePage.razor" />
   </ItemGroup>
 
@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <UpToDateCheckInput Remove="DatabaseModule\Components\DatabaseEditor.razor" />
+    <UpToDateCheckInput Remove="DatabaseModule\Components\AddDbProductDialog.razor" />
   </ItemGroup>
 
 </Project>
