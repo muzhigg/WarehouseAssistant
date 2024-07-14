@@ -10,8 +10,4 @@
     <PackageReference Include="MiniExcel" Version="1.33.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
 </Project>
