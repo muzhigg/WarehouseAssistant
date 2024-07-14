@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
+    <PackageReference Include="MiniExcel" Version="1.33.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MiniExcel" Version="1.32.1" />
+    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>
