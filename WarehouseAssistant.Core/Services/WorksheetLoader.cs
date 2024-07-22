@@ -62,7 +62,6 @@ public class WorksheetLoader(string path) : IDisposable
                     AvailableQuantity = ParseInt(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.AvailableQuantityKey]))),
                     AverageTurnover = ParseDouble(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.AverageTurnoverKey]))),
                     CurrentQuantity = ParseInt(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.CurrentQuantityKey]))),
-                    Reserved = ParseInt(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.ReservedKey]))),
                     StockDays = ParseDouble(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.StockDaysKey]))),
                     OrderCalculation = ParseDouble(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.OrderCalculationKey]))),
                 });

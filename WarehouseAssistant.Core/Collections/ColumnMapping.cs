@@ -10,7 +10,7 @@ public class ColumnMapping
     public const string ArticleKey = "Артикул";
     public const string AvailableQuantityKey = "Доступно основной склад МО";
     public const string CurrentQuantityKey = "Доступно Санкт-Петербург (склад)";
-    public const string ReservedKey = "В резерве СПб";
+    [Obsolete] public const string ReservedKey = "В резерве СПб";
     public const string AverageTurnoverKey = "Средняя оборачиваемость в день";
     public const string StockDaysKey = "Запас товара (на кол-во дней)";
     public const string OrderCalculationKey = "Расчет заказа";

@@ -1,9 +1,11 @@
-﻿namespace WarehouseAssistant.Core.Models;
+﻿using WarehouseAssistant.Core.Calculation;
 
-public class ProductTableItem
+namespace WarehouseAssistant.Core.Models;
+
+public class ProductTableItem : ICalculationData
 {
     public required string Name              { get; set; }
-    public int    Article           { get; set; }
+    public required int    Article           { get; set; }
     public int    AvailableQuantity { get; set; }
     public int    CurrentQuantity   { get; set; }
     public int    Reserved          { get; set; }
