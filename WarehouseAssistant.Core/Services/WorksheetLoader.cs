@@ -55,11 +55,12 @@ public class WorksheetLoader(string path) : IDisposable
 
                 if (!HasEightDigits(article)) continue;
 
+                int availableQuantity = ParseInt(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.AvailableQuantityKey])));
                 result.Add(new ProductTableItem
                 {
                     Article = article,
                     Name = productName,
-                    AvailableQuantity = ParseInt(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.AvailableQuantityKey]))),
+                    AvailableQuantity = availableQuantity < 0 ? 0 : availableQuantity,
                     AverageTurnover = ParseDouble(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.AverageTurnoverKey]))),
                     CurrentQuantity = ParseInt(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.CurrentQuantityKey]))),
                     StockDays = ParseDouble(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.StockDaysKey]))),

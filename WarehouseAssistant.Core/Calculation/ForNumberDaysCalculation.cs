@@ -11,11 +11,7 @@ public class ForNumberDaysCalculation : ICalculationStrategy<ProductTableItem>
         if (options.ConsiderCurrentQuantity)
             result = Math.Max(0.0, result - product.CurrentQuantity);
 
-        double minCanBeOrdered = product.AvailableQuantity * 0.07;
-
-        if (result > minCanBeOrdered)
-            result = minCanBeOrdered;
-
-        return (int)Math.Floor(result);
+        product.QuantityToOrder = (int)Math.Floor(result);
+        return product.QuantityToOrder;
     }
 }
