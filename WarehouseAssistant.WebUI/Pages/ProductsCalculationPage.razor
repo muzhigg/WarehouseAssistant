@@ -7,7 +7,9 @@
           Filterable="true" QuickFilter="@ShouldDisplayProduct" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
           MultiSelection="true"                                                                                                          
           EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" CommittedItemChanges="OnQuantityToOrderCommittedChanges" ReadOnly="false">
-    <ToolBarContent>
+    <ToolBarContent>    
+        <MudButton hidden="@_products.Any()" Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowFileUploadDialog" StartIcon="@Icons.Material.Filled.TableView">Загрузить таблицу</MudButton>
+        <MudSpacer/>
         <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">
         </MudTextField>

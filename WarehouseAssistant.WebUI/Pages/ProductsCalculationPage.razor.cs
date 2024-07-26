@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using WarehouseAssistant.Core.Models;
 
@@ -30,5 +31,10 @@ public partial class ProductsCalculationPage : ComponentBase
             Snackbar.Add("Значение не может быть меньше нуля", Severity.Error);
             obj.QuantityToOrder = 0;
         }
+    }
+
+    private void ShowFileUploadDialog(MouseEventArgs obj)
+    {
+        throw new NotImplementedException();
     }
 }
