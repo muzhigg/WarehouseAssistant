@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace WarehouseAssistant.WebUI.DatabaseModule.Pages;
+namespace WarehouseAssistant.WebUI.Pages;
 
 public partial class MarketingMaterialsDatabasePage : ComponentBase
 {

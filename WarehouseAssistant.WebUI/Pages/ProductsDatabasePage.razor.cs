@@ -4,7 +4,8 @@ using MudBlazor;
 using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.WebUI.Components;
-using WarehouseAssistant.WebUI.DatabaseModule.Components;
+using WarehouseAssistant.WebUI.Dialogs;
+
 #pragma warning disable BL0005
 
 namespace WarehouseAssistant.WebUI.DatabaseModule.Pages;

@@ -40,4 +40,8 @@
     <UpToDateCheckInput Remove="DatabaseModule\Components\AddDbProductDialog.razor" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DatabaseModule\Components\" />
+  </ItemGroup>
+
 </Project>

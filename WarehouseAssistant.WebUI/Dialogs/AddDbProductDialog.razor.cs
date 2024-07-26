@@ -3,29 +3,29 @@ using MudBlazor;
 using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
 
-namespace WarehouseAssistant.WebUI.DatabaseModule.Components
+namespace WarehouseAssistant.WebUI.Dialogs
 {
     public partial class AddDbProductDialog : ComponentBase
     {
-        [Parameter] public string? Article          { get; set; }
-        [Parameter] public string? ProductName      { get; set; }
-        public             long?   Barcode          { get; set; }
-        public             int?    QuantityPerBox   { get; set; }
-        public             int?    QuantityPerShelf { get; set; }
+        [Parameter] public string? Article { get; set; }
+        [Parameter] public string? ProductName { get; set; }
+        public long? Barcode { get; set; }
+        public int? QuantityPerBox { get; set; }
+        public int? QuantityPerShelf { get; set; }
 
         [CascadingParameter] private MudDialogInstance? MudDialog { get; set; }
-        [Inject]             private ProductRepository  Db        { get; set; } = null!;
+        [Inject] private ProductRepository Db { get; set; } = null!;
 
-        private bool    _isValid;
+        private bool _isValid;
 
         private async Task Submit()
         {
             Product product = new()
             {
-                Article          = Article,
-                Barcode          = Barcode,
-                Name             = ProductName,
-                QuantityPerBox   = QuantityPerBox,
+                Article = Article,
+                Barcode = Barcode,
+                Name = ProductName,
+                QuantityPerBox = QuantityPerBox,
                 QuantityPerShelf = QuantityPerShelf
             };
             await Db.AddAsync(product);
@@ -38,7 +38,7 @@ namespace WarehouseAssistant.WebUI.DatabaseModule.Components
             MudDialog?.Close(DialogResult.Cancel());
         }
 
-        private async Task<string?> ArticleValidation(string arg)
+        private async Task<string> ArticleValidation(string arg)
         {
             if (string.IsNullOrEmpty(arg)) return "Артикул обязателен";
 
@@ -46,7 +46,7 @@ namespace WarehouseAssistant.WebUI.DatabaseModule.Components
 
             if (await Db.GetByArticleAsync(arg) != null) return "Товар с данным артикулом существует";
 
-            return null;
+            return null!;
         }
 
         public static bool StartsAndEndsWithNonWhitespaceChar(string input)
