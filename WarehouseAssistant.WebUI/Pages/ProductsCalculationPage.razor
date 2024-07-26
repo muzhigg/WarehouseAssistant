@@ -1,0 +1,30 @@
+﻿@page "/order/products"
+@using WarehouseAssistant.Core.Models
+@using WarehouseAssistant.WebUI.Components
+
+<DataGrid T="ProductTableItem" Items="_products" LocalStorageKey="bglc_order"
+          FixedHeader="true" Hover="true" Bordered="true" Striped="true" Height="80vh" ColumnResizeMode="ResizeMode.Column" ShowColumnOptions="false"
+          Filterable="true" QuickFilter="@ShouldDisplayProduct" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
+          MultiSelection="true"                                                                                                          
+          EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" CommittedItemChanges="OnQuantityToOrderCommittedChanges" ReadOnly="false">
+    <ToolBarContent>
+        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">
+        </MudTextField>
+    </ToolBarContent>
+    <Columns>  
+        <SelectColumn T="ProductTableItem" />
+        <PropertyColumn Property="x => x.Name" Title="Название" Sortable="false" Resizable="false" IsEditable="false" />
+        <PropertyColumn Property="x => x.Article.ToString()" Title="Артикул" Sortable="false" Resizable="false" IsEditable="false"/>
+        <PropertyColumn Property="x => x.AvailableQuantity" Title="Доступное количество на БГЛЦ" Sortable="false" Resizable="false" IsEditable="false"/>
+        <PropertyColumn Property="x => x.CurrentQuantity" Title="Текущее количество в СПб" Sortable="false" Resizable="false"  IsEditable="false"/>
+        <PropertyColumn Property="x => x.Reserved" Title="В резерве" Sortable="false" Resizable="false" IsEditable="false"/>
+        <PropertyColumn Property="x => x.AverageTurnover" Title="Средняя оборачиваемость в день" Resizable="false" IsEditable="false"/>
+        <PropertyColumn Property="x => x.StockDays" Title="Запас на количество дней" Resizable="false" IsEditable="false"/>
+        <PropertyColumn Property="x => x.OrderCalculation" Title="Рекомендованное количество" Resizable="false" IsEditable="false"/>
+        <PropertyColumn Property="x => x.QuantityToOrder" Title="Количество для заказа" Filterable="false" Resizable="false" IsEditable="true"/>
+    </Columns>     
+    <PagerContent>
+        <MudDataGridPager T="ProductTableItem" PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Количество на странице" />
+    </PagerContent>
+</DataGrid>
