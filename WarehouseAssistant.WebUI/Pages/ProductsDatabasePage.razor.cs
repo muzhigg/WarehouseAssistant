@@ -8,7 +8,7 @@ using WarehouseAssistant.WebUI.Dialogs;
 
 #pragma warning disable BL0005
 
-namespace WarehouseAssistant.WebUI.DatabaseModule.Pages;
+namespace WarehouseAssistant.WebUI.Pages;
 
 public partial class ProductsDatabasePage : ComponentBase
 {
