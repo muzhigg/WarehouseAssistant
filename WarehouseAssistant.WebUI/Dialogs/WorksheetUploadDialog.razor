@@ -1,6 +1,6 @@
 ﻿@using System.Reflection
 @using Microsoft.AspNetCore.Components.Forms
-@using MiniExcelLibs.Attributes       
+@using MiniExcelLibs.Attributes
 @using WarehouseAssistant.Core.Calculation
 @typeparam TTableItem where TTableItem : class, ITableItem, new()
 
@@ -27,10 +27,9 @@
         @if (ExcelColumns != null && _file is not null)
         {
             <MudText Typo="Typo.h6">Настройка столбцов</MudText>
-            <MudForm @bind-IsValid="_isValid" @ref="_form">    
+            <MudForm @bind-IsValid="_isValid" @ref="_form">
                 <MudGrid>
-                    @if (_file != null)
-                    {
+                    @{
                         Type objectType = typeof(TTableItem);
 
                         @foreach (DynamicExcelColumn dynamicExcelColumn in ExcelColumns)
@@ -49,9 +48,12 @@
 
                             <MudItem xs="12" sm="6">
                                 <MudSelect T="string" Label="@displayName" @bind-Value="@RequiredColumns[dynamicExcelColumn.Key]" Required="true">
-                                    @foreach (KeyValuePair<string, string?> keyValuePair in _worksheetColumns!)
+                                    @if (_worksheetColumns != null)
                                     {
-                                        <MudSelectItem Value="@keyValuePair.Key"></MudSelectItem>
+                                        foreach (KeyValuePair<string, string?> keyValuePair in _worksheetColumns)
+                                        {
+                                            <MudSelectItem Value="@keyValuePair.Key"></MudSelectItem>
+                                        }
                                     }
                                 </MudSelect>
                             </MudItem>
