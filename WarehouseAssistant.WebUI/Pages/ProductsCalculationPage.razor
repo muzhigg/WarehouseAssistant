@@ -14,7 +14,8 @@
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">
         </MudTextField>
     </ToolBarContent>
-    <Columns>  
+    <Columns>                          
+        <HierarchyColumn T="ProductTableItem"></HierarchyColumn>
         <SelectColumn T="ProductTableItem" />
         <PropertyColumn Property="x => x.Name" Title="Название" Sortable="false" Resizable="false" IsEditable="false" />
         <PropertyColumn Property="x => x.Article" Title="Артикул" Sortable="false" Resizable="false" IsEditable="false"/>
@@ -24,7 +25,22 @@
         <PropertyColumn Property="x => x.StockDays" Title="Запас на количество дней" Resizable="false" IsEditable="false"/>
         <PropertyColumn Property="x => x.OrderCalculation" Title="Рекомендованное количество" Resizable="false" IsEditable="false"/>
         <PropertyColumn Property="x => x.QuantityToOrder" Title="Количество для заказа" Filterable="false" Resizable="false" IsEditable="true"/>
-    </Columns>     
+    </Columns>    
+    <ChildRowContent>   
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@context.Item.Name</MudText>        
+                </CardHeaderContent>
+            </MudCardHeader>           
+            <MudCardContent>
+                @{
+                    Console.WriteLine("Hi") ;
+                }
+            </MudCardContent>
+        </MudCard>
+
+    </ChildRowContent>
     <PagerContent>
         <MudDataGridPager T="ProductTableItem" PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Количество на странице" />
     </PagerContent>
