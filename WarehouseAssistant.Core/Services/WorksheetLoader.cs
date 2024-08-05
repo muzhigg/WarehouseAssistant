@@ -1,113 +1,85 @@
 ﻿using MiniExcelLibs;
-using WarehouseAssistant.Core.Collections;
-using WarehouseAssistant.Core.Models;
+using MiniExcelLibs.Attributes;
+using MiniExcelLibs.OpenXml;
+using WarehouseAssistant.Core.Calculation;
 
 namespace WarehouseAssistant.Core.Services;
 
 /// <summary>
-/// Класс для загрузки и обработки данных из Excel файла.
+///     Класс для загрузки и обработки данных из Excel файла.
 /// </summary>
-/// <param name="path">Путь к Excel файлу.</param>
-public class WorksheetLoader(string path) : IDisposable
+/// <param name="stream">Поток данных Excel файла</param>
+public sealed class WorksheetLoader<TTableItem>(Stream stream) : IDisposable, IAsyncDisposable where TTableItem : class, ITableItem, new()
 {
-    private readonly FileStream _fileStream = File.OpenRead(path);
+    /// <summary>
+    ///     Класс для загрузки и обработки данных из Excel файла.
+    /// </summary>
+    /// <param name="path">Путь к Excel файлу.</param>
+    public WorksheetLoader(string path) : this(File.OpenRead(path)) { }
 
     /// <summary>
-    /// Возвращает словарь, содержащий названия колонок и их значения из первой строки Excel файла.
+    ///     Возвращает словарь, содержащий названия колонок и их значения из первой строки Excel файла.
     /// </summary>
-    /// <returns>Словарь, где ключ - это буква колонки, а значение - её имя.</returns>
+    /// <returns>Словарь, где ключ - это буква колонки, а значение - её название.</returns>
     public Dictionary<string, string?> GetColumns()
     {
-        Dictionary<string, string?> result = [];
-
-        List<string>        columnLetters       = [.. _fileStream.GetColumns(excelType: ExcelType.XLSX)];
-        using MiniExcelDataReader excelDataReader = _fileStream.GetReader(excelType: ExcelType.XLSX);
-        excelDataReader.Read();
-
-        for (int i = 0; i < columnLetters.Count; i++) result.Add(columnLetters[i], excelDataReader.GetValue(i).ToString());
-
-        return result;
+        return GetColumnsInternal().Result;
     }
 
     /// <summary>
-    /// Парсит данные из Excel файла и возвращает список объектов ProductTableItem.
+    ///     Асинхронно возвращает словарь, содержащий названия колонок и их значения из первой строки Excel файла.
     /// </summary>
-    /// <param name="selectedColumns">Сопоставление ключей и букв столбцов.</param>
-    /// <returns>Список объектов ProductTableItem.</returns>
-    public List<ProductTableItem> ParseItems(ColumnMapping selectedColumns)
+    /// <returns>Словарь, где ключ - это буква колонки, а значение - её название.</returns>
+    public async Task<Dictionary<string, string?>> GetColumnsAsync()
     {
-        List<ProductTableItem> result = [];
+        return await GetColumnsInternal();
+    }
 
-        List<string?> columnLetters = [.. _fileStream.GetColumns(excelType: ExcelType.XLSX)];
-        using MiniExcelDataReader reader = _fileStream.GetReader(true, excelType: ExcelType.XLSX);
+    private async Task<Dictionary<string, string?>> GetColumnsInternal()
+    {
+        Dictionary<string, string?>  result   = [];
+        IEnumerable<dynamic>?        query    = await stream.QueryAsync(excelType: ExcelType.XLSX);
 
-        while (reader.Read())
+        if (query.FirstOrDefault() is IDictionary<string, object> firstRow)
         {
-            string? productName = reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.NameKey])).ToString();
+            List<string>  columnLetters = [..firstRow.Keys];
+            List<string?> columnValues  = firstRow.Values.Select(o => o as string).ToList();
 
-            if (string.IsNullOrEmpty(productName) || productName.Contains("акция", StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            object articleFieldRawValue = reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.ArticleKey]));
-            try
-            {
-                int article = ParseInt(articleFieldRawValue);
-
-                if (!HasEightDigits(article)) continue;
-
-                int availableQuantity = ParseInt(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.AvailableQuantityKey])));
-                result.Add(new ProductTableItem
-                {
-                    Article = article,
-                    Name = productName,
-                    AvailableQuantity = availableQuantity < 0 ? 0 : availableQuantity,
-                    AverageTurnover = ParseDouble(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.AverageTurnoverKey]))),
-                    CurrentQuantity = ParseInt(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.CurrentQuantityKey]))),
-                    StockDays = ParseDouble(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.StockDaysKey]))),
-                    OrderCalculation = ParseDouble(reader.GetValue(columnLetters.IndexOf(selectedColumns[ColumnMapping.OrderCalculationKey]))),
-                });
-            }
-            catch (FormatException) { }
-            catch (OverflowException) { }
+            for (int i = 0; i < columnLetters.Count; i++)
+                result.Add(columnLetters[i], columnValues[i]);
         }
 
         return result;
     }
 
-
-    private static bool HasEightDigits(int article)
+    public IEnumerable<TTableItem> ParseItems()
     {
-        return Math.Floor(Math.Log10(article) + 1) == 8;
+        return ParseItems(null);
     }
 
-
-    private static int ParseInt(object value)
+    /// <summary>
+    ///     Парсит данные из Excel файла и возвращает коллекцию объектов типа T.
+    /// </summary>
+    /// <param name="selectedColumns">Выбранные динамические колонки для конфигурации парсинга.</param>
+    /// <returns>Коллекция объектов типа T.</returns>
+    public IEnumerable<TTableItem> ParseItems(DynamicExcelColumn[]? selectedColumns)
     {
-        try
+        OpenXmlConfiguration configuration = new()
         {
-            return Convert.ToInt32(value);
-        }
-        catch (Exception)
-        {
-            return 0;
-        }
-    }
+            DynamicColumns = selectedColumns
+        };
 
-    private static double ParseDouble(object value)
-    {
-        try
-        {
-            return Convert.ToDouble(value);
-        }
-        catch (Exception)
-        {
-            return 0.0;
-        }
+        return stream.Query<TTableItem>(excelType: ExcelType.XLSX, configuration: configuration)
+            .Where(item => item.HasValidName() && item.HasValidArticle());
     }
 
     public void Dispose()
     {
-        _fileStream.Dispose();
-        GC.SuppressFinalize(this);
+        stream.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await stream.DisposeAsync();
     }
 }

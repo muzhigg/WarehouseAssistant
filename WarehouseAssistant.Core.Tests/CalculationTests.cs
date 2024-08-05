@@ -1,4 +1,5 @@
-﻿using WarehouseAssistant.Core.Calculation;
+﻿using MiniExcelLibs.Attributes;
+using WarehouseAssistant.Core.Calculation;
 using WarehouseAssistant.Core.Collections;
 using WarehouseAssistant.Core.Models;
 using WarehouseAssistant.Core.Services;
@@ -12,8 +13,8 @@ namespace WarehouseAssistant.Core.Tests
         {
             ProductTableItem product1 = new ProductTableItem()
             {
-                Name              = "Test",
-                Article = 4,
+                Name              = "NameKey",
+                Article           = 4.ToString(),
                 AvailableQuantity = 1770,
                 CurrentQuantity   = 10,
                 AverageTurnover   = 0.11,
@@ -21,8 +22,8 @@ namespace WarehouseAssistant.Core.Tests
             };
             ProductTableItem product2 = new ProductTableItem()
             {
-                Name              = "Test",
-                Article           = 4,
+                Name              = "NameKey",
+                Article           = 4.ToString(),
                 AvailableQuantity = 764,
                 CurrentQuantity   = 60,
                 AverageTurnover   = 0.0,
@@ -30,8 +31,8 @@ namespace WarehouseAssistant.Core.Tests
             };
             ProductTableItem product3 = new ProductTableItem()
             {
-                Name              = "Test",
-                Article           = 4,
+                Name              = "NameKey",
+                Article           = 4.ToString(),
                 AvailableQuantity = 1256,
                 CurrentQuantity   = 8,
                 AverageTurnover   = 0.28,
@@ -59,8 +60,8 @@ namespace WarehouseAssistant.Core.Tests
         {
             ProductTableItem product1 = new ProductTableItem()
             {
-                Name              = "Test",
-                Article           = 4,
+                Name              = "NameKey",
+                Article           = 4.ToString(),
                 AvailableQuantity = 0,
                 CurrentQuantity   = 0,
                 AverageTurnover   = 0.4,
@@ -77,24 +78,28 @@ namespace WarehouseAssistant.Core.Tests
             Assert.Equal(0, calc.CalculateOrderQuantity(product1));
         }
 
-        private List<ProductTableItem> GetTableItems()
+        private IEnumerable<ProductTableItem> GetTableItems()
         {
-            using WorksheetLoader worksheetLoader = new(@"D:\Downloads\товары 17.07.xlsx");
-            ColumnMapping         columnMapping   = new ColumnMapping();
-            columnMapping.AddMapping(ColumnMapping.NameKey, "A");
-            columnMapping.AddMapping(ColumnMapping.ArticleKey, "B");
-            columnMapping.AddMapping(ColumnMapping.AvailableQuantityKey, "C");
-            columnMapping.AddMapping(ColumnMapping.CurrentQuantityKey, "D");
-            columnMapping.AddMapping(ColumnMapping.AverageTurnoverKey, "E");
-            columnMapping.AddMapping(ColumnMapping.StockDaysKey, "F");
-            columnMapping.AddMapping(ColumnMapping.OrderCalculationKey, "G");
-            return worksheetLoader.ParseItems(columnMapping);
+            using WorksheetLoader<ProductTableItem> worksheetLoader = new(@"D:\Downloads\товары 17.07.xlsx");
+
+            DynamicExcelColumn[]? columns = [
+                new DynamicExcelColumn(nameof(ProductTableItem.Name)) { IndexName              = "A" },
+                new DynamicExcelColumn(nameof(ProductTableItem.AvailableQuantity)) { IndexName = "C" },
+                new DynamicExcelColumn(nameof(ProductTableItem.OrderCalculation)) { IndexName  = "G" },
+                new DynamicExcelColumn(nameof(ProductTableItem.Article)) { IndexName           = "B" },
+                new DynamicExcelColumn(nameof(ProductTableItem.CurrentQuantity)) { IndexName   = "D" },
+                new DynamicExcelColumn(nameof(ProductTableItem.AverageTurnover)) { IndexName   = "E" },
+                new DynamicExcelColumn(nameof(ProductTableItem.StockDays)) { IndexName         = "F" }
+            ];
+
+            IEnumerable<ProductTableItem> productTableItems = worksheetLoader.ParseItems(columns);
+            return productTableItems.ToList();
         }
 
         [Fact]
         public void ForNumberDaysCalculation_First30Raw()
         {
-            List<ProductTableItem> list = GetTableItems();
+            List<ProductTableItem> list = GetTableItems().ToList();
 
             CalculationOptions options = new CalculationOptions()
             {
@@ -245,7 +250,7 @@ namespace WarehouseAssistant.Core.Tests
         [Fact]
         public void ByRecommendedCalculation_First30Raw()
         {
-            List<ProductTableItem> list = GetTableItems();
+            List<ProductTableItem> list = GetTableItems().ToList();
 
             CalculationOptions options = new CalculationOptions()
             {

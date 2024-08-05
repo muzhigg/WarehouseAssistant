@@ -1,6 +1,13 @@
 ﻿namespace WarehouseAssistant.Core.Calculation;
 
-public interface ICalculationData
+public interface ICalculationData;
+
+public interface ITableItem : ICalculationData
 {
-    // Общие свойства для всех типов данных могут быть здесь
+    public string? Name { get; set; }
+    public string? Article { get; set; }
+
+    public bool HasValidName();
+
+    public bool HasValidArticle();
 }

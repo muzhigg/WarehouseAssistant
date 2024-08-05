@@ -23,7 +23,7 @@ public class WorkbookBuilderTests
         {
             ProductTableItem product = new()
             {
-                Article           = i,
+                Article           = i.ToString(),
                 AvailableQuantity = i + 1,
                 AverageTurnover   = i + 0.1,
                 CurrentQuantity   = i + 2,
@@ -40,7 +40,7 @@ public class WorkbookBuilderTests
         {
             ProductTableItem product = new()
             {
-                Article           = i,
+                Article           = i.ToString(),
                 AvailableQuantity = i + 1,
                 AverageTurnover   = i + 0.1,
                 CurrentQuantity   = i + 2,
@@ -50,7 +50,7 @@ public class WorkbookBuilderTests
                 StockDays         = i + 0.3
             };
 
-            workbookBuilder.AddToSheet("Test 2", product);
+            workbookBuilder.AddToSheet("NameKey 2", product);
         }
     }
 
@@ -62,7 +62,7 @@ public class WorkbookBuilderTests
             worksheetBuilder = new WorkbookBuilder<ProductTableItem>();
 
             worksheetBuilder.CreateSheet("Sheet 1");
-            worksheetBuilder.CreateSheet("Test 2");
+            worksheetBuilder.CreateSheet("NameKey 2");
             return worksheetBuilder;
         }
         catch
@@ -99,7 +99,7 @@ public class WorkbookBuilderTests
     {
         using WorkbookBuilder<dynamic> workbookBuilder = new();
         workbookBuilder.CreateSheet("Sheet 1");
-        workbookBuilder.CreateSheet("Test 2");
+        workbookBuilder.CreateSheet("NameKey 2");
 
         for (int i = 0; i < 10; i++)
         {
@@ -124,7 +124,7 @@ public class WorkbookBuilderTests
                 Boxes = i
             };
 
-            workbookBuilder.AddToSheet("Test 2", data);
+            workbookBuilder.AddToSheet("NameKey 2", data);
         }
 
         OpenXmlConfiguration configuration = new()

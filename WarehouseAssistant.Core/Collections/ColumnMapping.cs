@@ -1,21 +1,12 @@
-﻿namespace WarehouseAssistant.Core.Collections;
+﻿using System.Collections;
+
+namespace WarehouseAssistant.Core.Collections;
 
 /// <summary>
 /// Класс для управления сопоставлением ключей и букв столбцов в таблице.
 /// </summary>
-public class ColumnMapping
+public class ColumnMapping : IEnumerable<KeyValuePair<string, string?>>
 {
-    // Предопределенные ключи
-    public const string NameKey = "Номенклатура";
-    public const string ArticleKey = "Артикул";
-    public const string AvailableQuantityKey = "Доступно основной склад МО";
-    public const string CurrentQuantityKey = "Доступно Санкт-Петербург (склад)";
-    [Obsolete] public const string ReservedKey = "В резерве СПб";
-    public const string AverageTurnoverKey = "Средняя оборачиваемость в день";
-    public const string StockDaysKey = "Запас товара (на кол-во дней)";
-    public const string OrderCalculationKey = "Расчет заказа";
-    public const string OrderAmountKey = "Заказ на офис Спб";
-
     // Словарь для хранения соответствий ключ-буква_столбца
     private readonly Dictionary<string, string?> _columnMappings = new();
 
@@ -42,6 +33,11 @@ public class ColumnMapping
             throw new ArgumentException("Этот ключ уже существует в коллекции.", nameof(key));
     }
 
+    public bool HasColumn(string key)
+    {
+        return _columnMappings.ContainsKey(key) && _columnMappings[key] != null;
+    }
+
     /// <summary>
     /// Метод для удаления пары ключ-буква_столбца.
     /// </summary>
@@ -60,9 +56,39 @@ public class ColumnMapping
     /// <exception cref="KeyNotFoundException">Выбрасывается, если ключ не найден.</exception>
     public string? GetColumnLetter(string key)
     {
-        return _columnMappings.TryGetValue(key, out string? columnLetter)
-            ? columnLetter
-            : throw new KeyNotFoundException("Этот ключ не найден в коллекции.");
+        return _columnMappings[key];
+
+        //return _columnMappings.TryGetValue(key, out string? columnLetter)
+        //    ? columnLetter
+        //    : throw new KeyNotFoundException($"Этот ключ не найден в коллекции. ({key})");
+    }
+
+    public int GetColumnIndex(string key)
+    {
+        string? columnLetter = GetColumnLetter(key);
+
+        int columnIndex = 0;
+        int factor      = 1;
+
+        if (columnLetter == null) return columnIndex;
+
+        for (int i = columnLetter.Length - 1; i >= 0; i--)
+        {
+            char letter      = columnLetter[i];
+            int  letterValue = letter - 'A' + 1;
+            columnIndex += letterValue * factor;
+            factor      *= 26;
+        }
+
+        return columnIndex;
+    }
+
+    public bool TryUpdateMapping(string key, string? columnLetter)
+    {
+        if (!_columnMappings.ContainsKey(key)) return false;
+
+        _columnMappings[key] = columnLetter;
+        return true;
     }
 
     /// <summary>
@@ -74,8 +100,18 @@ public class ColumnMapping
     public void UpdateMapping(string key, string? newColumnLetter)
     {
         if (!_columnMappings.ContainsKey(key))
-            throw new KeyNotFoundException("Этот ключ не найден в коллекции.");
+            throw new KeyNotFoundException($"Ключ {key} не найден в коллекции.");
 
         _columnMappings[key] = newColumnLetter;
+    }
+
+    public IEnumerator<KeyValuePair<string, string?>> GetEnumerator()
+    {
+        return _columnMappings.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.                          GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

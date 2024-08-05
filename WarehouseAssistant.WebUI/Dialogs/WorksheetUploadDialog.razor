@@ -1,0 +1,68 @@
+﻿@using System.Reflection
+@using Microsoft.AspNetCore.Components.Forms
+@using MiniExcelLibs.Attributes       
+@using WarehouseAssistant.Core.Calculation
+@typeparam TTableItem where TTableItem : class, ITableItem, new()
+
+<MudDialog>
+    <DialogContent>
+        <MudFileUpload T="IBrowserFile" Accept=".xlsx" FilesChanged="HandleFileSelected">
+            <ButtonTemplate>
+                <MudButton HtmlTag="label"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.CloudUpload"
+                           for="@context.Id">
+                    Загрузка таблицы
+                </MudButton>
+                <MudText Class="d-inline">
+                    @if (_file != null)
+                    {
+                        <label>@_file.Name</label>
+                    }
+                </MudText>
+            </ButtonTemplate>
+        </MudFileUpload>
+
+        @if (ExcelColumns != null)
+        {
+            <MudText Typo="Typo.h6">Настройка столбцов</MudText>
+            <MudForm @bind-IsValid="_isValid" @ref="_form">    
+                <MudGrid>
+                    @if (_file != null)
+                    {
+                        Type objectType = typeof(TTableItem);
+
+                        @foreach (DynamicExcelColumn dynamicExcelColumn in ExcelColumns)
+                        {
+                            PropertyInfo? prop = objectType.GetProperty(dynamicExcelColumn.Key);
+
+                            if (prop == null)
+                                continue;
+
+                            ExcelColumnAttribute? columnAttribute = prop.GetCustomAttribute<ExcelColumnAttribute>();
+
+                            if (columnAttribute == null || columnAttribute.Ignore)
+                                continue;
+
+                            string displayName = columnAttribute.Name ?? prop.Name;
+
+                            <MudItem xs="12" sm="6">
+                                <MudSelect T="string" Label="@displayName" @bind-Value="@RequiredColumns[dynamicExcelColumn.Key]" Required="true">
+                                    @foreach (KeyValuePair<string, string?> keyValuePair in _worksheetColumns!)
+                                    {
+                                        <MudSelectItem Value="@keyValuePair.Key"></MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                        }
+                    }
+                </MudGrid>
+            </MudForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="OnSubmit" Disabled="@(!_isValid)">Добавить</MudButton>
+        <MudButton Color="Color.Secondary" OnClick="OnCancel">Отмена</MudButton>
+    </DialogActions>
+</MudDialog>

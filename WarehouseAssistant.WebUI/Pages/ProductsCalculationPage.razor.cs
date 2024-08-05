@@ -1,13 +1,17 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using MiniExcelLibs.Attributes;
 using MudBlazor;
 using WarehouseAssistant.Core.Models;
+using WarehouseAssistant.WebUI.Dialogs;
 
 namespace WarehouseAssistant.WebUI.Pages;
 
 public partial class ProductsCalculationPage : ComponentBase
 {
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
+
+    [Inject] private IDialogService DialogService { get; set; } = null!;
 
     private IEnumerable<ProductTableItem> _products     = new List<ProductTableItem>();
     private string                        _searchString = null!;
@@ -17,9 +21,9 @@ public partial class ProductsCalculationPage : ComponentBase
         if (string.IsNullOrWhiteSpace(_searchString))
             return true;
 
-        if (arg.Article.ToString().Contains(_searchString)) return true;
+        if (arg.Article!.Contains(_searchString)) return true;
 
-        if (arg.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase)) return true;
+        if (arg.Name!.Contains(_searchString, StringComparison.OrdinalIgnoreCase)) return true;
 
         return false;
     }
@@ -33,8 +37,28 @@ public partial class ProductsCalculationPage : ComponentBase
         }
     }
 
-    private void ShowFileUploadDialog(MouseEventArgs obj)
+    private async Task ShowFileUploadDialog(MouseEventArgs obj)
     {
-        throw new NotImplementedException();
+        DialogParameters<WorksheetUploadDialog<ProductTableItem>> parameters = [];
+
+        parameters.Add(uploadDialog => uploadDialog.ExcelColumns, [
+            new DynamicExcelColumn(nameof(ProductTableItem.Name)),
+            new DynamicExcelColumn(nameof(ProductTableItem.AvailableQuantity)),
+            new DynamicExcelColumn(nameof(ProductTableItem.OrderCalculation)),
+            new DynamicExcelColumn(nameof(ProductTableItem.Article)),
+            new DynamicExcelColumn(nameof(ProductTableItem.CurrentQuantity)),
+            new DynamicExcelColumn(nameof(ProductTableItem.AverageTurnover)),
+            new DynamicExcelColumn(nameof(ProductTableItem.StockDays)),
+            new DynamicExcelColumn(nameof(ProductTableItem.QuantityToOrder)) { Ignore = true },
+        ]);
+
+        IDialogReference                                          dialog     = await DialogService.ShowAsync<WorksheetUploadDialog<ProductTableItem>>("Загрузка файла", parameters);
+        DialogResult                                              result     = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            IEnumerable<ProductTableItem> productItems = (IEnumerable<ProductTableItem>)result.Data;
+            _products = productItems;
+        }
     }
 }
