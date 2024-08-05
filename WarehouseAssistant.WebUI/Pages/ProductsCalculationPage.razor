@@ -1,16 +1,17 @@
 ﻿@page "/order/products"
 @using WarehouseAssistant.Core.Models
+@using WarehouseAssistant.Data.Models
 @using WarehouseAssistant.WebUI.Components
 
-<DataGrid T="ProductTableItem" Items="_products" LocalStorageKey="bglc_order"
+<DataGrid T="ProductTableItem" Items="_products" LocalStorageKey="bglc_order" @ref="_dataGrid" LoadingProgressColor="Color.Primary"
           FixedHeader="true" Hover="true" Bordered="true" Striped="true" Height="80vh" ColumnResizeMode="ResizeMode.Column" ShowColumnOptions="false"
           Filterable="true" QuickFilter="@ShouldDisplayProduct" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
           MultiSelection="true"                                                                                                          
           EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" CommittedItemChanges="OnQuantityToOrderCommittedChanges" ReadOnly="false">
     <ToolBarContent>    
-        <MudButton hidden="@_products.Any()" Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowFileUploadDialog" StartIcon="@Icons.Material.Filled.TableView">Загрузить таблицу</MudButton>
+        <MudButton hidden="@_products.Any()" Disabled="_dataGrid.Loading" Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowFileUploadDialog" StartIcon="@Icons.Material.Filled.TableView">Загрузить таблицу</MudButton>
         <MudSpacer/>
-        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start"
+        <MudTextField Disabled="_dataGrid.Loading" @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">
         </MudTextField>
     </ToolBarContent>
@@ -34,14 +35,25 @@
                 </CardHeaderContent>
             </MudCardHeader>           
             <MudCardContent>
-                @{
-                    Console.WriteLine("Hi") ;
+                @if (_dbProducts == null || !_dbProducts.Exists(product => product.Article == context.Item.Article))
+                {
+                    <MudText>Товар не найден в базе данных</MudText>
+                    <MudButton Variant="Variant.Filled" OnClick="() => ShowAddToDbDialog(context.Item)">Добавить в БД</MudButton>
+                }
+                else
+                {
+                    Product dbItem = _dbProducts.Find(product => product.Article == context.Item.Article)!;
+                    <MudText>@dbItem.Name</MudText>
+                    <MudText>@("Артикул: " + dbItem.Article)</MudText>
+                    <MudText>@("Штрих-код: " + @dbItem.Barcode)</MudText>
+                    <MudText>@("Количество на коробку: " + @dbItem.QuantityPerBox)</MudText>
+                    <MudText>@("Количество на полку: " + @dbItem.QuantityPerShelf)</MudText>
                 }
             </MudCardContent>
         </MudCard>
 
     </ChildRowContent>
     <PagerContent>
-        <MudDataGridPager T="ProductTableItem" PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Количество на странице" />
+        <MudDataGridPager Disabled="_dataGrid.Loading" T="ProductTableItem" PageSizeOptions="new[] { 10, 25, 50, 100 }" RowsPerPageString="Количество на странице" />
     </PagerContent>
 </DataGrid>
