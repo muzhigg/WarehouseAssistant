@@ -24,7 +24,7 @@
             </ButtonTemplate>
         </MudFileUpload>
 
-        @if (ExcelColumns != null)
+        @if (ExcelColumns != null && _file is not null)
         {
             <MudText Typo="Typo.h6">Настройка столбцов</MudText>
             <MudForm @bind-IsValid="_isValid" @ref="_form">    

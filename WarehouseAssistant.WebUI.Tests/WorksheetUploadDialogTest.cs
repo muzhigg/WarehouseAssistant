@@ -48,6 +48,38 @@ public class WorksheetUploadDialogTest : TestContext
     }
 
     [Fact]
+    public async Task DialogShouldOpenWithParamsAndAddButtonShouldBeDisabled()
+    {
+        // Arrange
+        IRenderedComponent<MudDialogProvider> provider        = RenderedDialogProvider(out DialogService? service);
+        IDialogReference?                     dialogReference = null;
+
+        // Act
+        DialogParameters<WorksheetUploadDialog<ProductTableItemStub>> parameters =
+            new()
+            {
+                {
+                    dialog => dialog.ExcelColumns, [
+                        new DynamicExcelColumn("Name"),
+                        new DynamicExcelColumn("Article"),
+                        new DynamicExcelColumn("Available")
+                    ]
+                }
+            };
+        await provider.InvokeAsync(() => dialogReference = service?.Show<WorksheetUploadDialog<ProductTableItemStub>>("Title", parameters));
+        IElement? submitButton = provider.FindAll("button").FirstOrDefault(element =>
+            element.TextContent.Contains("Добавить", StringComparison.OrdinalIgnoreCase));
+
+        // Assert
+        Assert.NotNull(service); // check service
+        Assert.NotNull(dialogReference); // dialog window
+        Assert.NotNull(provider.Find("div.mud-dialog-container")); // dialog render
+        Assert.NotNull(provider.FindComponent<MudFileUpload<IBrowserFile>>()); // upload button
+        Assert.NotNull(submitButton);
+        Assert.True(submitButton.HasAttribute("disabled"));
+    }
+
+    [Fact]
     public async Task DialogShouldDisplayColumnSettings()
     {
         // Arrange
