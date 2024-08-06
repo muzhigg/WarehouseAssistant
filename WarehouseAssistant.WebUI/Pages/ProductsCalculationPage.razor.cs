@@ -17,8 +17,8 @@ public partial class ProductsCalculationPage : ComponentBase
 
     [Inject] private IDialogService DialogService { get; set; } = null!;
 
-    [Inject] private ProductRepository Repository { get; set; } = null!;
-    private          List<Product>?    _dbProducts = [];
+    [Inject] private IRepository<Product> Repository { get; set; } = null!;
+    private          List<Product>?       _dbProducts = [];
 
     private DataGrid<ProductTableItem> _dataGrid = null!;
 

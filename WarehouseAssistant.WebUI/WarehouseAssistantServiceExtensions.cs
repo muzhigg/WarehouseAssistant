@@ -12,7 +12,8 @@ namespace WarehouseAssistant.WebUI
         // ReSharper disable once InconsistentNaming
         public static IServiceCollection AddWebUIServices(this IServiceCollection services)
         {
-            services.AddScoped<ProductRepository>();
+            //services.AddScoped<ProductRepository>();
+            services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<MarketingMaterialRepository>();
             services.AddMudServices(config =>
             {

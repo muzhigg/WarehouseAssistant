@@ -131,6 +131,11 @@ public class WorksheetUploadDialogTest : TestContext
 
         Assert.Equal("B", selectFields[0].Instance.Value);
         Assert.Equal("B", provider.FindComponent<WorksheetUploadDialog<ProductTableItemStub>>().Instance.RequiredColumns["Name"]);
+
+        IElement? submitButton = provider.FindAll("button").FirstOrDefault(element =>
+            element.TextContent.Contains("Добавить", StringComparison.OrdinalIgnoreCase));
+        Assert.NotNull(submitButton);
+        Assert.False(submitButton.HasAttribute("disabled"));
     }
 
     private MemoryStream CreateFakeExcelStream(object rows, bool printHeader)
