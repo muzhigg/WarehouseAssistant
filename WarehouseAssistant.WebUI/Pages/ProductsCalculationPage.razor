@@ -34,7 +34,8 @@
                     <MudText Typo="Typo.h6">@context.Item.Name</MudText>        
                 </CardHeaderContent>
             </MudCardHeader>           
-            <MudCardContent>
+            <MudCardContent>   
+                <MudText>@($"В наличии на БГЛЦ: {context.Item.AvailableQuantity}. Максимально доступно для заказа: {Math.Ceiling(context.Item.AvailableQuantity * 0.07)}")</MudText>
                 @if (_dbProducts == null || !_dbProducts.Exists(product => product.Article == context.Item.Article))
                 {
                     <MudText>Товар не найден в базе данных</MudText>
