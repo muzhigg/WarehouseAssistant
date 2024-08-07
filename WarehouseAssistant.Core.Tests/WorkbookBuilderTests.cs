@@ -1,4 +1,5 @@
-﻿using MiniExcelLibs.Attributes;
+﻿using MiniExcelLibs;
+using MiniExcelLibs.Attributes;
 using MiniExcelLibs.OpenXml;
 using WarehouseAssistant.Core.Models;
 using WarehouseAssistant.Core.Services;
@@ -13,6 +14,11 @@ public class WorkbookBuilderTests
         using WorkbookBuilder<ProductTableItem> workbookBuilder = GetWorkbookForProductTableItem();
 
         FillWorkbookWithProductTableItems(workbookBuilder);
+
+        using MemoryStream                      stream  = new MemoryStream(workbookBuilder.AsByteArray());
+        WorksheetLoader<ProductTableItem> sheet   = new WorksheetLoader<ProductTableItem>(stream);
+        Dictionary<string, string?>       columns = sheet.GetColumns();
+        Assert.Equal(8, columns.Count);
 
         File.WriteAllBytes(@"D:\Downloads\TestWorkbook.xlsx", workbookBuilder.AsByteArray());
     }
@@ -91,7 +97,12 @@ public class WorkbookBuilderTests
             ]
         };
 
-        File.WriteAllBytes(@"D:\Downloads\TestWorkbook 2.xlsx", workbookBuilder.AsByteArray(configuration));
+        //File.WriteAllBytes(@"D:\Downloads\TestWorkbook 2.xlsx", workbookBuilder.AsByteArray(configuration));
+
+        using MemoryStream                      stream  = new MemoryStream(workbookBuilder.AsByteArray(configuration));
+        WorksheetLoader<ProductTableItem> sheet   = new WorksheetLoader<ProductTableItem>(stream);
+        Dictionary<string, string?>       columns = sheet.GetColumns();
+        Assert.Equal(3, columns.Count);
     }
 
     [Fact]
@@ -139,6 +150,12 @@ public class WorkbookBuilderTests
             ]
         };
 
-        File.WriteAllBytes(@"D:\Downloads\TestWorkbook 3.xlsx", workbookBuilder.AsByteArray(configuration));
+        using MemoryStream stream = new MemoryStream(workbookBuilder.AsByteArray(configuration));
+        var columns = stream.GetColumns(sheetName: "Sheet 1");
+        Assert.Equal(3, columns.Count);
+        columns = stream.GetColumns(sheetName: "NameKey 2");
+        Assert.Equal(5, columns.Count);
+
+        //File.WriteAllBytes(@"D:\Downloads\TestWorkbook 3.xlsx", workbookBuilder.AsByteArray(configuration));
     }
 }

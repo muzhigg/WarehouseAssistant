@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MiniExcelLibs.Attributes;
 using MudBlazor;
@@ -50,17 +49,12 @@ public partial class ProductsCalculationPage : ComponentBase
     {
         _dataGrid.Loading = true;
 
-        DialogParameters<AddDbProductDialog> parameters = [];
-        parameters.Add(productDialog => productDialog.Article, contextItem.Article);
-        parameters.Add(productDialog => productDialog.ProductName, contextItem.Name);
-        IDialogReference? dialog = await DialogService.ShowAsync<AddDbProductDialog>("Добавить товар", parameters);
-        DialogResult?     result = await dialog.Result;
+        Product? product = await AddDbProductDialog.Show(contextItem, DialogService);
 
-        if (!result.Canceled)
+        if (product != null)
         {
-            Product product = (Product)result.Data;
             if (_dbProducts != null) _dbProducts.Add(product);
-            else _dbProducts = await Repository.GetAllAsync() as List<Product>;
+            else _dbProducts = await Repository.GetAllAsync();
         }
 
         _dataGrid.Loading = false;
@@ -89,7 +83,26 @@ public partial class ProductsCalculationPage : ComponentBase
         if (!result.Canceled)
         {
             _products         = (IEnumerable<ProductTableItem>)result.Data;
-            _dbProducts       = await Repository.GetAllAsync() as List<Product>;
+            _dbProducts       = await Repository.GetAllAsync();
+        }
+
+        _dataGrid.Loading = false;
+    }
+
+    private async Task ShowCalculatorDialog(MouseEventArgs obj)
+    {
+        // TODO проверить выбранны ли элементы, если нет вывести ошибку
+        _dataGrid.Loading = true;
+        DialogParameters<ProductCalculatorDialog> parameters = [];
+        parameters.Add(dialog => dialog.ProductTableItems, _dataGrid.SelectedItems);
+
+        IDialogReference dialog = await DialogService.ShowAsync<ProductCalculatorDialog>("Расчет заказа", parameters);
+        DialogResult result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            _dbProducts = await Repository.GetAllAsync();
+            StateHasChanged();
         }
 
         _dataGrid.Loading = false;

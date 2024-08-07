@@ -10,7 +10,7 @@
           EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" CommittedItemChanges="OnQuantityToOrderCommittedChanges" ReadOnly="false">
     <ToolBarContent>    
         <MudButton Class="open-upload-table-dialog-button" hidden="@_products.Any()" Disabled="_dataGrid.Loading" Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowFileUploadDialog" StartIcon="@Icons.Material.Filled.TableView">Загрузить таблицу</MudButton>  
-        <MudButton Class="open-calculation-dialog-button" hidden="@(!_products.Any())" Disabled="_dataGrid.Loading" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Calculate">Расчитать выбранные</MudButton>
+        <MudButton Class="open-calculation-dialog-button" hidden="@(!_products.Any())" Disabled="@(_dataGrid.Loading || _dataGrid.SelectedItems.Count == 0)" Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowCalculatorDialog" StartIcon="@Icons.Material.Filled.Calculate">Расчитать выбранные</MudButton>
         <MudSpacer/>
         <MudTextField T="string" Disabled="_dataGrid.Loading" @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">

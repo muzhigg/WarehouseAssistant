@@ -14,7 +14,7 @@ namespace WarehouseAssistant.Data.Repositories
             return await httpClient.GetFromJsonAsync<MarketingMaterial>($"{Uri}/{article}");
         }
 
-        public async Task<IEnumerable<MarketingMaterial>?> GetAllAsync()
+        public async Task<List<MarketingMaterial>?> GetAllAsync()
         {
             return await httpClient.GetFromJsonAsync<List<MarketingMaterial>>(Uri);
         }

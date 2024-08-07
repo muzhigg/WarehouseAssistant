@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
 using Blazored.LocalStorage;
-using Bunit;
 using Microsoft.AspNetCore.Components.Forms;
 using MiniExcelLibs;
 using MudBlazor;
@@ -16,115 +12,16 @@ using MudBlazor.Services;
 using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.WebUI.Pages;
+using WarehouseAssistant.WebUI.Tests.Stubs;
 
-namespace WarehouseAssistant.WebUI.Tests;
+namespace WarehouseAssistant.WebUI.Tests.Pages;
 
-public class LocalStorageStub : ILocalStorageService
-{
-    public async ValueTask                        ClearAsync(CancellationToken         cancellationToken                          = new CancellationToken())
-    {
-        return;
-    }
-
-    public async ValueTask<T?>                    GetItemAsync<T>(string               key,   CancellationToken cancellationToken = new CancellationToken())
-    {
-        return default;
-    }
-
-    public async ValueTask<string?>               GetItemAsStringAsync(string          key,   CancellationToken cancellationToken = new CancellationToken())
-    {
-        return null;
-    }
-
-    public async ValueTask<string?>               KeyAsync(int                         index, CancellationToken cancellationToken = new CancellationToken())
-    {
-        return null;
-    }
-
-    public async ValueTask<IEnumerable<string>>   KeysAsync(CancellationToken          cancellationToken                        = new CancellationToken())
-    {
-        throw new NotImplementedException();
-    }
-
-    public async ValueTask<bool>                  ContainKeyAsync(string               key, CancellationToken cancellationToken = new CancellationToken())
-    {
-        throw new NotImplementedException();
-    }
-
-    public async ValueTask<int>                   LengthAsync(CancellationToken        cancellationToken                                                 = new CancellationToken())
-    {
-        throw new NotImplementedException();
-    }
-
-    public async ValueTask                        RemoveItemAsync(string               key,  CancellationToken cancellationToken                         = new CancellationToken())
-    {
-        throw new NotImplementedException();
-    }
-
-    public async ValueTask                        RemoveItemsAsync(IEnumerable<string> keys, CancellationToken cancellationToken                         = new CancellationToken())
-    {
-        throw new NotImplementedException();
-    }
-
-    public async ValueTask                        SetItemAsync<T>(string      key, T      data, CancellationToken cancellationToken = new CancellationToken())
-    {
-        throw new NotImplementedException();
-    }
-
-    public async ValueTask                        SetItemAsStringAsync(string key, string data, CancellationToken cancellationToken = new CancellationToken())
-    {
-        throw new NotImplementedException();
-    }
-
-    public event EventHandler<ChangingEventArgs>? Changing;
-    public event EventHandler<ChangedEventArgs>?  Changed;
-}
-
-public class ProductRepositoryStub : IRepository<Product>
-{
-    public async Task<Product?>              GetByArticleAsync(string article)
-    {
-        return null;
-    }
-
-    public async Task<IEnumerable<Product>?> GetAllAsync()
-    {
-        return null;
-    }
-
-    public async Task AddAsync(Product    product)
-    {
-        return;
-    }
-
-    public async Task UpdateAsync(Product product)
-    {
-        return;
-    }
-
-    public async Task DeleteAsync(string? article)
-    {
-        return;
-    }
-}
-
-public class ProductCalculationPageTest : TestContext
+public class ProductCalculationPageTest : MudBlazorTestContext
 {
     public ProductCalculationPageTest()
     {
-        JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddMudServices();
-        Services.AddScoped(_ => new HttpClient());
-        Services.AddOptions();
         Services.AddScoped<IRepository<Product>, ProductRepositoryStub>();
-        Services.AddScoped<ILocalStorageService, LocalStorageStub>();
-    }
-
-    private IRenderedComponent<MudDialogProvider> RenderedDialogProvider(out DialogService? service)
-    {
-        IRenderedComponent<MudDialogProvider> provider = RenderComponent<MudDialogProvider>();
-        service = Services.GetService<IDialogService>() as DialogService;
-        return provider;
+        //Services.AddScoped<ILocalStorageService, LocalStorageStub>();
     }
 
     private IElement FindOpenUploadTableDialogButton(IRenderedFragment fragment)
@@ -151,7 +48,7 @@ public class ProductCalculationPageTest : TestContext
     [Fact]
     public async Task ShouldDisplayUiCorrectly()
     {
-        IRenderedComponent<MudDialogProvider> provider        = RenderedDialogProvider(out DialogService? service);
+        IRenderedComponent<MudDialogProvider> provider = RenderedDialogProvider(out DialogService? service);
 
         //open page
         var page = RenderComponent<ProductsCalculationPage>();
@@ -201,6 +98,30 @@ public class ProductCalculationPageTest : TestContext
         Assert.True(uploadButton.HasAttribute("hidden"));
         calcButton = FindOpenCalculationDialogButton(page);
         Assert.False(calcButton.HasAttribute("hidden"));
+    }
+
+    [Fact]
+    public async Task UploadButtonShouldBeVisible()
+    {
+
+    }
+
+    [Fact]
+    public async Task UploadButtonShouldBeHidden()
+    {
+
+    }
+
+    [Fact]
+    public async Task CalculateDialogButtonShouldBeDisabled()
+    {
+        // Arrange
+        var page = RenderComponent<ProductsCalculationPage>();
+
+
+        // Act
+
+        // Assert
     }
 
     private MemoryStream CreateFakeExcelStream(object rows, bool printHeader)

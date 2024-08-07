@@ -1,7 +1,9 @@
-﻿using Blazored.LocalStorage;
+﻿using System.Text.Json;
+using Blazored.LocalStorage;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
+using WarehouseAssistant.Core.Models;
 using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
 
@@ -12,7 +14,6 @@ namespace WarehouseAssistant.WebUI
         // ReSharper disable once InconsistentNaming
         public static IServiceCollection AddWebUIServices(this IServiceCollection services)
         {
-            //services.AddScoped<ProductRepository>();
             services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<MarketingMaterialRepository>();
             services.AddMudServices(config =>
@@ -37,10 +38,13 @@ namespace WarehouseAssistant.WebUI
             services.AddBlazoredLocalStorage(cfg =>
             {
                 cfg.JsonSerializerOptions.IgnoreReadOnlyProperties = true;
-                cfg.JsonSerializerOptions.Converters.Add(
-                    new TypeMappingConverter<IFilterDefinition<Product>, FilterDefinition<Product>>());
-                cfg.JsonSerializerOptions.Converters.Add(
-                    new TypeMappingConverter<IFilterDefinition<MarketingMaterial>, FilterDefinition<MarketingMaterial>>());
+                //cfg.JsonSerializerOptions.Converters.Add(
+                //    new TypeMappingConverter<IFilterDefinition<Product>, FilterDefinition<Product>>());
+                //cfg.JsonSerializerOptions.Converters.Add(
+                //    new TypeMappingConverter<IFilterDefinition<MarketingMaterial>, FilterDefinition<MarketingMaterial>>());
+                //cfg.JsonSerializerOptions.Converters.Add(
+                //    new TypeMappingConverter<IFilterDefinition<ProductTableItem>, FilterDefinition<ProductTableItem>>());
+                //cfg.JsonSerializerOptions.Converters.Add(new ObjectConverter());
             });
         }
     }

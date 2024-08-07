@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <_ContentIncludedByDefault Remove="Components\MainLayout.razor" />
+    <_ContentIncludedByDefault Remove="Dialogs\ManualOrderInputDialog.razor" />
     <_ContentIncludedByDefault Remove="Pages\ProductsCalculationPage.razor" />
   </ItemGroup>
 
@@ -33,6 +34,10 @@
 
   <ItemGroup>
     <UpToDateCheckInput Remove="Pages\ProductsCalculationPage.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Dialogs\ManualOrderInputDialog.razor" />
   </ItemGroup>
 
 </Project>

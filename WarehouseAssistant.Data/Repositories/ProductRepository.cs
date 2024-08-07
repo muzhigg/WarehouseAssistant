@@ -20,7 +20,7 @@ namespace WarehouseAssistant.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<Product>?> GetAllAsync()
+        public async Task<List<Product>?> GetAllAsync()
         {
             return await httpClient.GetFromJsonAsync<List<Product>>(Uri);
         }

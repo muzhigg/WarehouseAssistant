@@ -230,7 +230,7 @@ public class WorksheetUploadDialogTest : TestContext
     }
 }
 
-public class ProductTableItemStub : ITableItem
+public class ProductTableItemStub : ICalculatedTableItem
 {
     [ExcelColumn(Name = "Название", Aliases = ["Номенклатура"])]
     public string? Name { get; set; }
@@ -250,4 +250,7 @@ public class ProductTableItemStub : ITableItem
     {
         return !string.IsNullOrEmpty(Article);
     }
+
+    public int QuantityToOrder { get; set; }
+    public int MaxCanBeOrdered => (int)(Available * 0.07);
 }

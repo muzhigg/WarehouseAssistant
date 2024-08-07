@@ -1,8 +1,12 @@
 ﻿namespace WarehouseAssistant.Core.Calculation;
 
-public interface ICalculationData;
+public interface ICalculatedTableItem : ITableItem
+{
+    public int QuantityToOrder { get; set; }
+    public int MaxCanBeOrdered { get; }
+}
 
-public interface ITableItem : ICalculationData
+public interface ITableItem
 {
     public string? Name { get; set; }
     public string? Article { get; set; }

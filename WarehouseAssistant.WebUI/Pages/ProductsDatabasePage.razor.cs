@@ -12,9 +12,9 @@ namespace WarehouseAssistant.WebUI.Pages;
 
 public partial class ProductsDatabasePage : ComponentBase
 {
-    [Inject] private ProductRepository Repository    { get; set; } = null!;
-    [Inject] private ISnackbar         SnackBar      { get; set; } = null!;
-    [Inject] private IDialogService    DialogService { get; set; } = null!;
+    [Inject] private IRepository<Product>  Repository    { get; set; } = null!;
+    [Inject] private ISnackbar      SnackBar      { get; set; } = null!;
+    [Inject] private IDialogService DialogService { get; set; } = null!;
 
     private          DataGrid<Product>             _dataGrid = null!;
     private readonly ObservableCollection<Product> _products = [];

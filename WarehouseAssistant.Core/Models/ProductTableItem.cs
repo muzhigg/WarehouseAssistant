@@ -3,7 +3,7 @@ using WarehouseAssistant.Core.Calculation;
 
 namespace WarehouseAssistant.Core.Models;
 
-public class ProductTableItem : ITableItem
+public class ProductTableItem : ICalculatedTableItem
 {
     private int    _quantityToOrder;
     private int    _availableQuantity;
@@ -65,12 +65,12 @@ public class ProductTableItem : ITableItem
         get => _quantityToOrder;
         set
         {
-            int minCanBeOrdered = MinCanBeOrdered;
+            int minCanBeOrdered = MaxCanBeOrdered;
             _quantityToOrder = value > minCanBeOrdered ? minCanBeOrdered : value;
         }
     }
 
-    private int MinCanBeOrdered => (int)Math.Floor(AvailableQuantity * 0.07);
+    [ExcelIgnore] public int MaxCanBeOrdered => (int)Math.Floor(AvailableQuantity * 0.07);
 
     public bool HasValidName()
     {
