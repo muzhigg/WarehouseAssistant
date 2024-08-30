@@ -2,9 +2,11 @@
 
 public interface IRepository<T> where T : class
 {
-    Task<T?> GetByArticleAsync(string article);
+    bool CanWrite { get; }
+    
+    Task<T?>       GetByArticleAsync(string article);
     Task<List<T>?> GetAllAsync();
-    Task                  AddAsync(T    product);
-    Task                  UpdateAsync(T product);
-    Task                  DeleteAsync(string?     article);
+    Task           AddAsync(T          product);
+    Task           UpdateAsync(T       product);
+    Task           DeleteAsync(string? article);
 }
