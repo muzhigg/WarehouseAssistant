@@ -4,7 +4,7 @@
         <MudText Typo="Typo.h6">Расчет заказа</MudText>
     </TitleContent>
     <DialogContent>
-        <MudTextField T="int" @bind-Value="_options.DaysCount" Label="На колечество дней"></MudTextField>
+        <MudTextField T="int" @bind-Value="_options.DaysCount" Label="На количество дней"></MudTextField>
         <MudCheckBox T="bool" Label="Учитывать текущее количество" @bind-Value="_options.ConsiderCurrentQuantity"></MudCheckBox>
         <MudTooltip Text="Оставьте -1, чтобы не добавлять коробкой">
             <MudTextField T="double" Label="Мин. ср. оборачиваемость для добавления коробкой" @bind-Value="_minAvgTurnoverForAdditionByBox"></MudTextField>

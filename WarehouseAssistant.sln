@@ -17,6 +17,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarehouseAssistant.Core.Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarehouseAssistant.WebUI.Tests", "WarehouseAssistant.WebUI.Tests\WarehouseAssistant.WebUI.Tests.csproj", "{DE1BD1E8-DA71-4EC0-B4B7-D22C7EBEEFC4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{666486B5-6FBA-412E-A26E-CFBCD3393EA4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{53A76888-93F5-4B5A-AAAB-68086CBC55D9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workbooks", "workbooks", "{A90BCBE8-305A-4BF9-BD86-973327004288}"
+	ProjectSection(SolutionItems) = preProject
+		samples\workbooks\EmptyWorkbook.xlsx = samples\workbooks\EmptyWorkbook.xlsx
+		samples\workbooks\BaseWorkbook.xlsx = samples\workbooks\BaseWorkbook.xlsx
+		samples\workbooks\товары 17.07.xlsx = samples\workbooks\товары 17.07.xlsx
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,5 +70,10 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5F6CF24B-A9E9-4573-9ECF-41161F6F798A}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D7D40C52-76F5-4A64-80AB-5FD288392E1C} = {53A76888-93F5-4B5A-AAAB-68086CBC55D9}
+		{A90BCBE8-305A-4BF9-BD86-973327004288} = {666486B5-6FBA-412E-A26E-CFBCD3393EA4}
+		{DE1BD1E8-DA71-4EC0-B4B7-D22C7EBEEFC4} = {53A76888-93F5-4B5A-AAAB-68086CBC55D9}
 	EndGlobalSection
 EndGlobal

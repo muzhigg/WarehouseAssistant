@@ -3,19 +3,20 @@
 @using WarehouseAssistant.Data.Models
 @using WarehouseAssistant.WebUI.Components
 
-<DataGrid Items="_products" @ref="_dataGrid" LocalStorageKey="products_db_grid_filters" T="Product" LoadingProgressColor="Color.Primary"
-          FixedHeader="true" Hover="true" Bordered="true" Striped="true" Height="80vh" ColumnResizeMode="ResizeMode.None"
-          QuickFilter="FilterFunc" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"                            
+<DataGrid Items="_products" @ref="_dataGrid" LocalStorageKey="products_db_grid_filters" T="Product" 
+          LoadingProgressColor="Color.Primary" FixedHeader="true" Hover="true" Bordered="true" Striped="true" 
+          Height="80vh" ColumnResizeMode="ResizeMode.None" QuickFilter="FilterFunc" 
+          FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"                            
           Filterable="true" ShowColumnOptions="false" SortMode="SortMode.Multiple"
           ReadOnly="false" EditMode="DataGridEditMode.Form" EditTrigger="DataGridEditTrigger.Manual" CommittedItemChanges="OnProductChanged"
-          MultiSelection="true">   
+          MultiSelection="true" Class="db-products-grid" RowClass="db-products-grid-row">   
 
     <ToolBarContent>         
-        <MudButton Color="Color.Primary" OnClick="AddItem" Disabled="_dataGrid.Loading">Добавить</MudButton>
-        <MudButton Color="Color.Secondary" Disabled="_dataGrid.Loading" OnClick="DeleteItems">Удалить</MudButton>
+        <MudButton Color="Color.Primary" OnClick="ShowAddProductDialog" Disabled="InProgress">Добавить</MudButton>
+        <MudButton Color="Color.Secondary" Disabled="InProgress" OnClick="OnDeleteButtonClicked">Удалить</MudButton>
         <MudSpacer></MudSpacer>
-        <MudTextField Disabled="_dataGrid.Loading" @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">
+        <MudTextField T="string" Disabled="InProgress" @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0 search-field">
         </MudTextField>
     </ToolBarContent>    
 
@@ -28,13 +29,13 @@
         <PropertyColumn Property="arg => arg.QuantityPerShelf" Title="Кол-во на полку" Required="false"></PropertyColumn>   
         <TemplateColumn>
             <CellTemplate>
-                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" Disabled="_dataGrid.Loading" />
+                <MudIconButton Class="edit-product-button" Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" Disabled="InProgress" />
             </CellTemplate>
         </TemplateColumn>
-    </Columns>        
+    </Columns>
 
     <PagerContent>
-        <MudDataGridPager Disabled="_dataGrid.Loading" T="Product" PageSizeOptions="new[] { 10, 25, 50, 100 }" RowsPerPageString="Количество на странице"></MudDataGridPager>
+        <MudDataGridPager Disabled="InProgress" T="Product" PageSizeOptions="new[] { 10, 25, 50, 100 }" RowsPerPageString="Количество на странице"></MudDataGridPager>
     </PagerContent>     
 
 </DataGrid>        

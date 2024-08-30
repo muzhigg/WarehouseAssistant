@@ -9,7 +9,7 @@ public class MudBlazorTestContext : TestContext
     public MudBlazorTestContext()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddMudServices();
+        // Services.AddMudServices();
         Services.AddScoped(_ => new HttpClient());
         Services.AddOptions();
     }
@@ -18,6 +18,13 @@ public class MudBlazorTestContext : TestContext
     {
         IRenderedComponent<MudDialogProvider> provider = RenderComponent<MudDialogProvider>();
         service = Services.GetService<IDialogService>() as DialogService;
+        return provider;
+    }
+    
+    protected IRenderedComponent<MudSnackbarProvider> RenderedSnackbarProvider(out SnackbarService? service)
+    {
+        IRenderedComponent<MudSnackbarProvider> provider = RenderComponent<MudSnackbarProvider>();
+        service = Services.GetService<ISnackbar>() as SnackbarService;
         return provider;
     }
 }

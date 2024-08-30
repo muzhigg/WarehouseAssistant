@@ -2,7 +2,7 @@
 
 namespace WarehouseAssistant.Core.Calculation;
 
-public class ForNumberDaysCalculation : ICalculationStrategy<ProductTableItem>
+public sealed class ForNumberDaysCalculation : ICalculationStrategy<ProductTableItem>
 {
     public int CalculateQuantity(ProductTableItem product, CalculationOptions options)
     {

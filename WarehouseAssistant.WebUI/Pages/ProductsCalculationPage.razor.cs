@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+﻿using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
+using Microsoft.AspNetCore.Components;
 using MiniExcelLibs.Attributes;
 using MudBlazor;
 using WarehouseAssistant.Core.Models;
@@ -8,64 +9,92 @@ using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.WebUI.Components;
 using WarehouseAssistant.WebUI.Dialogs;
 
+[assembly: InternalsVisibleTo("WarehouseAssistant.WebUI.Tests")]
+
 namespace WarehouseAssistant.WebUI.Pages;
 
+[UsedImplicitly]
 public partial class ProductsCalculationPage : ComponentBase
 {
-    [Inject] private ISnackbar Snackbar { get; set; } = null!;
-
-    [Inject] private IDialogService DialogService { get; set; } = null!;
-
-    [Inject] private IRepository<Product> Repository { get; set; } = null!;
-    private          List<Product>?       _dbProducts = [];
-
-    private DataGrid<ProductTableItem> _dataGrid = null!;
-
+    public bool InProgress
+    {
+        get => _inProgress;
+        private set
+        {
+            _inProgress = value;
+            _dataGrid?.SetLoading(value);
+            StateHasChanged();
+        }
+    }
+    
+    private int SelectedProductCount => _dataGrid?.SelectedItems.Count ?? 0;
+    
+    [Inject] private ISnackbar                     Snackbar      { get; set; } = null!;
+    [Inject] private IDialogService                DialogService { get; set; } = null!;
+    [Inject] private IRepository<Product>          Repository    { get; set; } = null!;
+    
+    internal IReadOnlyCollection<ProductTableItem> Products => _products.ToList().AsReadOnly();
+    
+    private List<Product>?                _dbProducts = [];
+    private DataGrid<ProductTableItem>?   _dataGrid;
     private IEnumerable<ProductTableItem> _products     = new List<ProductTableItem>();
-    private string                        _searchString = null!;
-
+    private string                        _searchString = "";
+    private bool                          _inProgress;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshDbProductListAsync();
+        
+#if DEBUG
+        Console.WriteLine("ProductsCalculationPage.OnInitializedAsync() called");
+#endif
+    }
+    
+    private async Task RefreshDbProductListAsync()
+    {
+        try
+        {
+            _dbProducts = await Repository.GetAllAsync();
+        }
+        catch (Exception e)
+        {
+            string message = $"Не удалось получить список товаров из базы данных: {e.Message}";
+            Snackbar.Add(message, Severity.Error);
+            Console.WriteLine(message);
+        }
+    }
+    
     private bool ShouldDisplayProduct(ProductTableItem arg)
     {
-        if (string.IsNullOrWhiteSpace(_searchString))
-            return true;
-
-        if (arg.Article!.Contains(_searchString)) return true;
-
-        if (arg.Name!.Contains(_searchString, StringComparison.OrdinalIgnoreCase)) return true;
-
-        return false;
+        return string.IsNullOrWhiteSpace(_searchString) ||
+               arg.Article.Contains(_searchString) ||
+               arg.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
     }
-
-    private void OnQuantityToOrderCommittedChanges(ProductTableItem obj)
+    
+    internal async Task ShowAddToDbDialog(ProductTableItem contextItem)
     {
-        if (obj.QuantityToOrder < 0)
-        {
-            Snackbar.Add("Значение не может быть меньше нуля", Severity.Error);
-            obj.QuantityToOrder = 0;
-        }
-    }
-
-    private async Task ShowAddToDbDialog(ProductTableItem contextItem)
-    {
-        _dataGrid.Loading = true;
-
+        InProgress = true;
+        
         Product? product = await AddDbProductDialog.Show(contextItem, DialogService);
-
+        
         if (product != null)
         {
-            if (_dbProducts != null) _dbProducts.Add(product);
-            else _dbProducts = await Repository.GetAllAsync();
+            _dbProducts ??= [];
+            _dbProducts.Add(product);
+            Snackbar.Add("Товар успешно добавлен в базу данных", Severity.Success);
+            // if (_dbProducts != null) _dbProducts.Add(product);
+            // else _dbProducts = await Repository.GetAllAsync();
         }
-
-        _dataGrid.Loading = false;
-        StateHasChanged();
+        
+        InProgress = false;
+        // StateHasChanged();
     }
-
-    private async Task ShowFileUploadDialog(MouseEventArgs obj)
+    
+    public async Task ShowFileUploadDialogAsync()
     {
-        _dataGrid.Loading = true;
+        InProgress = true;
+        
         DialogParameters<WorksheetUploadDialog<ProductTableItem>> parameters = [];
-
         parameters.Add(uploadDialog => uploadDialog.ExcelColumns, [
             new DynamicExcelColumn(nameof(ProductTableItem.Name)),
             new DynamicExcelColumn(nameof(ProductTableItem.AvailableQuantity)),
@@ -74,37 +103,39 @@ public partial class ProductsCalculationPage : ComponentBase
             new DynamicExcelColumn(nameof(ProductTableItem.CurrentQuantity)),
             new DynamicExcelColumn(nameof(ProductTableItem.AverageTurnover)),
             new DynamicExcelColumn(nameof(ProductTableItem.StockDays)),
-            new DynamicExcelColumn(nameof(ProductTableItem.QuantityToOrder)) { Ignore = true },
+            new DynamicExcelColumn(nameof(ProductTableItem.QuantityToOrder)) { Ignore = true }
         ]);
-
-        IDialogReference                                          dialog     = await DialogService.ShowAsync<WorksheetUploadDialog<ProductTableItem>>("Загрузка файла", parameters);
-        DialogResult                                              result     = await dialog.Result;
-
-        if (!result.Canceled)
-        {
-            _products         = (IEnumerable<ProductTableItem>)result.Data;
-            _dbProducts       = await Repository.GetAllAsync();
-        }
-
-        _dataGrid.Loading = false;
+        
+        IDialogReference dialog =
+            await DialogService.ShowAsync<WorksheetUploadDialog<ProductTableItem>>("Загрузка файла", parameters);
+        DialogResult result = await dialog.Result;
+        
+        if (!result.Canceled) _products   = (IEnumerable<ProductTableItem>)result.Data;
+        // _dbProducts = await Repository.GetAllAsync();
+        InProgress = false;
+        // StateHasChanged();
     }
-
-    private async Task ShowCalculatorDialog(MouseEventArgs obj)
+    
+    public async Task ShowCalculatorDialog()
     {
-        // TODO проверить выбранны ли элементы, если нет вывести ошибку
-        _dataGrid.Loading = true;
+        if (_dataGrid!.SelectedItems.Count == 0)
+        {
+            Snackbar.Add("Не выбрано ни одного элемента", Severity.Error);
+            return;
+        }
+        
+        InProgress = true;
+        
         DialogParameters<ProductCalculatorDialog> parameters = [];
         parameters.Add(dialog => dialog.ProductTableItems, _dataGrid.SelectedItems);
-
+        
         IDialogReference dialog = await DialogService.ShowAsync<ProductCalculatorDialog>("Расчет заказа", parameters);
-        DialogResult result = await dialog.Result;
-
-        if (!result.Canceled)
-        {
-            _dbProducts = await Repository.GetAllAsync();
-            StateHasChanged();
-        }
-
-        _dataGrid.Loading = false;
+        DialogResult     result = await dialog.Result;
+        
+        if (!result.Canceled && result.Data is true) 
+            await RefreshDbProductListAsync();
+        
+        InProgress = false;
+        // StateHasChanged();
     }
 }

@@ -1,29 +1,30 @@
-﻿using MiniExcelLibs.Attributes;
+﻿using JetBrains.Annotations;
+using MiniExcelLibs.Attributes;
 using WarehouseAssistant.Core.Calculation;
 
 namespace WarehouseAssistant.Core.Models;
 
-public class ProductTableItem : ICalculatedTableItem
+public sealed class ProductTableItem : ICalculatedTableItem
 {
     private int    _quantityToOrder;
     private int    _availableQuantity;
     private int    _currentQuantity;
     private double _averageTurnover;
     private double _stockDays;
-
+    
     [ExcelColumn(Name = "Название", Aliases = ["Номенклатура"], Width = 70.0)]
-    public string? Name
+    public string Name
     {
         get;
         set;
-    }
+    } = string.Empty;
 
     [ExcelColumn(Name = "Артикул", Width = 10.0)]
-    public string? Article
+    public string Article
     {
         get;
         set;
-    }
+    } = string.Empty;
 
     [ExcelColumn(Name = "Доступно на БГЛЦ", Aliases = ["Доступно основной склад МО"], Width = 16.0)]
     public int AvailableQuantity
@@ -38,10 +39,7 @@ public class ProductTableItem : ICalculatedTableItem
         get => _currentQuantity;
         set => _currentQuantity = Math.Clamp(value, 0, int.MaxValue);
     }
-
-    [ExcelIgnore, Obsolete]
-    public int Reserved { get; set; }
-
+    
     [ExcelColumn(Name = "Средний расход в день", Aliases = ["Средняя оборачиваемость в день"], Width = 16.0)]
     public double AverageTurnover
     {
@@ -70,7 +68,7 @@ public class ProductTableItem : ICalculatedTableItem
         }
     }
 
-    [ExcelIgnore] public int MaxCanBeOrdered => (int)Math.Floor(AvailableQuantity * 0.07);
+    [ExcelColumn(Ignore = true)] public int MaxCanBeOrdered => (int)Math.Floor(AvailableQuantity * 0.07);
 
     public bool HasValidName()
     {

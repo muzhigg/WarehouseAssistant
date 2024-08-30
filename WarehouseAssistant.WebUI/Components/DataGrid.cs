@@ -5,8 +5,8 @@ using MudBlazor;
 
 namespace WarehouseAssistant.WebUI.Components;
 
-
 [CascadingTypeParameter(nameof(T))]
+// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
 public class DataGrid<T> : MudDataGrid<T>
 {
     private sealed class FilterDataWrapper
@@ -17,10 +17,19 @@ public class DataGrid<T> : MudDataGrid<T>
         public string? Operator    { get; init; }
         public object? Value       { get; set; }
     }
-
-
+    
     [Parameter] public string LocalStorageKey { get; set; } = "DataGrid";
-
+    
+    public new virtual HashSet<T> SelectedItems
+    {
+        get => base.SelectedItems;
+        set => base.SelectedItems = value;
+    }
+    
+    internal void SetLoading(bool loading)
+    {
+        Loading = loading;
+    }
     //[Inject] private ILocalStorageService LocalStorage { get; set; } = null!;
 
     //private          List<FilterDataWrapper> _filterDataWrappers = [];

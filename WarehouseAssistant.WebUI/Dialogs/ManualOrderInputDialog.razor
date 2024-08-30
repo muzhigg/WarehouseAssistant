@@ -1,33 +1,28 @@
 ﻿@using WarehouseAssistant.Core.Calculation
 @typeparam TCalculatedItem where TCalculatedItem : class, ICalculatedTableItem
 
-<MudDialog Class="manual-order-input-dialog"> 
-                
+<MudDialog Class="manual-order-input-dialog">
     <TitleContent>
         <MudText Typo="Typo.h6">Введите количество</MudText>
     </TitleContent>
-    <DialogContent>                 
-        <MudText Class="manual-order-input-text">@Text</MudText>  
-        @* <MudText>Товар: @(Item.Name)</MudText>
-        <MudText>Артикул: @(Item.Article)</MudText> *@
-        @* <MudText>Максимальное количество для заказа: <b>@(Item.MaxCanBeOrdered)</b></MudText> *@     
-                        @AdditionalRenderFragment
+    <DialogContent>
+        <MudText Class="manual-order-input-text">@Text</MudText>
+        @AdditionalRenderFragment
         <MudTextField Class="manual-input-value-field" T="uint" @bind-Value="Value" Label="Введите количество вручную"></MudTextField>
     </DialogContent>
     <DialogActions>
-        <MudButton Class="manual-input-submit" Color="Color.Primary" OnClick="ManualInputSubmit">Добавить</MudButton>
+        <MudButton Disabled="@(Value == 0)" Class="manual-input-submit" Color="Color.Primary" OnClick="ManualInputSubmit">Добавить</MudButton>
         <MudButton Color="Color.Secondary" OnClick="ManualInputCancel">Пропустить</MudButton>
     </DialogActions>
-</MudDialog>  
+</MudDialog>
 
 @code
 {
     [CascadingParameter] private MudDialogInstance MudDialog { get; set; } = null!;
 
-    private            uint             _value;
     [Parameter] public TCalculatedItem? Item                     { get; set; }
-    [Parameter] public string           Text                     { get; set; }
-    [Parameter] public RenderFragment   AdditionalRenderFragment { get; set; }
+    [Parameter] public string?          Text                     { get; set; }
+    [Parameter] public RenderFragment?  AdditionalRenderFragment { get; set; }
 
     private uint Value
     {
@@ -38,21 +33,25 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        EnsureItemIsSet();
+    }
 
+    private void EnsureItemIsSet()
+    {
         if (Item == null)
         {
-            throw new NullReferenceException($"{nameof(Item)} is not set as parameter");
+            throw new ArgumentNullException(nameof(Item), $"{nameof(Item)} is not set as parameter");
         }
     }
 
     private void ManualInputSubmit(MouseEventArgs obj)
     {
-        MudDialog.Close();
+        MudDialog.Close(DialogResult.Ok(Value));
     }
 
     private void ManualInputCancel(MouseEventArgs obj)
     {
-        Item.QuantityToOrder = 0;
+        Item!.QuantityToOrder = 0;
         MudDialog.Cancel();
     }
 }
