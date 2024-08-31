@@ -23,13 +23,11 @@ public partial class ProductCalculatorDialog
     
     [CascadingParameter] private MudDialogInstance MudDialog { get; set; } = null!;
     
-    private CalculationOptions _options = new CalculationOptions();
+    private CalculationOptions _options;
     
-    private OrderCalculator<ProductTableItem> _calculator =
-        new OrderCalculator<ProductTableItem>(new ForNumberDaysCalculation(), _options);
-    
-    private double _minAvgTurnoverForAdditionByBox;
-    private bool   _needAddToDb;
+    private OrderCalculator<ProductTableItem> _calculator;
+    private double                            _minAvgTurnoverForAdditionByBox;
+    private bool                              _needAddToDb;
     
     private bool                _manualInputIsVisible;
     private MudDialog           _manualInputDialog;
@@ -93,8 +91,14 @@ public partial class ProductCalculatorDialog
     
     protected override async Task OnInitializedAsync()
     {
+        _options    = new CalculationOptions();
+        _calculator = new OrderCalculator<ProductTableItem>(new ForNumberDaysCalculation(), _options);
+        
         _settingsData = await LocalStorage.GetItemAsync<CalculatorSettingsData>(LocalStorageKey) ??
                         new CalculatorSettingsData();
+        
+        _options.DaysCount               = _settingsData.DaysCount;
+        _options.ConsiderCurrentQuantity = _settingsData.ConsiderCurrentQuantity;
         
         await base.OnInitializedAsync();
     }
@@ -108,9 +112,6 @@ public partial class ProductCalculatorDialog
             Snackbar.Add("Нет товаров для расчёта", Severity.Error);
             MudDialog.Cancel();
         }
-        
-        // _options    = new CalculationOptions();
-        // _calculator = new OrderCalculator<ProductTableItem>(new ForNumberDaysCalculation(), _options);
     }
     
     private async Task OnSubmit(MouseEventArgs obj)
