@@ -173,7 +173,7 @@ public sealed partial class ProductCalculatorDialog
     
     private async Task AddToRepo(ProductTableItem contextItem, List<Product> dbProducts)
     {
-        Product? product = await AddDbProductDialog.Show(contextItem, DialogService);
+        Product? product = await ProductFormDialog.ShowAddDialogAsync(contextItem, DialogService);
         
         if (product != null)
             dbProducts.Add(product);

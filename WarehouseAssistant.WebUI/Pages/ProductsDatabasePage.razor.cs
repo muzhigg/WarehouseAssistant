@@ -8,7 +8,6 @@ using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.WebUI.Components;
 using WarehouseAssistant.WebUI.Dialogs;
-using NotNull = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
 namespace WarehouseAssistant.WebUI.Pages;
 
@@ -21,8 +20,8 @@ public partial class ProductsDatabasePage : ComponentBase
         get => _inProgress;
         set
         {
-            _inProgress       = value;
-            if (_dataGrid != null) _dataGrid.Loading = value;
+            _inProgress = value;
+            if (_dataGrid != null) _dataGrid.SetLoading(value);
             else ShowError("DataGrid is not initialized.");
         }
     }
@@ -31,10 +30,10 @@ public partial class ProductsDatabasePage : ComponentBase
     [Inject] private ISnackbar            SnackBar      { get; set; }  = null!;
     [Inject] private IDialogService       DialogService { get; init; } = null!;
     
-    private DataGrid<Product>?            _dataGrid;
-    private readonly    ObservableCollection<Product> _products = [];
-    private             string?                       _searchString;
-    private             bool                          _inProgress;
+    private          DataGrid<Product>?            _dataGrid;
+    private readonly ObservableCollection<Product> _products = [];
+    private          string?                       _searchString;
+    private          bool                          _inProgress;
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -83,7 +82,7 @@ public partial class ProductsDatabasePage : ComponentBase
         return arg.Article.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
                arg.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
     }
-
+    
     private async Task OnProductChanged(Product obj)
     {
         InProgress = true;
@@ -105,19 +104,19 @@ public partial class ProductsDatabasePage : ComponentBase
     private async Task ShowAddProductDialog()
     {
         InProgress = true;
-        IDialogReference? dialog = await DialogService.ShowAsync<AddDbProductDialog>("Добавить товар");
+        IDialogReference? dialog = await DialogService.ShowAsync<ProductFormDialog>("Добавить товар");
         DialogResult?     result = await dialog.Result;
-
+        
         if (!result.Canceled)
         {
             Product product = (Product)result.Data;
             _products.Add(product);
         }
-
+        
         InProgress = false;
         StateHasChanged();
     }
-
+    
     private async Task DeleteItems(ICollection<Product> items)
     {
         InProgress = true;
@@ -132,10 +131,10 @@ public partial class ProductsDatabasePage : ComponentBase
                 ShowError($"Не удалось удалить {product.Article}. {exception.StatusCode}");
                 continue;
             }
-
+            
             _products.Remove(product);
         }
-
+        
         InProgress = false;
         StateHasChanged();
     }

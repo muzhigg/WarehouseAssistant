@@ -4,19 +4,15 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
-using AngleSharp.Dom;
 using FluentAssertions;
 using FluentAssertions.BUnit;
-using Microsoft.AspNetCore.Components;
 using Moq;
 using MudBlazor;
 using MudBlazor.Services;
 using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
-using WarehouseAssistant.WebUI.Components;
 using WarehouseAssistant.WebUI.Dialogs;
 using WarehouseAssistant.WebUI.Pages;
-using WarehouseAssistant.WebUI.Tests.Stubs;
 
 namespace WarehouseAssistant.WebUI.Tests.Pages;
 
@@ -61,7 +57,8 @@ public sealed class ProductsDatabasePageTests : MudBlazorTestContext
         page.FindAll(".db-products-grid-row").Count.Should().Be(3);
     }
     
-    private static async Task WaitForPropertyChangeAsync(Func<bool> condition, int timeoutMilliseconds = 10000, int pollingIntervalMilliseconds = 100)
+    private static async Task WaitForPropertyChangeAsync(Func<bool> condition, int timeoutMilliseconds = 10000,
+        int                                                         pollingIntervalMilliseconds = 100)
     {
         var timeoutTask = Task.Delay(timeoutMilliseconds);
         while (!condition())
@@ -171,7 +168,7 @@ public sealed class ProductsDatabasePageTests : MudBlazorTestContext
         var dialogResult = DialogResult.Ok(expectedProduct);
         
         mockDialogService
-            .Setup(ds => ds.ShowAsync<AddDbProductDialog>(It.IsAny<string>()))
+            .Setup(ds => ds.ShowAsync<ProductFormDialog>(It.IsAny<string>()))
             .ReturnsAsync(Mock.Of<IDialogReference>(dr => dr.Result == Task.FromResult(dialogResult)));
         
         Services.AddSingleton(mockRepository.Object);
@@ -187,7 +184,7 @@ public sealed class ProductsDatabasePageTests : MudBlazorTestContext
             .Invoke(component.Instance, null);
         
         // Assert
-        mockDialogService.Verify(ds => ds.ShowAsync<AddDbProductDialog>(It.IsAny<string>()), Times.Once);
+        mockDialogService.Verify(ds => ds.ShowAsync<ProductFormDialog>(It.IsAny<string>()), Times.Once);
         IRenderedComponent<MudDataGrid<Product>> grid = component.FindComponent<MudDataGrid<Product>>();
         grid.Instance.Items.Should().HaveCount(1).And.Contain(expectedProduct);
         
@@ -225,7 +222,7 @@ public sealed class ProductsDatabasePageTests : MudBlazorTestContext
         {
             Article          = "12345678",        // Article остается тем же, так как это ключ
             Name             = "Updated Product", // Измененное имя
-            Barcode          = 000002,          // Измененный штрихкод
+            Barcode          = 000002,            // Измененный штрихкод
             QuantityPerBox   = 20,
             QuantityPerShelf = 10
         };

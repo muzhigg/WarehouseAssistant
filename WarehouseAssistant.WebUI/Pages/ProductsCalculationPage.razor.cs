@@ -29,9 +29,9 @@ public partial class ProductsCalculationPage : ComponentBase
     
     private int SelectedProductCount => _dataGrid?.SelectedItems.Count ?? 0;
     
-    [Inject] private ISnackbar                     Snackbar      { get; set; } = null!;
-    [Inject] private IDialogService                DialogService { get; set; } = null!;
-    [Inject] private IRepository<Product>          Repository    { get; set; } = null!;
+    [Inject] private ISnackbar            Snackbar      { get; set; } = null!;
+    [Inject] private IDialogService       DialogService { get; set; } = null!;
+    [Inject] private IRepository<Product> Repository    { get; set; } = null!;
     
     internal IReadOnlyCollection<ProductTableItem> Products => _products.ToList().AsReadOnly();
     
@@ -75,7 +75,7 @@ public partial class ProductsCalculationPage : ComponentBase
     {
         InProgress = true;
         
-        Product? product = await AddDbProductDialog.Show(contextItem, DialogService);
+        Product? product = await ProductFormDialog.ShowAddDialogAsync(contextItem, DialogService);
         
         if (product != null)
         {
@@ -110,7 +110,7 @@ public partial class ProductsCalculationPage : ComponentBase
             await DialogService.ShowAsync<WorksheetUploadDialog<ProductTableItem>>("Загрузка файла", parameters);
         DialogResult result = await dialog.Result;
         
-        if (!result.Canceled) _products   = (IEnumerable<ProductTableItem>)result.Data;
+        if (!result.Canceled) _products = (IEnumerable<ProductTableItem>)result.Data;
         // _dbProducts = await Repository.GetAllAsync();
         InProgress = false;
         // StateHasChanged();
@@ -132,7 +132,7 @@ public partial class ProductsCalculationPage : ComponentBase
         IDialogReference dialog = await DialogService.ShowAsync<ProductCalculatorDialog>("Расчет заказа", parameters);
         DialogResult     result = await dialog.Result;
         
-        if (!result.Canceled && result.Data is true) 
+        if (!result.Canceled && result.Data is true)
             await RefreshDbProductListAsync();
         
         InProgress = false;
