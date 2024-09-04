@@ -8,7 +8,8 @@
 		<MudText Class="manual-order-input-text">@Text</MudText>
 		@AdditionalRenderFragment
 		<MudNumericField Class="manual-input-value-field" T="int" @bind-Value="Value" Label="Введите количество вручную"
-		                 Min="0" Required="true" ErrorText="Должно быть положительное число"/>
+		                 Min="0" Max="@Item.MaxCanBeOrdered" Required="true"
+		                 ErrorText="Должно быть положительное число"/>
 	</DialogContent>
 	<DialogActions>
 		<MudButton Disabled="@(Value == 0)" Class="manual-input-submit" Color="Color.Primary"

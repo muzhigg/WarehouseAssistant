@@ -253,4 +253,29 @@ public sealed class ManualOrderInputDialogTest : MudBlazorTestContext
         mockItem.Object.QuantityToOrder.Should().Be(10,
             because: "the value should be reset to the initial value after canceling the dialog");
     }
+    
+    [Fact]
+    public void Should_ClampValueToMaxCanBeOrdered()
+    {
+        // Arrange
+        var cut = RenderComponent<MudDialogProvider>();
+        
+        var mockItem = new Mock<ICalculatedTableItem>();
+        mockItem.SetupProperty(x => x.QuantityToOrder, 0);
+        mockItem.SetupGet(x => x.MaxCanBeOrdered).Returns(5);
+        
+        cut.InvokeAsync((async () => ManualOrderInputDialog<ICalculatedTableItem>.Show(
+            Services.GetService<IDialogService>() as DialogService,
+            mockItem.Object, "Введите количество")));
+        
+        IRenderedComponent<ManualOrderInputDialog<ICalculatedTableItem>> component =
+            cut.FindComponent<ManualOrderInputDialog<ICalculatedTableItem>>();
+        
+        // Act - Simulate entering a value greater than MaxCanBeOrdered
+        component.Find(".manual-input-value-field input").Change(10);
+        component.Find(".manual-input-value-field input").Blur();
+        
+        // Assert
+        component.Instance.Value.Should().Be(5, "Value should be clamped to MaxCanBeOrdered");
+    }
 }

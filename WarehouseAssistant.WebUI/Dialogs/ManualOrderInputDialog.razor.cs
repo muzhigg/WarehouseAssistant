@@ -37,6 +37,8 @@ public sealed partial class ManualOrderInputDialog<TCalculatedItem> where TCalcu
         set => Item.QuantityToOrder = value;
     }
     
+    internal int MaxValue => Item.MaxCanBeOrdered;
+    
     private int? _initialValue;
     
     protected override void OnParametersSet()
