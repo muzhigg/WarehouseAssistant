@@ -1,5 +1,4 @@
-﻿@using WarehouseAssistant.Data.Models
-<MudDialog>
+﻿<MudDialog>
 	<TitleContent>
 		<MudText Typo="Typo.h6">Расчет заказа</MudText>
 	</TitleContent>
@@ -19,12 +18,7 @@
 		</MudCheckBox>
 	</DialogContent>
 	<DialogActions>
-		<MudButton Class="submit-calculation-button" Color="Color.Primary" OnClick="OnSubmit">Добавить</MudButton>
+		<MudButton id="submit-calculation-button" Color="Color.Primary" OnClick="OnSubmit">Добавить</MudButton>
 		<MudButton Color="Color.Secondary" OnClick="OnCancel">Отмена</MudButton>
 	</DialogActions>
 </MudDialog>
-
-@code
-{
-	private RenderFragment<Product> ManualInputText = value => builder => { };
-}
