@@ -35,5 +35,10 @@ namespace WarehouseAssistant.Data.Repositories
         {
             await httpClient.DeleteAsync($"{Uri}/{article}");
         }
+        
+        public Task<bool> ValidateAccessKeyAsync(string accessKey)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

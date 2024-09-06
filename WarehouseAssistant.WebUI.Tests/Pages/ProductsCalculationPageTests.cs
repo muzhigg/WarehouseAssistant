@@ -170,7 +170,7 @@ public sealed class ProductsCalculationPageTests : MudBlazorTestContext
         _dialogServiceMock.Verify(ds => ds.ShowAsync<ProductFormDialog>(
             "Добавить товар",
             It.Is<DialogParameters>(p =>
-                p.Get<string>("ProductName") == product.Name)
+                p.Get<Product>("EditedProduct").Name == product.Name)
         ), Times.Once);
         _snackbarMock.Verify(snackbar => snackbar.Add("Товар успешно добавлен в базу данных",
             Severity.Success,

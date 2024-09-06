@@ -145,6 +145,7 @@ public sealed class ManualOrderInputDialogTest : MudBlazorTestContext
         var cut      = RenderComponent<MudDialogProvider>();
         var mockItem = new Mock<ICalculatedTableItem>();
         mockItem.SetupProperty(x => x.QuantityToOrder, 0);
+        mockItem.SetupGet(x => x.MaxCanBeOrdered).Returns(100);
         
         // Act
         cut.InvokeAsync((async () => ManualOrderInputDialog<ICalculatedTableItem>.Show(
@@ -152,14 +153,14 @@ public sealed class ManualOrderInputDialogTest : MudBlazorTestContext
             mockItem.Object, "Введите количество")));
         
         // Assert initial state
-        cut.Render();
+        // cut.Render();
         var submitButton = cut.Find(".manual-input-submit");
         submitButton.HasAttribute("disabled").Should()
             .BeTrue("Submit button should be disabled when QuantityToOrder is 0");
         
         // Act - Simulate entering a negative value
-        var numericField = cut.Find(".manual-input-value-field input");
-        numericField.Change(-5);
+        cut.Find(".manual-input-value-field input").Change(-5);
+        cut.Find(".manual-input-value-field input").Blur();
         
         // Assert
         submitButton.HasAttribute("disabled").Should()
@@ -167,12 +168,13 @@ public sealed class ManualOrderInputDialogTest : MudBlazorTestContext
         mockItem.Object.QuantityToOrder.Should().Be(0);
         
         // Act - Simulate entering a positive value
-        numericField.Change(10);
+        cut.Find(".manual-input-value-field input").Change(10);
+        cut.Find(".manual-input-value-field input").Blur();
         
         // Assert
+        mockItem.Object.QuantityToOrder.Should().Be(10, "QuantityToOrder should reflect the positive input value");
         submitButton.HasAttribute("disabled").Should()
             .BeFalse("Submit button should be enabled when QuantityToOrder is positive");
-        mockItem.Object.QuantityToOrder.Should().Be(10, "QuantityToOrder should reflect the positive input value");
     }
     
     [Fact]

@@ -3,7 +3,6 @@ using Blazored.LocalStorage;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
-using WarehouseAssistant.Core.Models;
 using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
 
@@ -14,8 +13,7 @@ namespace WarehouseAssistant.WebUI
         // ReSharper disable once InconsistentNaming
         public static IServiceCollection AddWebUIServices(this IServiceCollection services)
         {
-            services.AddScoped<IRepository<Product>, ProductRepository>();
-            services.AddScoped<MarketingMaterialRepository>();
+            // services.AddScoped<MarketingMaterialRepository>();
             services.AddMudServices(config =>
             {
                 config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -29,7 +27,9 @@ namespace WarehouseAssistant.WebUI
                 config.SnackbarConfiguration.SnackbarVariant        = Variant.Filled;
             });
             AddLocalStorage(services);
-
+            
+            services.AddScoped<IRepository<Product>, ProductRepository>();
+            
             return services;
         }
 

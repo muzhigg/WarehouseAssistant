@@ -33,4 +33,9 @@ public class ProductRepositoryStub : IRepository<Product>
     {
         return;
     }
+    
+    public Task<bool> ValidateAccessKeyAsync(string accessKey)
+    {
+        throw new System.NotImplementedException();
+    }
 }

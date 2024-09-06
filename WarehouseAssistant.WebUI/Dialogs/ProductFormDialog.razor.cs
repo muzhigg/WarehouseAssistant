@@ -53,7 +53,6 @@ namespace WarehouseAssistant.WebUI.Dialogs
         
         [CascadingParameter] private MudDialogInstance? MudDialog { get; set; }
         
-        
         public string? Article
         {
             get => EditedProduct.Article;
@@ -85,6 +84,14 @@ namespace WarehouseAssistant.WebUI.Dialogs
         }
         
         private bool _isValid;
+        
+        protected override Task OnInitializedAsync()
+        {
+            if (Db.CanWrite == false)
+                Snackbar.Add("Нет доступа для записи в базу данных", Severity.Error);
+            
+            return Task.CompletedTask;
+        }
         
         protected override async Task OnParametersSetAsync()
         {
