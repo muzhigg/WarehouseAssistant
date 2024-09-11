@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Blazored.LocalStorage;
+﻿using Blazored.LocalStorage;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
@@ -17,7 +16,7 @@ namespace WarehouseAssistant.WebUI
             services.AddMudServices(config =>
             {
                 config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
-
+                
                 config.SnackbarConfiguration.PreventDuplicates      = false;
                 config.SnackbarConfiguration.NewestOnTop            = false;
                 config.SnackbarConfiguration.ShowCloseIcon          = true;
@@ -32,7 +31,7 @@ namespace WarehouseAssistant.WebUI
             
             return services;
         }
-
+        
         private static void AddLocalStorage(IServiceCollection services)
         {
             services.AddBlazoredLocalStorage(cfg =>

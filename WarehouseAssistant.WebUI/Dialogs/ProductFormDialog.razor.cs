@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using WarehouseAssistant.Core.Models;
 using WarehouseAssistant.Data.Models;
@@ -8,8 +9,8 @@ namespace WarehouseAssistant.WebUI.Dialogs
 {
     public partial class ProductFormDialog : ComponentBase
     {
-        public static async Task<Product?> ShowAddDialogAsync(ProductTableItem productTableItem,
-            IDialogService                                                     dialogService)
+        public static Task<Product?> ShowAddDialogAsync(ProductTableItem productTableItem,
+            IDialogService                                               dialogService)
         {
             Product product = new()
             {
@@ -17,6 +18,12 @@ namespace WarehouseAssistant.WebUI.Dialogs
                 Name    = productTableItem.Name,
             };
             
+            return ShowAddDialogAsync(product, dialogService);
+        }
+        
+        public static async Task<Product?> ShowAddDialogAsync(Product product,
+            IDialogService                                            dialogService)
+        {
             DialogParameters<ProductFormDialog> parameters = [];
             parameters.Add(productDialog => productDialog.IsEditMode, false);
             parameters.Add(productDialog => productDialog.EditedProduct, product);
@@ -36,9 +43,9 @@ namespace WarehouseAssistant.WebUI.Dialogs
             parameters.Add(productDialog => productDialog.IsEditMode, true);
             parameters.Add(productDialog => productDialog.EditedProduct, product);
             
-            IDialogReference? dialog =
-                await dialogService.ShowAsync<ProductFormDialog>("Редактировать товар", parameters);
-            DialogResult? result = dialog.Result.Result;
+            var dialog =
+                dialogService.Show<ProductFormDialog>("Редактировать товар", parameters);
+            DialogResult? result = await dialog.Result;
             
             if (!result.Canceled) return (Product)result.Data;
             
@@ -49,7 +56,7 @@ namespace WarehouseAssistant.WebUI.Dialogs
         [Inject]    private ISnackbar            Snackbar   { get; set; } = null!;
         [Parameter] public  bool                 IsEditMode { get; set; }
         
-        [Parameter] public Product EditedProduct { get; set; } = new();
+        [Parameter] public Product EditedProduct { get; set; } = null!;
         
         [CascadingParameter] private MudDialogInstance? MudDialog { get; set; }
         
@@ -83,7 +90,8 @@ namespace WarehouseAssistant.WebUI.Dialogs
             set => EditedProduct.QuantityPerShelf = value;
         }
         
-        private bool _isValid;
+        private bool    _isValid;
+        private MudForm _form = null!;
         
         protected override Task OnInitializedAsync()
         {
@@ -93,10 +101,8 @@ namespace WarehouseAssistant.WebUI.Dialogs
             return Task.CompletedTask;
         }
         
-        protected override async Task OnParametersSetAsync()
+        protected override void OnParametersSet()
         {
-            await base.OnParametersSetAsync();
-            
             if (IsEditMode)
             {
                 if (EditedProduct is null)
@@ -106,6 +112,15 @@ namespace WarehouseAssistant.WebUI.Dialogs
                 QuantityPerBox   = EditedProduct.QuantityPerBox;
                 QuantityPerShelf = EditedProduct.QuantityPerShelf;
                 ProductName      = EditedProduct.Name;
+            }
+        }
+        
+        protected override void OnAfterRender(bool firstRender)
+        {
+            base.OnAfterRender(firstRender);
+            if (firstRender)
+            {
+                _form.Validate();
             }
         }
         
@@ -120,7 +135,9 @@ namespace WarehouseAssistant.WebUI.Dialogs
             }
             catch (HttpRequestException e)
             {
-                Console.Error.WriteLine(e);
+#if DEBUG
+                Debug.WriteLine(e, "Error");
+#endif
                 Snackbar.Add("Ошибка при сохранении товара", Severity.Error);
                 return;
             }
@@ -133,9 +150,10 @@ namespace WarehouseAssistant.WebUI.Dialogs
             MudDialog?.Close(DialogResult.Cancel());
         }
         
-        private async Task<string> ArticleValidation(string arg)
+        internal async Task<string> ArticleValidation(string arg)
         {
             if (string.IsNullOrEmpty(arg)) return "Артикул обязателен";
+            
             
             if (StartsAndEndsWithNonWhitespaceChar(arg) == false) return "Артикул не должен содержать пробелы";
             
