@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
@@ -266,5 +267,328 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
         // Assert
         mockDialogService.Verify(ds => ds.Show<ManualOrderInputDialog<ProductTableItem>>(
             It.IsAny<string>(), It.Is<DialogParameters>(p => p.Get<object>("Item") == productTableItem)), Times.Never);
+    }
+    
+    [Fact]
+    public async Task CalculateProducts_ShouldCatchExceptionsAndContinue()
+    {
+        // Arrange
+        Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
+        Services.AddSingleton(dialogServiceMock.Object);
+        
+        _repositoryMock.Setup(r => r.GetAllAsync()).Throws<HttpRequestException>();
+        
+        var productTableItems = new List<ProductTableItem>
+        {
+            new ProductTableItem
+            {
+                Article           = "12345",
+                Name              = "Test Product",
+                AverageTurnover   = 1.0,
+                AvailableQuantity = 100000,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 0,
+                StockDays         = 10
+            },
+        };
+        var cut = RenderComponent<ProductCalculatorDialog>(builder =>
+            builder.Add(p => p.ProductTableItems, productTableItems));
+        
+        cut.Instance.DaysCount                      = 60;
+        cut.Instance.MinAvgTurnoverForAdditionByBox = -1;
+        
+        // Act
+        await cut.Instance.CalculateProducts();
+        
+        // Assert
+        _repositoryMock.Verify(r => r.GetAllAsync(), Times.Once);
+        _snackbarMock.Verify(s => s.Add(It.Is<string>(s1 => s1.Contains("Ошибка при загрузке данных")),
+            Severity.Warning, It.IsAny<Action<SnackbarOptions>>(),
+            It.IsAny<string>()), Times.Once);
+        productTableItems[0].QuantityToOrder.Should().Be(60);
+    }
+    
+    [Fact]
+    public async Task CalculateProducts_Should_Not_Add_Product_To_Database_When_NeedAddToDb_IsFalse()
+    {
+        // Arrange
+        Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
+        Services.AddSingleton(dialogServiceMock.Object);
+        
+        _repositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Product>());
+        
+        var productTableItems = new List<ProductTableItem>
+        {
+            new ProductTableItem
+            {
+                Article           = "12345",
+                Name              = "Test Product",
+                AverageTurnover   = 1.0,
+                AvailableQuantity = 100000,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 0,
+                StockDays         = 10
+            },
+        };
+        var cut = RenderComponent<ProductCalculatorDialog>(builder =>
+            builder.Add(p => p.ProductTableItems, productTableItems));
+        
+        cut.Instance.DaysCount                      = 60;
+        cut.Instance.MinAvgTurnoverForAdditionByBox = -1;
+        cut.Instance.NeedAddToDb                    = false;
+        
+        // Act
+        await cut.Instance.CalculateProducts();
+        
+        // Assert
+        _repositoryMock.Verify(r => r.AddAsync(It.IsAny<Product>()), Times.Never);
+        dialogServiceMock.Verify(ds => ds.ShowAsync<ProductFormDialog>(
+                It.IsAny<string>(),
+                It.Is<DialogParameters<ProductFormDialog>>(p => p.Get<Product>("EditedProduct").Article == "12345")),
+            Times.Never);
+        productTableItems[0].QuantityToOrder.Should().Be(60);
+    }
+    
+    [Fact]
+    public async Task CalculateProducts_Should_Add_Product_To_Database_When_NeedAddToDb_IsTrue()
+    {
+        // Arrange
+        Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
+        Services.AddSingleton(dialogServiceMock.Object);
+        var dialogReferenceMock = new Mock<IDialogReference>();
+        var dialogResult        = DialogResult.Ok(new Product { Article = "12345", Name = "Test Product" });
+        dialogReferenceMock.Setup(d => d.Result).ReturnsAsync(dialogResult);
+        dialogServiceMock.Setup(d =>
+                d.ShowAsync<ProductFormDialog>(It.IsAny<string>(), It.IsAny<DialogParameters<ProductFormDialog>>()))
+            .ReturnsAsync(dialogReferenceMock.Object);
+        
+        _repositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Product>());
+        
+        var productTableItems = new List<ProductTableItem>
+        {
+            new ProductTableItem
+            {
+                Article           = "12345",
+                Name              = "Test Product",
+                AverageTurnover   = 1.0,
+                AvailableQuantity = 100000,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 0,
+                StockDays         = 10
+            },
+        };
+        var cut = RenderComponent<ProductCalculatorDialog>(builder =>
+            builder.Add(p => p.ProductTableItems, productTableItems));
+        
+        cut.Instance.DaysCount                      = 60;
+        cut.Instance.MinAvgTurnoverForAdditionByBox = -1;
+        cut.Instance.NeedAddToDb                    = true;
+        
+        // Act
+        await cut.Instance.CalculateProducts();
+        
+        // Assert
+        dialogServiceMock.Verify(ds => ds.ShowAsync<ProductFormDialog>(
+                It.IsAny<string>(),
+                It.Is<DialogParameters<ProductFormDialog>>(p => p.Get<Product>("EditedProduct").Article == "12345")),
+            Times.Once);
+        productTableItems[0].QuantityToOrder.Should().Be(60);
+    }
+    
+    [Fact]
+    public async Task CalculateProducts_Should_ShowManualInputDialog_When_AverageTurnoverIsZero()
+    {
+        // Arrange
+        Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
+        Services.AddSingleton(dialogServiceMock.Object);
+        var dialogReferenceMock = new Mock<IDialogReference>();
+        var dialogResult        = DialogResult.Ok(true);
+        dialogReferenceMock.Setup(d => d.Result).ReturnsAsync(dialogResult);
+        dialogServiceMock.Setup(d =>
+                d.Show<ManualOrderInputDialog<ProductTableItem>>(It.IsAny<string>(),
+                    It.IsAny<DialogParameters<ManualOrderInputDialog<ProductTableItem>>>()))
+            .Returns((string s, DialogParameters<ManualOrderInputDialog<ProductTableItem>> p) =>
+            {
+                p.Get<ProductTableItem>("Item").QuantityToOrder = 10;
+                return dialogReferenceMock.Object;
+            });
+        
+        var productTableItems = new List<ProductTableItem>
+        {
+            new ProductTableItem
+            {
+                Article           = "12345",
+                Name              = "Test Product",
+                AverageTurnover   = 0.0,
+                AvailableQuantity = 100000,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 0,
+                StockDays         = 0
+            },
+        };
+        var cut = RenderComponent<ProductCalculatorDialog>(builder =>
+            builder.Add(p => p.ProductTableItems, productTableItems));
+        
+        cut.Instance.DaysCount                      = 60;
+        cut.Instance.MinAvgTurnoverForAdditionByBox = -1;
+        
+        // Act
+        await cut.Instance.CalculateProducts();
+        
+        // Assert
+        dialogServiceMock.Verify(ds => ds.Show<ManualOrderInputDialog<ProductTableItem>>(
+                It.IsAny<string>(),
+                It.Is<DialogParameters>(p => p.Get<ProductTableItem>("Item") == productTableItems[0])),
+            Times.Once);
+        productTableItems[0].QuantityToOrder.Should().Be(10);
+    }
+    
+    
+    [Fact]
+    public async Task CalculateProducts_Should_Continue_When_ManualInputDialog_Is_Canceled()
+    {
+        // Arrange
+        Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
+        Services.AddSingleton(dialogServiceMock.Object);
+        var dialogReferenceMock = new Mock<IDialogReference>();
+        var dialogResult        = DialogResult.Cancel();
+        dialogReferenceMock.Setup(d => d.Result).ReturnsAsync(dialogResult);
+        dialogServiceMock.Setup(d =>
+                d.Show<ManualOrderInputDialog<ProductTableItem>>(It.IsAny<string>(),
+                    It.IsAny<DialogParameters<ManualOrderInputDialog<ProductTableItem>>>()))
+            .Returns((string s, DialogParameters<ManualOrderInputDialog<ProductTableItem>> p) =>
+                dialogReferenceMock.Object);
+        
+        var productTableItems = new List<ProductTableItem>
+        {
+            new ProductTableItem
+            {
+                Article           = "12345",
+                Name              = "Test Product",
+                AverageTurnover   = 0.0,
+                AvailableQuantity = 100000,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 0,
+                StockDays         = 0
+            },
+        };
+        var cut = RenderComponent<ProductCalculatorDialog>(builder =>
+            builder.Add(p => p.ProductTableItems, productTableItems));
+        
+        cut.Instance.DaysCount                      = 60;
+        cut.Instance.MinAvgTurnoverForAdditionByBox = 0;
+        
+        // Act
+        await cut.Instance.CalculateProducts();
+        
+        // Assert
+        dialogServiceMock.Verify(ds => ds.Show<ManualOrderInputDialog<ProductTableItem>>(
+                It.IsAny<string>(),
+                It.Is<DialogParameters>(p => p.Get<ProductTableItem>("Item") == productTableItems[0])),
+            Times.Once);
+        productTableItems[0].QuantityToOrder.Should().Be(0);
+    }
+    
+    [Fact]
+    public async Task CalculateProducts_Should_Not_ShowManualInputDialog_When_AverageTurnoverIsMoreThanZero()
+    {
+        // Arrange
+        Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
+        Services.AddSingleton(dialogServiceMock.Object);
+        
+        var productTableItems = new List<ProductTableItem>
+        {
+            new ProductTableItem
+            {
+                Article           = "12345",
+                Name              = "Test Product",
+                AverageTurnover   = 1.0,
+                AvailableQuantity = 100000,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 10,
+                StockDays         = 10
+            },
+        };
+        var cut = RenderComponent<ProductCalculatorDialog>(builder =>
+            builder.Add(p => p.ProductTableItems, productTableItems));
+        
+        cut.Instance.DaysCount                      = 60;
+        cut.Instance.MinAvgTurnoverForAdditionByBox = -1;
+        
+        // Act
+        await cut.Instance.CalculateProducts();
+        
+        // Assert
+        dialogServiceMock.Verify(ds => ds.Show<ManualOrderInputDialog<ProductTableItem>>(
+                It.IsAny<string>(),
+                It.Is<DialogParameters>(p => p.Get<ProductTableItem>("Item") == productTableItems[0])),
+            Times.Never);
+        productTableItems[0].QuantityToOrder.Should().Be(60);
+    }
+    
+    [Fact]
+    public async Task CalculateProducts_Should_CalculateByBox()
+    {
+        // Arrange
+        Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
+        Services.AddSingleton(dialogServiceMock.Object);
+        
+        var productTableItems = new List<ProductTableItem>
+        {
+            new ProductTableItem
+            {
+                Article           = "12345",
+                Name              = "Test Product",
+                AverageTurnover   = 1.0,
+                AvailableQuantity = 100000,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 10,
+                StockDays         = 10
+            },
+            new ProductTableItem
+            {
+                Article           = "67890",
+                Name              = "Test Product 2",
+                AverageTurnover   = 0.5,
+                AvailableQuantity = 100000,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 10,
+                StockDays         = 10
+            },
+            new ProductTableItem
+            {
+                Article           = "678901",
+                Name              = "Test Product 3",
+                AverageTurnover   = 1.4,
+                AvailableQuantity = 100000,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 10,
+                StockDays         = 10
+            },
+            new ProductTableItem
+            {
+                Article           = "6789011",
+                Name              = "Test Product 4",
+                AverageTurnover   = 0.2,
+                AvailableQuantity = 100000,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 10,
+                StockDays         = 10
+            },
+        };
+        var cut = RenderComponent<ProductCalculatorDialog>(builder =>
+            builder.Add(p => p.ProductTableItems, productTableItems));
+        
+        cut.Instance.DaysCount                      = 60;
+        cut.Instance.MinAvgTurnoverForAdditionByBox = .3;
+        
+        // Act
+        await cut.Instance.CalculateProducts();
+        
+        // Assert
+        productTableItems[0].QuantityToOrder.Should().Be(54);
+        productTableItems[1].QuantityToOrder.Should().Be(54);
+        productTableItems[2].QuantityToOrder.Should().Be(108);
+        productTableItems[3].QuantityToOrder.Should().Be(12);
     }
 }

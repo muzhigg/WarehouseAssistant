@@ -1,6 +1,6 @@
 using System.Reflection;
-using WarehouseAssistant.Core.Models;
 using WarehouseAssistant.Core.Calculation;
+using WarehouseAssistant.Core.Models;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -15,7 +15,8 @@ public sealed class ForNumberDaysCalculationTests(ITestOutputHelper log)
     // 
     [Theory]
     [InlineData(2696, 191, 4.1, 20.9, 123, false)]
-    public void CalculateForNumberDays_ReturnsCorrectResult(int availableQuantity, int currentQuantity, double averageTurnover, double stockDays, int expectedResult, bool considerCurrentQuantity)
+    public void CalculateForNumberDays_ReturnsCorrectResult(int availableQuantity, int currentQuantity,
+        double averageTurnover, double stockDays, int expectedResult, bool considerCurrentQuantity)
     {
         // Arrange
         ProductTableItem productTableItem = new ProductTableItem
@@ -34,22 +35,22 @@ public sealed class ForNumberDaysCalculationTests(ITestOutputHelper log)
         
         // Act
         orderCalculator.CalculateOrderQuantity(productTableItem);
-            
+        
         // Assert
         Assert.Equal(expectedResult, productTableItem.QuantityToOrder);
     }
     
     [Theory]
-    [Repeat(100)]
+    [Repeat(1000)]
     public void RandomTests()
     {
         // Arrange
-        int expectedResult = Random.Shared.Next(0, 1000); //30
-        double avgTurnover = expectedResult / 30.0; //2
-        int currentQuantity = Random.Shared.Next(0, 1000); //100
-        double stockDays = currentQuantity / avgTurnover; // 50
-        bool considerCurrentQuantity = Random.Shared.Next(0, 2) == 0;
-        int avaiableQuantity = Random.Shared.Next(0, 10000); //1000
+        int    expectedResult          = Random.Shared.Next(0, 1000);   //30
+        double avgTurnover             = expectedResult / 30.0;         //2
+        int    currentQuantity         = Random.Shared.Next(0, 1000);   //100
+        double stockDays               = currentQuantity / avgTurnover; // 50
+        bool   considerCurrentQuantity = Random.Shared.Next(0, 2) == 0;
+        int    avaiableQuantity        = Random.Shared.Next(0, 10000); //1000
         log.WriteLine(
             $"expectedResult: {expectedResult}, avgTurnover: {avgTurnover}, currentQuantity: {currentQuantity}, " +
             $"stockDays: {stockDays}, considerCurrentQuantity: {considerCurrentQuantity}, " +
@@ -57,7 +58,8 @@ public sealed class ForNumberDaysCalculationTests(ITestOutputHelper log)
         
         if (considerCurrentQuantity)
         {
-            expectedResult = expectedResult = (int)Math.Clamp(Math.Ceiling((double)(expectedResult - currentQuantity)), 0, int.MaxValue);
+            expectedResult = expectedResult =
+                (int)Math.Clamp(Math.Ceiling((double)(expectedResult - currentQuantity)), 0, int.MaxValue);
             log.WriteLine($"expectedResult after considering currentQuantity: {expectedResult}");
         }
         
@@ -69,15 +71,15 @@ public sealed class ForNumberDaysCalculationTests(ITestOutputHelper log)
         
         ProductTableItem productTableItem = new ProductTableItem
         {
-            AverageTurnover = avgTurnover,
-            CurrentQuantity = currentQuantity,
+            AverageTurnover   = avgTurnover,
+            CurrentQuantity   = currentQuantity,
             AvailableQuantity = avaiableQuantity,
-            StockDays = stockDays
+            StockDays         = stockDays
         };
         
         CalculationOptions calculationOptions = new CalculationOptions
         {
-            DaysCount = 30,
+            DaysCount               = 30,
             ConsiderCurrentQuantity = considerCurrentQuantity
         };
         
@@ -90,19 +92,19 @@ public sealed class ForNumberDaysCalculationTests(ITestOutputHelper log)
         
         // Assert
         Assert.Equal(expectedResult, productTableItem.QuantityToOrder);
-    } 
+    }
     
     [Theory]
-    [Repeat(100)]
+    [Repeat(1000)]
     public void SimilarToRealRandomTests()
     {
         // Arrange
-        int expectedResult = Random.Shared.Next(0, 300); //30
-        double avgTurnover = expectedResult / 30.0; //2
-        int currentQuantity = Random.Shared.Next(0, 450); //100
-        double stockDays = currentQuantity / avgTurnover; // 50
-        bool considerCurrentQuantity = Random.Shared.Next(0, 2) == 0;
-        int avaiableQuantity = Random.Shared.Next(0, 3420); //1000
+        int    expectedResult          = Random.Shared.Next(0, 300);    //30
+        double avgTurnover             = expectedResult / 30.0;         //2
+        int    currentQuantity         = Random.Shared.Next(0, 450);    //100
+        double stockDays               = currentQuantity / avgTurnover; // 50
+        bool   considerCurrentQuantity = Random.Shared.Next(0, 2) == 0;
+        int    avaiableQuantity        = Random.Shared.Next(0, 3420); //1000
         log.WriteLine(
             $"expectedResult: {expectedResult}, avgTurnover: {avgTurnover}, currentQuantity: {currentQuantity}, " +
             $"stockDays: {stockDays}, considerCurrentQuantity: {considerCurrentQuantity}, " +
@@ -122,15 +124,15 @@ public sealed class ForNumberDaysCalculationTests(ITestOutputHelper log)
         
         ProductTableItem productTableItem = new ProductTableItem
         {
-            AverageTurnover = avgTurnover,
-            CurrentQuantity = currentQuantity,
+            AverageTurnover   = avgTurnover,
+            CurrentQuantity   = currentQuantity,
             AvailableQuantity = avaiableQuantity,
-            StockDays = stockDays
+            StockDays         = stockDays
         };
         
         CalculationOptions calculationOptions = new CalculationOptions
         {
-            DaysCount = 30,
+            DaysCount               = 30,
             ConsiderCurrentQuantity = considerCurrentQuantity
         };
         
@@ -157,6 +159,7 @@ public class RepeatAttribute : DataAttribute
             throw new ArgumentOutOfRangeException(nameof(count),
                 "Repeat count must be greater than 0.");
         }
+        
         _count = count;
     }
     

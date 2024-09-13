@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using MiniExcelLibs.Attributes;
+﻿using MiniExcelLibs.Attributes;
 using WarehouseAssistant.Core.Calculation;
 
 namespace WarehouseAssistant.Core.Models;
@@ -13,26 +12,18 @@ public sealed class ProductTableItem : ICalculatedTableItem
     private double _stockDays;
     
     [ExcelColumn(Name = "Название", Aliases = ["Номенклатура"], Width = 70.0)]
-    public string Name
-    {
-        get;
-        set;
-    } = string.Empty;
-
+    public string Name { get; set; } = string.Empty;
+    
     [ExcelColumn(Name = "Артикул", Width = 10.0)]
-    public string Article
-    {
-        get;
-        set;
-    } = string.Empty;
-
+    public string Article { get; set; } = string.Empty;
+    
     [ExcelColumn(Name = "Доступно на БГЛЦ", Aliases = ["Доступно основной склад МО"], Width = 16.0)]
     public int AvailableQuantity
     {
         get => _availableQuantity;
         set => _availableQuantity = Math.Clamp(value, 0, int.MaxValue);
     }
-
+    
     [ExcelColumn(Name = "Текущее количество", Aliases = ["Доступно Санкт-Петербург (склад)"], Width = 18.0)]
     public int CurrentQuantity
     {
@@ -46,17 +37,18 @@ public sealed class ProductTableItem : ICalculatedTableItem
         get => _averageTurnover;
         set => _averageTurnover = Math.Clamp(value, 0.0, double.MaxValue);
     }
-
-    [ExcelColumn(Name = "Запас на кол-во дней)", Aliases = ["Запас товара (на кол-во дней)  ", "Запас товара (на кол-во дней)"], Width = 17.0)]
+    
+    [ExcelColumn(Name = "Запас на кол-во дней)",
+        Aliases = ["Запас товара (на кол-во дней)  ", "Запас товара (на кол-во дней)"], Width = 17.0)]
     public double StockDays
     {
         get => _stockDays;
         set => _stockDays = Math.Clamp(value, 0.0, double.MaxValue);
     }
-
+    
     [ExcelColumn(Name = "Рекомендуемое количество", Aliases = ["Расчет заказа"], Width = 13.0)]
     public double OrderCalculation { get; set; }
-
+    
     [ExcelColumn(Name = "Нужно заказать", Width = 16.0, Aliases = ["Заказ на офис Спб"])]
     public int QuantityToOrder
     {
@@ -64,17 +56,18 @@ public sealed class ProductTableItem : ICalculatedTableItem
         set
         {
             int minCanBeOrdered = MaxCanBeOrdered;
-            _quantityToOrder = value > minCanBeOrdered ? minCanBeOrdered : value;
+            int val             = value > minCanBeOrdered ? minCanBeOrdered : value;
+            _quantityToOrder = Math.Clamp(val, 0, int.MaxValue);
         }
     }
-
+    
     [ExcelColumn(Ignore = true)] public int MaxCanBeOrdered => (int)Math.Floor(AvailableQuantity * 0.07);
-
+    
     public bool HasValidName()
     {
         return !string.IsNullOrEmpty(Name) && !Name.Contains("акция", StringComparison.OrdinalIgnoreCase);
     }
-
+    
     public bool HasValidArticle()
     {
         return !string.IsNullOrEmpty(Article) && Article.Length == 8 && Article.All(char.IsDigit);

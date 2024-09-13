@@ -112,9 +112,18 @@ public sealed partial class ProductCalculatorDialog
         MudDialog.Close();
     }
     
-    private async Task CalculateProducts()
+    internal async Task CalculateProducts()
     {
-        List<Product> dbProducts = await Repository.GetAllAsync() ?? [];
+        List<Product> dbProducts = [];
+        
+        try
+        {
+            dbProducts = await Repository.GetAllAsync() ?? [];
+        }
+        catch (HttpRequestException ex)
+        {
+            Snackbar.Add("Ошибка при загрузке данных: " + ex.Message, Severity.Warning);
+        }
         
         if (ProductTableItems != null)
             foreach (ProductTableItem productTableItem in ProductTableItems)
@@ -123,7 +132,7 @@ public sealed partial class ProductCalculatorDialog
                     dbProducts.FirstOrDefault(dbProduct => dbProduct.Article.Equals(productTableItem.Article));
                 
                 if (NeedAddToDb && dbProduct == null)
-                    await AddToRepo(productTableItem, dbProducts);
+                    dbProduct = await ProductFormDialog.ShowAddDialogAsync(productTableItem, DialogService);
                 
                 if (productTableItem is { AverageTurnover: <= 0.0, AvailableQuantity: > 0 })
                 {
@@ -136,11 +145,16 @@ public sealed partial class ProductCalculatorDialog
                     _calculator.CalculateOrderQuantity(productTableItem);
                 }
                 
-                if (MinAvgTurnoverForAdditionByBox >= 0.0 &&
+                if (ConsiderCurrentQuantity)
+                    productTableItem.QuantityToOrder -= productTableItem.CurrentQuantity;
+                
+                if (MinAvgTurnoverForAdditionByBox > 0.0 &&
                     productTableItem.AverageTurnover >= MinAvgTurnoverForAdditionByBox)
                 {
-                    int    perBox      = dbProduct != null ? dbProduct.QuantityPerBox ?? DefaultPerBox : DefaultPerBox;
-                    double boxQuantity = Math.Ceiling((double)productTableItem.QuantityToOrder / perBox);
+                    int perBox = dbProduct != null ? dbProduct.QuantityPerBox ?? DefaultPerBox : DefaultPerBox;
+                    double boxQuantity = Math.Round((double)productTableItem.QuantityToOrder / perBox, 0,
+                        MidpointRounding.AwayFromZero);
+                    // double boxQuantity = Math.Ceiling((double)productTableItem.QuantityToOrder / perBox);
                     
                     if (boxQuantity < 1.0)
                         boxQuantity = 1.0;
@@ -175,8 +189,8 @@ public sealed partial class ProductCalculatorDialog
     {
         Product? product = await ProductFormDialog.ShowAddDialogAsync(contextItem, DialogService);
         
-        if (product != null)
-            dbProducts.Add(product);
+        // if (product != null)
+        //     dbProducts.Add(product);
     }
     
     private void OnCancel(MouseEventArgs obj)
