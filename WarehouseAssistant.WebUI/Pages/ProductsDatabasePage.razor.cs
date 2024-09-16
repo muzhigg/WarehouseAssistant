@@ -104,14 +104,22 @@ public partial class ProductsDatabasePage : ComponentBase
     private async Task ShowAddProductDialog()
     {
         InProgress = true;
-        IDialogReference? dialog = await DialogService.ShowAsync<ProductFormDialog>("Добавить товар");
-        DialogResult?     result = await dialog.Result;
-        
-        if (!result.Canceled)
-        {
-            Product product = (Product)result.Data;
+        Product? product = await ProductFormDialog.ShowAddDialogAsync(new Product(), DialogService);
+        if (product != null)
             _products.Add(product);
-        }
+        
+        InProgress = false;
+        StateHasChanged();
+    }
+    
+    private async Task ShowEditProductDialog(Product? product)
+    {
+        if (product == null)
+            return;
+        
+        InProgress = true;
+        
+        await ProductFormDialog.ShowEditDialogAsync(product, DialogService);
         
         InProgress = false;
         StateHasChanged();

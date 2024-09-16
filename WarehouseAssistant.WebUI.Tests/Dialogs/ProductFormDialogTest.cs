@@ -128,7 +128,7 @@ public class ProductFormDialogTest : MudBlazorTestContext
         
         // Assert
         act.Should().Throw<ArgumentException>()
-            .WithMessage("EditedProduct is null in edit mode");
+            .WithMessage("EditedProduct is null");
     }
     
     [Fact]

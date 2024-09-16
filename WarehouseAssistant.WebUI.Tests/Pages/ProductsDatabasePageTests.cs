@@ -165,10 +165,13 @@ public sealed class ProductsDatabasePageTests : MudBlazorTestContext
             QuantityPerShelf = 5
         };
         
-        var dialogResult = DialogResult.Ok(expectedProduct);
+        var dialogResult        = DialogResult.Ok(expectedProduct);
+        var mockDialogReference = new Mock<IDialogReference>();
+        mockDialogReference.Setup(dr => dr.Result).Returns(Task.FromResult(dialogResult));
         
         mockDialogService
-            .Setup(ds => ds.ShowAsync<ProductFormDialog>(It.IsAny<string>()))
+            .Setup(ds =>
+                ds.ShowAsync<ProductFormDialog>(It.IsAny<string>(), It.IsAny<DialogParameters<ProductFormDialog>>()))
             .ReturnsAsync(Mock.Of<IDialogReference>(dr => dr.Result == Task.FromResult(dialogResult)));
         
         Services.AddSingleton(mockRepository.Object);
@@ -178,15 +181,19 @@ public sealed class ProductsDatabasePageTests : MudBlazorTestContext
             .AddMudBlazorScrollManager().AddMudPopoverService();
         
         var component = RenderComponent<ProductsDatabasePage>();
+        component.Instance.Should().NotBeNull();
         
         // Act
         component.Instance.GetType().GetMethod("ShowAddProductDialog", BindingFlags.Instance | BindingFlags.NonPublic)
             .Invoke(component.Instance, null);
         
         // Assert
-        mockDialogService.Verify(ds => ds.ShowAsync<ProductFormDialog>(It.IsAny<string>()), Times.Once);
+        mockDialogService.Verify(
+            ds => ds.ShowAsync<ProductFormDialog>(It.IsAny<string>(),
+                It.IsAny<DialogParameters<ProductFormDialog>>()), Times.Once);
         IRenderedComponent<MudDataGrid<Product>> grid = component.FindComponent<MudDataGrid<Product>>();
-        grid.Instance.Items.Should().HaveCount(1).And.Contain(expectedProduct);
+        grid.Render();
+        grid.Instance.Items.Should().HaveCount(1).And.Subject.First().Should().BeSameAs(expectedProduct);
         
         component.Instance.InProgress.Should().BeFalse();
     }

@@ -24,12 +24,12 @@ namespace WarehouseAssistant.WebUI.Dialogs
         public static async Task<Product?> ShowAddDialogAsync(Product product,
             IDialogService                                            dialogService)
         {
-            DialogParameters<ProductFormDialog> parameters = [];
-            parameters.Add(productDialog => productDialog.IsEditMode, false);
+            DialogParameters<ProductFormDialog> parameters = new();
             parameters.Add(productDialog => productDialog.EditedProduct, product);
+            parameters.Add(productDialog => productDialog.IsEditMode, false);
             
             IDialogReference? dialog = await dialogService.ShowAsync<ProductFormDialog>("Добавить товар", parameters);
-            DialogResult?     result = dialog.Result.Result;
+            DialogResult?     result = await dialog.Result;
             
             if (!result.Canceled) return (Product)result.Data;
             
@@ -60,35 +60,15 @@ namespace WarehouseAssistant.WebUI.Dialogs
         
         [CascadingParameter] private MudDialogInstance? MudDialog { get; set; }
         
-        public string? Article
-        {
-            get => EditedProduct.Article;
-            set => EditedProduct.Article = value;
-        }
+        public string? Article { get; set; }
         
-        public string? ProductName
-        {
-            get => EditedProduct.Name;
-            set => EditedProduct.Name = value;
-        }
+        public string? ProductName { get; set; }
         
-        public long? Barcode
-        {
-            get => EditedProduct.Barcode;
-            set => EditedProduct.Barcode = value;
-        }
+        public long? Barcode { get; set; }
         
-        public int? QuantityPerBox
-        {
-            get => EditedProduct.QuantityPerBox;
-            set => EditedProduct.QuantityPerBox = value;
-        }
+        public int? QuantityPerBox { get; set; }
         
-        public int? QuantityPerShelf
-        {
-            get => EditedProduct.QuantityPerShelf;
-            set => EditedProduct.QuantityPerShelf = value;
-        }
+        public int? QuantityPerShelf { get; set; }
         
         private bool    _isValid;
         private MudForm _form = null!;
@@ -103,29 +83,31 @@ namespace WarehouseAssistant.WebUI.Dialogs
         
         protected override void OnParametersSet()
         {
-            if (IsEditMode)
-            {
-                if (EditedProduct is null)
-                    throw new ArgumentException("EditedProduct is null in edit mode");
-                
-                Barcode          = EditedProduct.Barcode;
-                QuantityPerBox   = EditedProduct.QuantityPerBox;
-                QuantityPerShelf = EditedProduct.QuantityPerShelf;
-                ProductName      = EditedProduct.Name;
-            }
+            if (EditedProduct is null)
+                throw new ArgumentException("EditedProduct is null");
+            
+            Article          = EditedProduct.Article;
+            ProductName      = EditedProduct.Name;
+            Barcode          = EditedProduct.Barcode;
+            QuantityPerBox   = EditedProduct.QuantityPerBox;
+            QuantityPerShelf = EditedProduct.QuantityPerShelf;
         }
         
         protected override void OnAfterRender(bool firstRender)
         {
             base.OnAfterRender(firstRender);
             if (firstRender)
-            {
                 _form.Validate();
-            }
         }
         
         private async Task Submit()
         {
+            EditedProduct.Article          = Article;
+            EditedProduct.Name             = ProductName;
+            EditedProduct.Barcode          = Barcode;
+            EditedProduct.QuantityPerBox   = QuantityPerBox;
+            EditedProduct.QuantityPerShelf = QuantityPerShelf;
+            
             try
             {
                 if (IsEditMode)
@@ -152,8 +134,9 @@ namespace WarehouseAssistant.WebUI.Dialogs
         
         internal async Task<string> ArticleValidation(string arg)
         {
-            if (string.IsNullOrEmpty(arg)) return "Артикул обязателен";
+            if (IsEditMode) return null!;
             
+            if (string.IsNullOrEmpty(arg)) return "Артикул обязателен";
             
             if (StartsAndEndsWithNonWhitespaceChar(arg) == false) return "Артикул не должен содержать пробелы";
             
