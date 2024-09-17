@@ -5,51 +5,68 @@ using WarehouseAssistant.Core.Calculation;
 
 namespace WarehouseAssistant.Core.Services;
 
-/// <summary>
-///     Класс для загрузки и обработки данных из Excel файла.
-/// </summary>
-/// <param name="stream">Поток данных Excel файла</param>
-public sealed class WorksheetLoader<TTableItem>(Stream stream) : IDisposable, IAsyncDisposable where TTableItem : class, ITableItem, new()
+public sealed class WorksheetLoader<TTableItem> : IDisposable, IAsyncDisposable
+    where TTableItem : class, ITableItem, new()
 {
-    /// <summary>
-    ///     Класс для загрузки и обработки данных из Excel файла.
-    /// </summary>
-    /// <param name="path">Путь к Excel файлу.</param>
-    public WorksheetLoader(string path) : this(File.OpenRead(path)) { }
+    private readonly Stream             _stream;
+    private readonly IExcelQueryService _excelQueryService;
 
-    /// <summary>
-    ///     Возвращает словарь, содержащий названия колонок и их значения из первой строки Excel файла.
-    /// </summary>
-    /// <returns>Словарь, где ключ - это буква колонки, а значение - её название.</returns>
-    public Dictionary<string, string?> GetColumns()
+    public WorksheetLoader(string path,
+        IExcelQueryService        excelQueryService) : this(File.OpenRead(path), excelQueryService) { }
+
+    public WorksheetLoader(Stream stream, IExcelQueryService excelQueryService)
     {
-        return GetColumnsInternal().Result;
+        ArgumentNullException.ThrowIfNull(stream);
+
+        if (stream.CanRead == false)
+            throw new ArgumentException("Stream must be readable.", nameof(stream));
+
+        _stream            = stream;
+        _excelQueryService = excelQueryService ?? throw new ArgumentNullException(nameof(excelQueryService));
     }
 
-    /// <summary>
-    ///     Асинхронно возвращает словарь, содержащий названия колонок и их значения из первой строки Excel файла.
-    /// </summary>
-    /// <returns>Словарь, где ключ - это буква колонки, а значение - её название.</returns>
-    public async Task<Dictionary<string, string?>> GetColumnsAsync()
-    {
-        return await GetColumnsInternal();
-    }
+    public WorksheetLoader(Stream stream) : this(stream, new ExcelQueryService()) { }
+
+    public WorksheetLoader(string path) : this(path, new ExcelQueryService()) { }
 
     private async Task<Dictionary<string, string?>> GetColumnsInternal()
     {
-        Dictionary<string, string?>  result   = [];
-        IEnumerable<dynamic>?        query    = await stream.QueryAsync(excelType: ExcelType.XLSX);
+        Dictionary<string, string?> result = [];
+        IEnumerable<dynamic>        query  = await _excelQueryService.QueryAsync(_stream, ExcelType.XLSX);
 
-        if (query.FirstOrDefault() is IDictionary<string, object> firstRow)
-        {
-            List<string>  columnLetters = [..firstRow.Keys];
-            List<string?> columnValues  = firstRow.Values.Select(o => o as string).ToList();
+        if (query.FirstOrDefault() is not IDictionary<string, object> firstRow) return result;
 
-            for (int i = 0; i < columnLetters.Count; i++)
-                result.Add(columnLetters[i], columnValues[i]);
-        }
+        foreach (KeyValuePair<string, object> kvp in firstRow) result[kvp.Key] = kvp.Value as string;
 
         return result;
+    }
+
+    /// <summary>
+    /// Извлекает первую строку Excel-файла и возвращает словарь, где ключи — это буквы столбцов,
+    /// а значения — это соответствующие значения из ячеек первой строки.
+    /// </summary>
+    /// <returns>
+    /// Возвращает словарь, где ключи — это буквы столбцов (например, "A", "B", "C"), а значения — строки,
+    /// содержащие данные из ячеек первой строки соответствующих столбцов.
+    /// Если в файле Excel нет данных или первая строка не содержит допустимых данных, возвращается пустой словарь.
+    /// </returns>
+    public Dictionary<string, string?> GetColumns()
+    {
+        return GetColumnsAsync().GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Асинхронно извлекает первую строку Excel-файла и возвращает словарь, где ключи — это буквы столбцов,
+    /// а значения — это соответствующие значения из ячеек первой строки.
+    /// </summary>
+    /// <returns>
+    /// Возвращает словарь, где ключи — это буквы столбцов (например, "A", "B", "C"), а значения — строки,
+    /// содержащие данные из ячеек первой строки соответствующих столбцов.
+    /// Если в файле Excel нет данных или первая строка не содержит допустимых данных, возвращается пустой словарь.
+    /// </returns>
+    public async Task<Dictionary<string, string?>> GetColumnsAsync()
+    {
+        return await GetColumnsInternal();
     }
 
     public IEnumerable<TTableItem> ParseItems()
@@ -57,29 +74,24 @@ public sealed class WorksheetLoader<TTableItem>(Stream stream) : IDisposable, IA
         return ParseItems(null);
     }
 
-    /// <summary>
-    ///     Парсит данные из Excel файла и возвращает коллекцию объектов типа T.
-    /// </summary>
-    /// <param name="selectedColumns">Выбранные динамические колонки для конфигурации парсинга.</param>
-    /// <returns>Коллекция объектов типа T.</returns>
     public IEnumerable<TTableItem> ParseItems(DynamicExcelColumn[]? selectedColumns)
     {
         OpenXmlConfiguration configuration = new()
         {
-            DynamicColumns = selectedColumns
+            DynamicColumns = selectedColumns,
         };
-
-        return stream.Query<TTableItem>(excelType: ExcelType.XLSX, configuration: configuration)
+        
+        return _excelQueryService.Query<TTableItem>(_stream, ExcelType.XLSX, configuration)
             .Where(item => item.HasValidName() && item.HasValidArticle());
     }
 
     public void Dispose()
     {
-        stream.Dispose();
+        _stream.Dispose();
     }
 
     public async ValueTask DisposeAsync()
     {
-        await stream.DisposeAsync();
+        await _stream.DisposeAsync();
     }
 }
