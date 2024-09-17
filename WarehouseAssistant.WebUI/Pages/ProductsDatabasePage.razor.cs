@@ -1,88 +1,134 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.WebUI.Components;
 using WarehouseAssistant.WebUI.Dialogs;
 
-#pragma warning disable BL0005
-
 namespace WarehouseAssistant.WebUI.Pages;
 
+[UsedImplicitly]
+[SuppressMessage("Usage", "BL0005:Component parameter should not be set outside of its component.")]
 public partial class ProductsDatabasePage : ComponentBase
 {
-    [Inject] private ProductRepository Repository    { get; set; } = null!;
-    [Inject] private ISnackbar         SnackBar      { get; set; } = null!;
-    [Inject] private IDialogService    DialogService { get; set; } = null!;
-
-    private          DataGrid<Product>             _dataGrid = null!;
+    public bool InProgress
+    {
+        get => _inProgress;
+        set
+        {
+            _inProgress = value;
+            if (_dataGrid != null) _dataGrid.SetLoading(value);
+            else ShowError("DataGrid is not initialized.");
+        }
+    }
+    
+    [Inject] private IRepository<Product> Repository    { get; init; } = null!;
+    [Inject] private ISnackbar            SnackBar      { get; set; }  = null!;
+    [Inject] private IDialogService       DialogService { get; init; } = null!;
+    
+    private          DataGrid<Product>?            _dataGrid;
     private readonly ObservableCollection<Product> _products = [];
     private          string?                       _searchString;
-
+    private          bool                          _inProgress;
+    
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender) await LoadProductsAsync();
+    }
+    
+    private void ShowError(string message)
+    {
+        SnackBar?.Add(message, Severity.Error);
+        Console.Error.WriteLine(message);
+    }
+    
+    private async Task LoadProductsAsync()
+    {
+        InProgress = true;
+        
+        try
         {
-            _dataGrid.Loading = true;
-            IEnumerable<Product>? allAsync = await Repository.GetAllAsync();
-            if (allAsync == null)
-                SnackBar.Add("Ошибка при получении списка", Severity.Error);
+            IEnumerable<Product>? products = await Repository.GetAllAsync();
+            if (products == null)
+                ShowError("Не удалось получить список продуктов.");
             else
-                foreach (Product product in allAsync)
+                foreach (Product product in products)
                     _products.Add(product);
-            _dataGrid.Loading = false;
+        }
+        catch (HttpRequestException e)
+        {
+            ShowError($"Ошибка при получении списка продуктов: {e.StatusCode}");
+        }
+        catch (Exception ex)
+        {
+            ShowError($"Ошибка при получении списка продуктов: {ex.Message}");
+        }
+        finally
+        {
+            InProgress = false;
             StateHasChanged();
         }
     }
-
+    
     private bool FilterFunc(Product arg)
     {
         if (string.IsNullOrWhiteSpace(_searchString))
             return true;
-
-        if (arg.Article!.Contains(_searchString)) return true;
-
-        if (arg.Name!.Contains(_searchString, StringComparison.OrdinalIgnoreCase)) return true;
-
-        return false;
+        
+        return arg.Article.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+               arg.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
     }
-
+    
     private async Task OnProductChanged(Product obj)
     {
-        _dataGrid.Loading = true;
+        InProgress = true;
         try
         {
             await Repository.UpdateAsync(obj);
         }
         catch (HttpRequestException e)
         {
-            SnackBar.Add(e.StatusCode.ToString(), Severity.Error);
+            ShowError($"Ошибка при обновлении продукта: {e.StatusCode}");
         }
-
-        _dataGrid.Loading = false;
-    }
-
-    private async Task AddItem()
-    {
-        _dataGrid.Loading = true;
-        IDialogReference? dialog = await DialogService.ShowAsync<AddDbProductDialog>("Добавить товар");
-        DialogResult?     result = await dialog.Result;
-
-        if (!result.Canceled)
+        finally
         {
-            Product product = (Product)result.Data;
-            _products.Add(product);
+            InProgress = false;
+            StateHasChanged();
         }
-
-        _dataGrid.Loading = false;
+    }
+    
+    private async Task ShowAddProductDialog()
+    {
+        InProgress = true;
+        Product? product = await ProductFormDialog.ShowAddDialogAsync(new Product(), DialogService);
+        if (product != null)
+            _products.Add(product);
+        
+        InProgress = false;
         StateHasChanged();
     }
-
-    private async Task DeleteItems()
+    
+    private async Task ShowEditProductDialog(Product? product)
     {
-        _dataGrid.Loading = true;
-        foreach (Product product in _dataGrid.SelectedItems)
+        if (product == null)
+            return;
+        
+        InProgress = true;
+        
+        await ProductFormDialog.ShowEditDialogAsync(product, DialogService);
+        
+        InProgress = false;
+        StateHasChanged();
+    }
+    
+    private async Task DeleteItems(ICollection<Product> items)
+    {
+        InProgress = true;
+        foreach (Product product in items)
         {
             try
             {
@@ -90,14 +136,25 @@ public partial class ProductsDatabasePage : ComponentBase
             }
             catch (HttpRequestException exception)
             {
-                SnackBar.Add($"Не удалось удалить {product.Article}. {exception.StatusCode}");
+                ShowError($"Не удалось удалить {product.Article}. {exception.StatusCode}");
                 continue;
             }
-
+            
             _products.Remove(product);
         }
-
-        _dataGrid.Loading = false;
+        
+        InProgress = false;
         StateHasChanged();
+    }
+    
+    private void OnDeleteButtonClicked(MouseEventArgs obj)
+    {
+        if (_dataGrid == null)
+        {
+            ShowError("DataGrid is not initialized.");
+            return;
+        }
+        
+        _ = DeleteItems(_dataGrid.SelectedItems);
     }
 }

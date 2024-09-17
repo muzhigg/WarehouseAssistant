@@ -12,12 +12,11 @@ namespace WarehouseAssistant.WebUI
         // ReSharper disable once InconsistentNaming
         public static IServiceCollection AddWebUIServices(this IServiceCollection services)
         {
-            services.AddScoped<ProductRepository>();
-            services.AddScoped<MarketingMaterialRepository>();
+            // services.AddScoped<MarketingMaterialRepository>();
             services.AddMudServices(config =>
             {
                 config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
-
+                
                 config.SnackbarConfiguration.PreventDuplicates      = false;
                 config.SnackbarConfiguration.NewestOnTop            = false;
                 config.SnackbarConfiguration.ShowCloseIcon          = true;
@@ -27,19 +26,24 @@ namespace WarehouseAssistant.WebUI
                 config.SnackbarConfiguration.SnackbarVariant        = Variant.Filled;
             });
             AddLocalStorage(services);
-
+            
+            services.AddScoped<IRepository<Product>, ProductRepository>();
+            
             return services;
         }
-
+        
         private static void AddLocalStorage(IServiceCollection services)
         {
             services.AddBlazoredLocalStorage(cfg =>
             {
                 cfg.JsonSerializerOptions.IgnoreReadOnlyProperties = true;
-                cfg.JsonSerializerOptions.Converters.Add(
-                    new TypeMappingConverter<IFilterDefinition<Product>, FilterDefinition<Product>>());
-                cfg.JsonSerializerOptions.Converters.Add(
-                    new TypeMappingConverter<IFilterDefinition<MarketingMaterial>, FilterDefinition<MarketingMaterial>>());
+                //cfg.JsonSerializerOptions.Converters.Add(
+                //    new TypeMappingConverter<IFilterDefinition<Product>, FilterDefinition<Product>>());
+                //cfg.JsonSerializerOptions.Converters.Add(
+                //    new TypeMappingConverter<IFilterDefinition<MarketingMaterial>, FilterDefinition<MarketingMaterial>>());
+                //cfg.JsonSerializerOptions.Converters.Add(
+                //    new TypeMappingConverter<IFilterDefinition<ProductTableItem>, FilterDefinition<ProductTableItem>>());
+                //cfg.JsonSerializerOptions.Converters.Add(new ObjectConverter());
             });
         }
     }

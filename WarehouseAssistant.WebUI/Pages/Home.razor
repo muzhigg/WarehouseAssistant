@@ -1,1 +1,51 @@
 ﻿@page "/"
+@using System.Diagnostics
+@using Blazored.LocalStorage
+@using WarehouseAssistant.Data.Models
+@using WarehouseAssistant.Data.Repositories
+
+@code {
+	[Inject] private ILocalStorageService LocalStorage      { get; set; } = null!;
+	[Inject] private IRepository<Product> ProductRepository { get; set; } = null!;
+
+	public string? AccessKey { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		string? accessKey = await LocalStorage.GetItemAsync<string>("accessKey");
+		if (accessKey != null)
+		{
+			AccessKey = accessKey;
+			bool isValid = await ProductRepository.ValidateAccessKeyAsync(accessKey);
+#if DEBUG
+			Debug.WriteLine("Access key loaded from local storage: " + AccessKey);
+			Debug.WriteLine("Access key is valid: " + isValid);
+#endif
+		}
+	}
+
+	private async Task<string?> ValidateAccessKey(string? value)
+	{
+		if (value == null)
+		{
+			return "Access key is required";
+		}
+
+		bool isValid = await ProductRepository.ValidateAccessKeyAsync(value);
+
+		if (!isValid)
+			return "Invalid access key";
+
+		await LocalStorage.SetItemAsync("accessKey", value);
+
+#if DEBUG
+		Debug.WriteLine("Access key saved to local storage: " + AccessKey);
+#endif
+
+		return null;
+	}
+
+}
+
+<MudTextField T="string?" Label="Enter access key" @bind-Value="AccessKey" Immediate="false"
+              Validation="new Func<string?, Task<string?>>(ValidateAccessKey)"/>
