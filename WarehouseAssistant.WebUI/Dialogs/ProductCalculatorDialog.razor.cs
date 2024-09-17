@@ -69,7 +69,7 @@ public sealed partial class ProductCalculatorDialog
         }
     }
     
-    private CalculatorSettingsData _settingsData = null!;
+    private CalculatorSettingsData _settingsData = new();
     
     private const string LocalStorageKey = "CalculatorSettings";
     
@@ -86,8 +86,9 @@ public sealed partial class ProductCalculatorDialog
         _options    = new CalculationOptions();
         _calculator = new OrderCalculator<ProductTableItem>(new ForNumberDaysCalculation(), _options);
         
-        _settingsData = await LocalStorage.GetItemAsync<CalculatorSettingsData>(LocalStorageKey) ??
-                        new CalculatorSettingsData();
+        CalculatorSettingsData? data = await LocalStorage.GetItemAsync<CalculatorSettingsData>(LocalStorageKey);
+        if (data != null)
+            _settingsData = data;
         
         _options.DaysCount               = _settingsData.DaysCount;
         _options.ConsiderCurrentQuantity = _settingsData.ConsiderCurrentQuantity;
@@ -148,18 +149,20 @@ public sealed partial class ProductCalculatorDialog
                 if (ConsiderCurrentQuantity)
                     productTableItem.QuantityToOrder -= productTableItem.CurrentQuantity;
                 
-                if (MinAvgTurnoverForAdditionByBox > 0.0 &&
+                if (dbProduct?.QuantityPerBox is { } perBox &&
+                    MinAvgTurnoverForAdditionByBox > 0.0 &&
                     productTableItem.AverageTurnover >= MinAvgTurnoverForAdditionByBox)
                 {
-                    int perBox = dbProduct != null ? dbProduct.QuantityPerBox ?? DefaultPerBox : DefaultPerBox;
-                    double boxQuantity = Math.Round((double)productTableItem.QuantityToOrder / perBox, 0,
-                        MidpointRounding.AwayFromZero);
-                    // double boxQuantity = Math.Ceiling((double)productTableItem.QuantityToOrder / perBox);
-                    
-                    if (boxQuantity < 1.0)
-                        boxQuantity = 1.0;
-                    
-                    productTableItem.QuantityToOrder = (int)(boxQuantity * perBox);
+                    try
+                    {
+                        double boxQuantity = Math.Round((double)productTableItem.QuantityToOrder / perBox, 0,
+                            MidpointRounding.AwayFromZero);
+                        productTableItem.QuantityToOrder = (int)(boxQuantity * perBox);
+                    }
+                    catch (DivideByZeroException)
+                    {
+                        Snackbar.Add("Ошибка: Количество на коробку не может быть равно нулю", Severity.Error);
+                    }
                 }
             }
     }

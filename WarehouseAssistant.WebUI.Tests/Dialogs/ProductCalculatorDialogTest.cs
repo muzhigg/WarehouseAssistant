@@ -533,6 +533,14 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
         Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
         Services.AddSingleton(dialogServiceMock.Object);
         
+        _repositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Product>
+        {
+            new Product { Article = "12345", Name = "Test Product", QuantityPerBox = 54 },
+            // new Product { Article = "40007259", Name = "SESMAHAL B3 Niacinamide", AverageTurnover = 0.11, StockDays = 9.09 },
+            new Product { Article = "67890", Name  = "Test Product 2", QuantityPerBox = 54 },
+            new Product { Article = "678901", Name = "Test Product 3", QuantityPerBox = 54 },
+        });
+        
         var productTableItems = new List<ProductTableItem>
         {
             new ProductTableItem
@@ -590,5 +598,67 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
         productTableItems[1].QuantityToOrder.Should().Be(54);
         productTableItems[2].QuantityToOrder.Should().Be(108);
         productTableItems[3].QuantityToOrder.Should().Be(12);
+    }
+    
+    [Fact]
+    public async Task CalculateProducts_Ver1()
+    {
+        // Arrange
+        Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
+        Services.AddSingleton(dialogServiceMock.Object);
+        
+        _repositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Product>
+        {
+            new Product { Article = "40001732", Name = "RETI AGE Anti-aging gel-cream", QuantityPerBox = 54 },
+            // new Product { Article = "40007259", Name = "SESMAHAL B3 Niacinamide", AverageTurnover = 0.11, StockDays = 9.09 },
+            new Product { Article = "40007604", Name = "ПРОМОНАБОР SESDERMA", QuantityPerBox = 10 },
+        });
+        
+        var productTableItems = new List<ProductTableItem>
+        {
+            new ProductTableItem
+            {
+                Article           = "40001732",
+                Name              = "RETI AGE Anti-aging gel-cream",
+                AverageTurnover   = 0.84,
+                AvailableQuantity = 9609,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 7,
+                StockDays         = 8.33
+            },
+            new ProductTableItem
+            {
+                Article           = "40007259",
+                Name              = "SESMAHAL B3 Niacinamide",
+                AverageTurnover   = 0.11,
+                AvailableQuantity = 2767,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 1,
+                StockDays         = 9.09
+            },
+            new ProductTableItem
+            {
+                Article           = "40007604",
+                Name              = "ПРОМОНАБОР SESDERMA",
+                AverageTurnover   = 0.18,
+                AvailableQuantity = 111,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 1,
+                StockDays         = 5.56
+            },
+        };
+        var cut = RenderComponent<ProductCalculatorDialog>(builder =>
+            builder.Add(p => p.ProductTableItems, productTableItems));
+        
+        cut.Instance.DaysCount                      = 90;
+        cut.Instance.MinAvgTurnoverForAdditionByBox = .1;
+        
+        // Act
+        await cut.Instance.CalculateProducts();
+        
+        // Assert
+        productTableItems[0].QuantityToOrder.Should().Be(54);
+        productTableItems[1].QuantityToOrder.Should().Be(9);
+        productTableItems[2].QuantityToOrder.Should().Be(7);
     }
 }
