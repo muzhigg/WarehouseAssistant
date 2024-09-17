@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using MiniExcelLibs.Attributes;
 using MudBlazor;
 using WarehouseAssistant.Core.Models;
@@ -137,5 +138,10 @@ public partial class ProductsCalculationPage : ComponentBase
         
         InProgress = false;
         // StateHasChanged();
+    }
+    
+    private void ExportTable(MouseEventArgs obj)
+    {
+        throw new NotImplementedException();
     }
 }
