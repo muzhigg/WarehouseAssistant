@@ -140,8 +140,5 @@ public partial class ProductsCalculationPage : ComponentBase
         // StateHasChanged();
     }
     
-    private void ExportTable(MouseEventArgs obj)
-    {
-        throw new NotImplementedException();
-    }
+    private void ExportTable(MouseEventArgs obj) { }
 }

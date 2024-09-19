@@ -101,6 +101,22 @@ public sealed class WorkbookBuilderUnitTests
         Assert.NotEmpty(result);
     }
     
+    [Fact]
+    public void AsByteArray_WithDynamicType()
+    {
+        // Arrange
+        var workbookBuilder = new WorkbookBuilder<dynamic>();
+        workbookBuilder.CreateSheet("TestSheet");
+        workbookBuilder.AddToSheet("TestSheet", new { Column1 = "TestData" });
+        
+        // Act
+        var result = workbookBuilder.AsByteArray();
+        
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotEmpty(result);
+    }
+    
     // Test disposing of the workbook builder
     [Fact]
     public void Dispose_DisposesWorkbookStream_Success()
