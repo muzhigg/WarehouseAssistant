@@ -70,7 +70,7 @@ public class ProductOrderExportDialogTest
         // Assert
         orders.Should().HaveCount(4);
         
-        List<ProductOrderExportDialog.OrderItem> orderItems = orders["Order 0"];
+        var orderItems = orders["Order 0"];
         orderItems.Should().HaveCount(5);
         orderItems.First(item => item.Article == tableItems[0].Article).Quantity.Should().Be(10);
         orderItems.First(item => item.Article == tableItems[1].Article).Quantity.Should().Be(180);

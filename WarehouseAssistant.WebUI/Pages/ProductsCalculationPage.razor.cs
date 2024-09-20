@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using MiniExcelLibs.Attributes;
 using MudBlazor;
 using WarehouseAssistant.Core.Models;
@@ -140,5 +139,24 @@ public partial class ProductsCalculationPage : ComponentBase
         // StateHasChanged();
     }
     
-    private void ExportTable(MouseEventArgs obj) { }
+    private async Task ExportTable()
+    {
+        if (_dataGrid!.SelectedItems.Count == 0)
+        {
+            Snackbar.Add("Не выбрано ни одного элемента", Severity.Error);
+            return;
+        }
+        
+        InProgress = true;
+        
+        DialogParameters<ProductOrderExportDialog> parameters = new();
+        parameters.Add(dialog => dialog.Products, _dataGrid.SelectedItems);
+        parameters.Add(dialog => dialog.DbProducts, _dbProducts);
+        
+        IDialogReference dialog =
+            await DialogService.ShowAsync<ProductOrderExportDialog>("Экспорт заказов", parameters);
+        DialogResult result = await dialog.Result;
+        
+        InProgress = false;
+    }
 }

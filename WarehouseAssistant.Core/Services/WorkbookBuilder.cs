@@ -22,7 +22,7 @@ public sealed class WorkbookBuilder<T> : IDisposable, IAsyncDisposable
     {
         return _sheets.GetValueOrDefault(sheetName);
     }
-
+    
     
     /// <summary>
     /// Returns the workbook as a byte array without additional configuration.
@@ -32,7 +32,7 @@ public sealed class WorkbookBuilder<T> : IDisposable, IAsyncDisposable
     {
         return AsByteArray(null);
     }
-
+    
     /// <summary>
     /// Returns the workbook as a byte array with additional configuration.
     /// </summary>
@@ -41,12 +41,14 @@ public sealed class WorkbookBuilder<T> : IDisposable, IAsyncDisposable
     public byte[] AsByteArray(IConfiguration? configuration)
     {
         _workbookStream.Position = 0;
-        Dictionary<string, object> sheets = _sheets.ToDictionary<KeyValuePair<string, List<T>>, string, object>(keyValuePair => keyValuePair.Key, keyValuePair => keyValuePair.Value);
-
+        Dictionary<string, object> sheets =
+            _sheets.ToDictionary<KeyValuePair<string, List<T>>, string, object>(keyValuePair => keyValuePair.Key,
+                keyValuePair => keyValuePair.Value);
+        
         _workbookStream.SaveAs(sheets, configuration: configuration);
         return _workbookStream.ToArray();
     }
-
+    
     /// <summary>
     /// Creates a new sheet with the specified name.
     /// </summary>
@@ -56,11 +58,11 @@ public sealed class WorkbookBuilder<T> : IDisposable, IAsyncDisposable
     {
         if (_sheets.ContainsKey(sheetName))
             return false;
-
+        
         _sheets.Add(sheetName, []);
         return true;
     }
-
+    
     /// <summary>
     /// Adds data to the specified sheet.
     /// </summary>
@@ -70,7 +72,7 @@ public sealed class WorkbookBuilder<T> : IDisposable, IAsyncDisposable
     {
         _sheets[sheetName].Add(data);
     }
-
+    
     /// <summary>
     /// Adds a range of data to the specified sheet.
     /// </summary>
@@ -80,12 +82,12 @@ public sealed class WorkbookBuilder<T> : IDisposable, IAsyncDisposable
     {
         _sheets[sheetName].AddRange(data);
     }
-
+    
     public void Dispose()
     {
         _workbookStream.Dispose();
     }
-
+    
     public async ValueTask DisposeAsync()
     {
         await _workbookStream.DisposeAsync();

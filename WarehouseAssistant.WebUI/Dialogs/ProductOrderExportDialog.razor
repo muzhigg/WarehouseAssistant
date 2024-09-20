@@ -1,3 +1,13 @@
-@code {
-
-}
+<MudDialog>
+	<TitleContent>
+		<Mudtext Typo="Typo.h5">Export Product Order</Mudtext>
+	</TitleContent>
+	<DialogContent>
+		<MudNumericField T="int" Label="Максимальное количество коробок на заказ" @bind-Value="_maxOrderSize"
+		                 Min="1"/>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel" Color="Color.Secondary">Отмена</MudButton>
+		<MudButton OnClick="Export" Color="Color.Primary">Экспортировать</MudButton>
+	</DialogActions>
+</MudDialog>

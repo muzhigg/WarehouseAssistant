@@ -1,10 +1,15 @@
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MiniExcelLibs.Attributes;
+using MudBlazor;
 using WarehouseAssistant.Core.Models;
+using WarehouseAssistant.Core.Services;
 using WarehouseAssistant.Data.Models;
 
 namespace WarehouseAssistant.WebUI.Dialogs;
 
+[UsedImplicitly]
 public partial class ProductOrderExportDialog : ComponentBase
 {
     private record Order(double BoxCount, List<OrderItem> Products)
@@ -13,24 +18,54 @@ public partial class ProductOrderExportDialog : ComponentBase
         public List<OrderItem> Products { get; set; } = Products;
     }
     
-    internal record OrderItem(ProductTableItem product, Product? dbProduct)
+    internal record OrderItem
     {
-        [ExcelColumn(Name = "Название")]   public string Name     { get; set; } = product.Name;
-        [ExcelColumn(Name = "Артикул")]    public string Article  { get; set; } = product.Article;
+        public OrderItem(ProductTableItem product, Product? dbProduct)
+        {
+            Name    = product.Name;
+            Article = product.Article;
+            BoxSize = dbProduct?.QuantityPerBox ?? 54;
+        }
+        
+        [ExcelColumn(Name = "Название", Width = 50)]
+        public string Name { get; set; }
+        
+        [ExcelColumn(Name = "Артикул")]    public string Article  { get; set; }
         [ExcelColumn(Name = "Количество")] public int    Quantity { get; set; }
-        [ExcelIgnore]                      public int    BoxSize  { get; set; } = dbProduct?.QuantityPerBox ?? 54;
+        [ExcelIgnore]                      public int    BoxSize  { get; set; }
     }
     
-    internal Dictionary<string, List<OrderItem>> DivideProductsIntoOrders(List<ProductTableItem> products,
+    [CascadingParameter] private MudDialogInstance MudDialog { get; set; } = null!;
+    
+    [Inject] public IJSRuntime JsRuntime { get; set; } = null!;
+    [Inject] public ISnackbar  Snackbar  { get; set; } = null!;
+    
+    [Parameter] public IEnumerable<ProductTableItem>? Products   { get; set; }
+    [Parameter] public List<Product>?                 DbProducts { get; set; }
+    private            int                            _maxOrderSize = 20;
+    
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        
+        if (Products is null)
+        {
+            Snackbar.Add("Нет данных для экспорта", Severity.Error);
+            Cancel();
+            return;
+        }
+    }
+    
+    internal Dictionary<string, List<OrderItem>> DivideProductsIntoOrders(IEnumerable<ProductTableItem> products,
         List<Product> dbProducts, int maxOrderSize)
     {
-        products.Sort((a, b) => a.StockDays.CompareTo(b.StockDays));
+        products = products.Order(Comparer<ProductTableItem>.Create((a, b) => a.StockDays.CompareTo(b.StockDays)));
         
         var result = new List<Order> { new Order(0, []) };
         
         foreach (ProductTableItem tableItem in products)
         {
-            OrderItem orderItem = new(tableItem, dbProducts.FirstOrDefault(p => p.Article == tableItem.Article));
+            OrderItem orderItem = new(tableItem, dbProducts?.FirstOrDefault(p => p.Article == tableItem.Article));
             
             int remainingQuantity = tableItem.QuantityToOrder;
             int currentOrderIndex = 0;
@@ -118,5 +153,33 @@ public partial class ProductOrderExportDialog : ComponentBase
         }
         
         order.BoxCount += (double)quantity / item.BoxSize;
+    }
+    
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+    
+    private async Task Export()
+    {
+        var orders = DivideProductsIntoOrders(Products!, DbProducts!, _maxOrderSize);
+        
+        if (orders.Count != 0)
+        {
+            await using WorkbookBuilder<OrderItem> workbookBuilder = new();
+            
+            foreach (KeyValuePair<string, List<OrderItem>> order in orders)
+            {
+                workbookBuilder.CreateSheet(order.Key);
+                workbookBuilder.AddRangeToSheet(order.Key, order.Value);
+            }
+            
+            var    xls      = workbookBuilder.AsByteArray();
+            string fileName = $"Order {DateTime.Now}.xlsx";
+            
+            await JsRuntime.InvokeVoidAsync("DownloadExcelFile", fileName, xls);
+        }
+        
+        MudDialog.Close(DialogResult.Ok(true));
     }
 }
