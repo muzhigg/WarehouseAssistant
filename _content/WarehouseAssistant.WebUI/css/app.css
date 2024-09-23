@@ -1,0 +1,13 @@
+﻿.body {
+    padding-top: 10px;
+}
+
+@media (min-width: 1280px) {
+    .mud-container-maxwidth-lg {
+        max-width: 100%;
+    }
+}
+
+.mud-tooltip-root {
+    width: auto;
+}
