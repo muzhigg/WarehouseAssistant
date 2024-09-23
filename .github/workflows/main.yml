@@ -21,7 +21,7 @@ jobs:
         
       # генерируем статические файлы
     - name: Publish .NET Core Project
-      run: dotnet publish WarehouseAssistant.WASM/WarehouseAssistant.WASM.csproj -c Release --output release --nologo
+      run: dotnet publish WarehouseAssistant.WASM/WarehouseAssistant.WASM.csproj -c Debug --output debug --nologo
 
     - name: Change base-tag in index.html from / to Hybrid
       run: sed -i 's/<base href="\/" \/>/<base href="\/WarehouseAssistant\/" \/>/g' release/wwwroot/index.html
