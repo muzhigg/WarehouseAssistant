@@ -53,7 +53,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-ciWrzteEHiS+7zFSJCIA9GLJEpSzoE\/NOlXgJcR\/Y9c=",
+      "hash": "sha256-SJPTcHDro2cfBRxtKLl5Qt7RSdJb1mIJokWNpC4lGLo=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -153,7 +153,7 @@
       "url": "_framework\/Microsoft.JSInterop.WebAssembly.wasm"
     },
     {
-      "hash": "sha256-gwpk1CUej8YLgFD+81yKe9E+9M5qxT2FoG2JCLv\/J1Y=",
+      "hash": "sha256-msAW4FqvY+Ee9uETKwm9NSfHLw8RbSYqDj5NENE4C3A=",
       "url": "_framework\/MiniExcel.wasm"
     },
     {
@@ -305,7 +305,7 @@
       "url": "_framework\/System.Private.Uri.wasm"
     },
     {
-      "hash": "sha256-F2C6gXmkot7y2fjo32Le4cWYTVIi7GzlAAM5q6glPkM=",
+      "hash": "sha256-JP2wrA4qk8lAQSc\/FW4hIgXON7y04W7hYLytQnzQpYo=",
       "url": "_framework\/System.Private.Xml.wasm"
     },
     {
@@ -361,23 +361,27 @@
       "url": "_framework\/System.wasm"
     },
     {
-      "hash": "sha256-VtTmQkogxahHcZhapoa1uJS4CVl+Zan3aQw3cGZA\/XM=",
+      "hash": "sha256-R4aJac4y6EcflZ9wX4hbdMvKGN7FJOOxG9FkoyHsbLo=",
       "url": "_framework\/System.Xml.ReaderWriter.wasm"
     },
     {
-      "hash": "sha256-9\/kX46jLyU8Bz0kZzXvezqIQ4+bdoZWtB9IUwzWJ6sI=",
+      "hash": "sha256-y5HGLDhFIzEDAFcfx2xY3EnwRC5zzq8+z32IFmKiH2g=",
       "url": "_framework\/WarehouseAssistant.Core.wasm"
     },
     {
-      "hash": "sha256-ee2rKCe2siEqiMnUAQ786K+45sKXfgSgfRxmXYo1AKA=",
+      "hash": "sha256-9OUksH7dPlQYLVWWc5WXHXP6kVMF\/7\/5+Szs4PTnfoI=",
       "url": "_framework\/WarehouseAssistant.Data.wasm"
     },
     {
-      "hash": "sha256-DmiX+GH6sNXm4Ed0CtF6NznlXQEGF3E5Is0LEaDPy5k=",
+      "hash": "sha256-PT71sTStfPvFgMikA1iMiN9KAUn7oTgemO1temevlXs=",
+      "url": "_framework\/WarehouseAssistant.Shared.Models.wasm"
+    },
+    {
+      "hash": "sha256-fFZI2PlsY74yty5OyUJvlSvis9EP6FTeIu7FVrt42BQ=",
       "url": "_framework\/WarehouseAssistant.WASM.wasm"
     },
     {
-      "hash": "sha256-D3lsCqPT4l3CI5r03szr3xUq9gLmcf38jLHcyox2f2M=",
+      "hash": "sha256-uLF8O6TPPwUd7aXZRVuf3xv3N8HGZgh5x1wWJDtUiz4=",
       "url": "_framework\/WarehouseAssistant.WebUI.wasm"
     },
     {
@@ -397,5 +401,5 @@
       "url": "_content\/WarehouseAssistant.WebUI\/js\/exportFile.js"
     }
   ],
-  "version": "OSWLvS1T"
+  "version": "FPO0KgUA"
 };
