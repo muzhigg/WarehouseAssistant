@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 using MiniExcelLibs.Attributes;
@@ -33,34 +34,29 @@ public partial class ProductsCalculationPage : ComponentBase
     [Inject] private IDialogService       DialogService { get; set; } = null!;
     [Inject] private IRepository<Product> Repository    { get; set; } = null!;
     
+#if DEBUG
     internal IReadOnlyCollection<ProductTableItem> Products => _products.ToList().AsReadOnly();
+#endif
     
-    private List<Product>?                _dbProducts = [];
     private DataGrid<ProductTableItem>?   _dataGrid;
     private IEnumerable<ProductTableItem> _products     = new List<ProductTableItem>();
     private string                        _searchString = "";
     private bool                          _inProgress;
     
-    protected override async Task OnInitializedAsync()
-    {
-        await RefreshDbProductListAsync();
-        
-#if DEBUG
-        Console.WriteLine("ProductsCalculationPage.OnInitializedAsync() called");
-#endif
-    }
-    
-    private async Task RefreshDbProductListAsync()
+    private async Task RefreshProductsReferencesAsync()
     {
         try
         {
-            _dbProducts = await Repository.GetAllAsync();
+            var dbProducts = await Repository.GetAllAsync();
+            if (dbProducts != null)
+                foreach (ProductTableItem tableItem in _products)
+                    tableItem.DbReference = dbProducts.FirstOrDefault(p => p.Article == tableItem.Article);
         }
-        catch (Exception e)
+        catch (HttpRequestException e)
         {
             string message = $"Не удалось получить список товаров из базы данных: {e.Message}";
             Snackbar.Add(message, Severity.Error);
-            Console.WriteLine(message);
+            Debug.WriteLine(message);
         }
     }
     
@@ -75,19 +71,15 @@ public partial class ProductsCalculationPage : ComponentBase
     {
         InProgress = true;
         
-        Product? product = await ProductFormDialog.ShowAddDialogAsync(contextItem, DialogService);
+        Product? dbReference = await ProductFormDialog.ShowAddDialogAsync(contextItem, DialogService);
         
-        if (product != null)
+        if (dbReference != null)
         {
-            _dbProducts ??= [];
-            _dbProducts.Add(product);
+            contextItem.DbReference = dbReference;
             Snackbar.Add("Товар успешно добавлен в базу данных", Severity.Success);
-            // if (_dbProducts != null) _dbProducts.Add(product);
-            // else _dbProducts = await Repository.GetAllAsync();
         }
         
         InProgress = false;
-        // StateHasChanged();
     }
     
     public async Task ShowFileUploadDialogAsync()
@@ -111,9 +103,10 @@ public partial class ProductsCalculationPage : ComponentBase
         DialogResult result = await dialog.Result;
         
         if (!result.Canceled) _products = (IEnumerable<ProductTableItem>)result.Data;
-        // _dbProducts = await Repository.GetAllAsync();
+        
+        await RefreshProductsReferencesAsync();
+        
         InProgress = false;
-        // StateHasChanged();
     }
     
     public async Task ShowCalculatorDialog()
@@ -132,11 +125,7 @@ public partial class ProductsCalculationPage : ComponentBase
         IDialogReference dialog = await DialogService.ShowAsync<ProductCalculatorDialog>("Расчет заказа", parameters);
         DialogResult     result = await dialog.Result;
         
-        if (!result.Canceled && result.Data is true)
-            await RefreshDbProductListAsync();
-        
         InProgress = false;
-        // StateHasChanged();
     }
     
     private async Task ExportTable()
@@ -151,7 +140,6 @@ public partial class ProductsCalculationPage : ComponentBase
         
         DialogParameters<ProductOrderExportDialog> parameters = new();
         parameters.Add(dialog => dialog.Products, _dataGrid.SelectedItems);
-        parameters.Add(dialog => dialog.DbProducts, _dbProducts);
         
         IDialogReference dialog =
             await DialogService.ShowAsync<ProductOrderExportDialog>("Экспорт заказов", parameters);

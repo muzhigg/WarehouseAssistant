@@ -40,8 +40,7 @@ public partial class ProductOrderExportDialog : ComponentBase
     [Inject] public IJSRuntime JsRuntime { get; set; } = null!;
     [Inject] public ISnackbar  Snackbar  { get; set; } = null!;
     
-    [Parameter] public IEnumerable<ProductTableItem>? Products   { get; set; }
-    [Parameter] public List<Product>?                 DbProducts { get; set; }
+    [Parameter] public IEnumerable<ProductTableItem>? Products { get; set; }
     private            int                            _maxOrderSize = 20;
     
     protected override void OnParametersSet()
@@ -52,12 +51,11 @@ public partial class ProductOrderExportDialog : ComponentBase
         {
             Snackbar.Add("Нет данных для экспорта", Severity.Error);
             Cancel();
-            return;
         }
     }
     
     internal Dictionary<string, List<OrderItem>> DivideProductsIntoOrders(IEnumerable<ProductTableItem> products,
-        List<Product> dbProducts, int maxOrderSize)
+        int                                                                                             maxOrderSize)
     {
         products = products.Order(Comparer<ProductTableItem>.Create((a, b) => a.StockDays.CompareTo(b.StockDays)));
         
@@ -65,7 +63,7 @@ public partial class ProductOrderExportDialog : ComponentBase
         
         foreach (ProductTableItem tableItem in products)
         {
-            OrderItem orderItem = new(tableItem, dbProducts?.FirstOrDefault(p => p.Article == tableItem.Article));
+            OrderItem orderItem = new(tableItem, tableItem.DbReference);
             
             int remainingQuantity = tableItem.QuantityToOrder;
             int currentOrderIndex = 0;
@@ -144,13 +142,9 @@ public partial class ProductOrderExportDialog : ComponentBase
         var existingProduct = order.Products.FirstOrDefault(p => p.Article == item.Article);
         
         if (existingProduct is not null)
-        {
             existingProduct.Quantity += quantity;
-        }
         else
-        {
             order.Products.Add(item with { Quantity = quantity });
-        }
         
         order.BoxCount += (double)quantity / item.BoxSize;
     }
@@ -162,7 +156,7 @@ public partial class ProductOrderExportDialog : ComponentBase
     
     private async Task Export()
     {
-        var orders = DivideProductsIntoOrders(Products!, DbProducts!, _maxOrderSize);
+        var orders = DivideProductsIntoOrders(Products!, _maxOrderSize);
         
         if (orders.Count != 0)
         {

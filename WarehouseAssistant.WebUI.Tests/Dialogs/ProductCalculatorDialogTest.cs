@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
@@ -270,45 +269,6 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
     }
     
     [Fact]
-    public async Task CalculateProducts_ShouldCatchExceptionsAndContinue()
-    {
-        // Arrange
-        Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
-        Services.AddSingleton(dialogServiceMock.Object);
-        
-        _repositoryMock.Setup(r => r.GetAllAsync()).Throws<HttpRequestException>();
-        
-        var productTableItems = new List<ProductTableItem>
-        {
-            new ProductTableItem
-            {
-                Article           = "12345",
-                Name              = "Test Product",
-                AverageTurnover   = 1.0,
-                AvailableQuantity = 100000,
-                QuantityToOrder   = 0,
-                CurrentQuantity   = 0,
-                StockDays         = 10
-            },
-        };
-        var cut = RenderComponent<ProductCalculatorDialog>(builder =>
-            builder.Add(p => p.ProductTableItems, productTableItems));
-        
-        cut.Instance.DaysCount                      = 60;
-        cut.Instance.MinAvgTurnoverForAdditionByBox = -1;
-        
-        // Act
-        await cut.Instance.CalculateProducts();
-        
-        // Assert
-        _repositoryMock.Verify(r => r.GetAllAsync(), Times.Once);
-        _snackbarMock.Verify(s => s.Add(It.Is<string>(s1 => s1.Contains("Ошибка при загрузке данных")),
-            Severity.Warning, It.IsAny<Action<SnackbarOptions>>(),
-            It.IsAny<string>()), Times.Once);
-        productTableItems[0].QuantityToOrder.Should().Be(60);
-    }
-    
-    [Fact]
     public async Task CalculateProducts_Should_Not_Add_Product_To_Database_When_NeedAddToDb_IsFalse()
     {
         // Arrange
@@ -530,17 +490,6 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
     public async Task CalculateProducts_Should_CalculateByBox()
     {
         // Arrange
-        Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
-        Services.AddSingleton(dialogServiceMock.Object);
-        
-        _repositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Product>
-        {
-            new Product { Article = "12345", Name = "Test Product", QuantityPerBox = 54 },
-            // new Product { Article = "40007259", Name = "SESMAHAL B3 Niacinamide", AverageTurnover = 0.11, StockDays = 9.09 },
-            new Product { Article = "67890", Name  = "Test Product 2", QuantityPerBox = 54 },
-            new Product { Article = "678901", Name = "Test Product 3", QuantityPerBox = 54 },
-        });
-        
         var productTableItems = new List<ProductTableItem>
         {
             new ProductTableItem
@@ -551,7 +500,8 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
                 AvailableQuantity = 100000,
                 QuantityToOrder   = 0,
                 CurrentQuantity   = 10,
-                StockDays         = 10
+                StockDays         = 10,
+                DbReference       = new Product { Article = "12345", Name = "Test Product", QuantityPerBox = 54 }
             },
             new ProductTableItem
             {
@@ -561,7 +511,8 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
                 AvailableQuantity = 100000,
                 QuantityToOrder   = 0,
                 CurrentQuantity   = 10,
-                StockDays         = 10
+                StockDays         = 10,
+                DbReference       = new Product { Article = "67890", Name = "Test Product 2", QuantityPerBox = 54 }
             },
             new ProductTableItem
             {
@@ -571,7 +522,8 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
                 AvailableQuantity = 100000,
                 QuantityToOrder   = 0,
                 CurrentQuantity   = 10,
-                StockDays         = 10
+                StockDays         = 10,
+                DbReference       = new Product { Article = "678901", Name = "Test Product 3", QuantityPerBox = 54 }
             },
             new ProductTableItem
             {
@@ -607,13 +559,6 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
         Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
         Services.AddSingleton(dialogServiceMock.Object);
         
-        _repositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Product>
-        {
-            new Product { Article = "40001732", Name = "RETI AGE Anti-aging gel-cream", QuantityPerBox = 54 },
-            // new Product { Article = "40007259", Name = "SESMAHAL B3 Niacinamide", AverageTurnover = 0.11, StockDays = 9.09 },
-            new Product { Article = "40007604", Name = "ПРОМОНАБОР SESDERMA", QuantityPerBox = 10 },
-        });
-        
         var productTableItems = new List<ProductTableItem>
         {
             new ProductTableItem
@@ -624,7 +569,9 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
                 AvailableQuantity = 9609,
                 QuantityToOrder   = 0,
                 CurrentQuantity   = 7,
-                StockDays         = 8.33
+                StockDays         = 8.33,
+                DbReference = new Product
+                    { Article = "40001732", Name = "RETI AGE Anti-aging gel-cream", QuantityPerBox = 54 }
             },
             new ProductTableItem
             {
@@ -638,13 +585,14 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
             },
             new ProductTableItem
             {
-                Article           = "40007604",
-                Name              = "ПРОМОНАБОР SESDERMA",
-                AverageTurnover   = 0.18,
+                Article = "40007604",
+                Name = "ПРОМОНАБОР SESDERMA",
+                AverageTurnover = 0.18,
                 AvailableQuantity = 111,
-                QuantityToOrder   = 0,
-                CurrentQuantity   = 1,
-                StockDays         = 5.56
+                QuantityToOrder = 0,
+                CurrentQuantity = 1,
+                StockDays = 5.56,
+                DbReference = new Product { Article = "40007604", Name = "ПРОМОНАБОР SESDERMA", QuantityPerBox = 10 }
             },
         };
         var cut = RenderComponent<ProductCalculatorDialog>(builder =>

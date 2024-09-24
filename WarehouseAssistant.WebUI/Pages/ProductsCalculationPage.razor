@@ -56,14 +56,14 @@
 			</MudCardHeader>
 			<MudCardContent>
 				<MudText>@($"В наличии на БГЛЦ: {context.Item.AvailableQuantity}. Максимально доступно для заказа: {Math.Ceiling(context.Item.AvailableQuantity * 0.07)}")</MudText>
-				@if (_dbProducts == null || !_dbProducts.Exists(product => product.Article == context.Item.Article))
+				@if (context.Item.DbReference == null)
 				{
 					<MudText>Товар не найден в базе данных</MudText>
 					<MudButton Variant="Variant.Filled" OnClick="() => ShowAddToDbDialog(context.Item)">Добавить в БД</MudButton>
 				}
 				else
 				{
-					Product dbItem = _dbProducts.Find(product => product.Article == context.Item.Article)!;
+					Product dbItem = context.Item.DbReference;
 					<MudText>@dbItem.Name</MudText>
 					<MudText>@("Артикул: " + dbItem.Article)</MudText>
 					<MudText>@("Штрих-код: " + @dbItem.Barcode)</MudText>
