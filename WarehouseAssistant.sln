@@ -30,6 +30,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workbooks", "workbooks", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarehouseAssistant.Data.Tests", "tests\WarehouseAssistant.Data.Tests\WarehouseAssistant.Data.Tests.csproj", "{9DE69C90-43E4-41F4-B32C-26A8AAD6CD51}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarehouseAssistant.Shared.Models", "WarehouseAssistant.Shared.Models\WarehouseAssistant.Shared.Models.csproj", "{8B867C34-C840-4271-9C9A-44A067CF216A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +72,10 @@ Global
 		{9DE69C90-43E4-41F4-B32C-26A8AAD6CD51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DE69C90-43E4-41F4-B32C-26A8AAD6CD51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DE69C90-43E4-41F4-B32C-26A8AAD6CD51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B867C34-C840-4271-9C9A-44A067CF216A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B867C34-C840-4271-9C9A-44A067CF216A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B867C34-C840-4271-9C9A-44A067CF216A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B867C34-C840-4271-9C9A-44A067CF216A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

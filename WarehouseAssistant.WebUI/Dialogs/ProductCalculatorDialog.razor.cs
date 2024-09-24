@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using WarehouseAssistant.Core.Calculation;
-using WarehouseAssistant.Core.Models;
-using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.Shared.Models;
+using WarehouseAssistant.Shared.Models.Db;
 
 namespace WarehouseAssistant.WebUI.Dialogs;
 

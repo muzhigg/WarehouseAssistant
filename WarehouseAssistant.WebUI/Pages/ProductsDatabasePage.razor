@@ -1,5 +1,5 @@
 ﻿@page "/database/products"
-@using WarehouseAssistant.Data.Models
+@using WarehouseAssistant.Shared.Models.Db
 @using WarehouseAssistant.WebUI.Components
 
 <DataGrid Items="_products" @ref="_dataGrid" LocalStorageKey="products_db_grid_filters" T="Product"

@@ -3,8 +3,8 @@ using System.Text;
 using Moq;
 using Moq.Contrib.HttpClient;
 using Newtonsoft.Json;
-using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.Shared.Models.Db;
 
 namespace WarehouseAssistant.Data.Tests;
 

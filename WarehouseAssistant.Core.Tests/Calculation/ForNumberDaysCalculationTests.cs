@@ -1,6 +1,6 @@
 using System.Reflection;
 using WarehouseAssistant.Core.Calculation;
-using WarehouseAssistant.Core.Models;
+using WarehouseAssistant.Shared.Models;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 

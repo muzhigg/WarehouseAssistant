@@ -1,4 +1,4 @@
-﻿using WarehouseAssistant.Core.Models;
+﻿using WarehouseAssistant.Shared.Models;
 
 namespace WarehouseAssistant.Core.Calculation;
 

@@ -1,4 +1,6 @@
-﻿namespace WarehouseAssistant.Core.Calculation;
+﻿using WarehouseAssistant.Shared.Models;
+
+namespace WarehouseAssistant.Core.Calculation;
 
 public interface ICalculationStrategy<in T> where T : ICalculatedTableItem
 {

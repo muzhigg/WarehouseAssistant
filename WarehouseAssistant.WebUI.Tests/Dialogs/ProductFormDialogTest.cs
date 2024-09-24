@@ -6,9 +6,9 @@ using JetBrains.Annotations;
 using Moq;
 using MudBlazor;
 using MudBlazor.Services;
-using WarehouseAssistant.Core.Models;
-using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.Shared.Models;
+using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Dialogs;
 
 namespace WarehouseAssistant.WebUI.Tests.Dialogs;

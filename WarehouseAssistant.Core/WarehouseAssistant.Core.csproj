@@ -8,7 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2024.2.0" />
-    <PackageReference Include="MiniExcel" Version="1.33.0" />
+    <PackageReference Include="MiniExcel" Version="1.34.2"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WarehouseAssistant.Shared.Models\WarehouseAssistant.Shared.Models.csproj"/>
   </ItemGroup>
 
 </Project>

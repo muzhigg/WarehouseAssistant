@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using JetBrains.Annotations;
-using WarehouseAssistant.Core.Models;
-using WarehouseAssistant.Data.Models;
+using WarehouseAssistant.Shared.Models;
+using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Dialogs;
 
 namespace WarehouseAssistant.WebUI.Tests.Dialogs;

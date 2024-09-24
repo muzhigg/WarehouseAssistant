@@ -1,5 +1,5 @@
-using WarehouseAssistant.Core.Calculation;
 using WarehouseAssistant.Core.Services;
+using WarehouseAssistant.Shared.Models;
 
 namespace WarehouseAssistant.Core.Tests.Services;
 
@@ -8,15 +8,15 @@ public sealed class WorkbookBuilderIntegrationTests
 {
     private sealed class TableITemStub : ITableItem
     {
-        public string? Name           { get; set; }
-        public string? Article        { get; set; }
+        public string? Name    { get; set; }
+        public string? Article { get; set; }
         
-        public bool    HasValidName()
+        public bool HasValidName()
         {
             return string.IsNullOrEmpty(Name) == false;
         }
         
-        public bool    HasValidArticle()
+        public bool HasValidArticle()
         {
             return string.IsNullOrEmpty(Article) == false;
         }
@@ -37,7 +37,7 @@ public sealed class WorkbookBuilderIntegrationTests
         workbookBuilder.AddRangeToSheet("Sheet 1", tableItems);
         MemoryStream stream = new MemoryStream(workbookBuilder.AsByteArray());
         stream.Position = 0;
-        var          loader = new WorksheetLoader<TableITemStub>(stream);
+        var loader = new WorksheetLoader<TableITemStub>(stream);
         
         // Act
         IEnumerable<TableITemStub> parsedItems = loader.ParseItems().ToList();

@@ -1,6 +1,6 @@
 ﻿@page "/order/products"
-@using WarehouseAssistant.Core.Models
-@using WarehouseAssistant.Data.Models
+@using WarehouseAssistant.Shared.Models
+@using WarehouseAssistant.Shared.Models.Db
 @using WarehouseAssistant.WebUI.Components
 
 <DataGrid T="ProductTableItem" Items="_products" LocalStorageKey="bglc_order" @ref="_dataGrid"

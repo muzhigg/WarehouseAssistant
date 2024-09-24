@@ -1,7 +1,6 @@
 ﻿using MiniExcelLibs.Attributes;
-using WarehouseAssistant.Core.Calculation;
 
-namespace WarehouseAssistant.Core.Models;
+namespace WarehouseAssistant.Shared.Models;
 
 public sealed class ProductTableItem : ICalculatedTableItem
 {

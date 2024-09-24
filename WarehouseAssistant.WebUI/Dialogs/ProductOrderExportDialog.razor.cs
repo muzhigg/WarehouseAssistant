@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MiniExcelLibs.Attributes;
 using MudBlazor;
-using WarehouseAssistant.Core.Models;
 using WarehouseAssistant.Core.Services;
-using WarehouseAssistant.Data.Models;
+using WarehouseAssistant.Shared.Models;
+using WarehouseAssistant.Shared.Models.Db;
 
 namespace WarehouseAssistant.WebUI.Dialogs;
 

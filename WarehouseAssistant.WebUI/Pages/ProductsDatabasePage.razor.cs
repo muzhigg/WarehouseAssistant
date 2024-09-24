@@ -4,8 +4,8 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
-using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Components;
 using WarehouseAssistant.WebUI.Dialogs;
 
