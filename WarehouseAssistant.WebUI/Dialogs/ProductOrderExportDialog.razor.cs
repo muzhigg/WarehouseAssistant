@@ -25,14 +25,32 @@ public partial class ProductOrderExportDialog : ComponentBase
             Name    = product.Name;
             Article = product.Article;
             BoxSize = dbProduct?.QuantityPerBox ?? 54;
+            
+#if DEBUG
+            AvailableQuantity     = product.AvailableQuantity;
+            AverageTurnoverPerDay = product.AverageTurnover;
+            StockDays             = product.StockDays;
+#endif
         }
         
         [ExcelColumn(Name = "Название", Width = 50)]
         public string Name { get; set; }
         
-        [ExcelColumn(Name = "Артикул")]    public string Article  { get; set; }
-        [ExcelColumn(Name = "Количество")] public int    Quantity { get; set; }
-        [ExcelIgnore]                      public int    BoxSize  { get; set; }
+        [ExcelColumn(Name = "Артикул")] public string Article { get; set; }
+        
+#if DEBUG
+        [ExcelColumn(Name = "Доступное количество")]
+        public int AvailableQuantity { get; set; }
+        
+        [ExcelColumn(Name = "Средний расход в день")]
+        public double AverageTurnoverPerDay { get; set; }
+        
+        [ExcelColumn(Name = "Запас на кол-во дней")]
+        public double StockDays { get; set; }
+#endif
+        
+        [ExcelColumn(Name = "Количество")] public int Quantity { get; set; }
+        [ExcelIgnore]                      public int BoxSize  { get; set; }
     }
     
     [CascadingParameter] private MudDialogInstance MudDialog { get; set; } = null!;
