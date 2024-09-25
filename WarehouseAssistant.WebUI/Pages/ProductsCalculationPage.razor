@@ -8,8 +8,8 @@
           Height="80vh" ColumnResizeMode="ResizeMode.Column" ShowColumnOptions="false" Filterable="true"
           QuickFilter="@ShouldDisplayProduct" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
           MultiSelection="true" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick"
-          ReadOnly="false" RowClass="product-row" CommittedItemChanges="@OnCommittedItemChanged"
-          CanceledEditingItem="@OnCanceledEditingItem" SelectedItemsChanged="@OnSelectedItemsChanged">
+          ReadOnly="false" RowClass="product-row" CanceledEditingItem="@OnCanceledEditingItem"
+          SelectedItemsChanged="@OnSelectedItemsChanged">
 	<ToolBarContent>
 		<MudButton id="open-upload-table-dialog-button" hidden="@_products.Any()" Disabled="InProgress"
 		           Variant="Variant.Filled" Color="Color.Primary" OnClick="OnFileUploadButtonClick"
@@ -26,6 +26,7 @@
 		           OnClick="ExportTable" StartIcon="@Icons.Material.Filled.ImportExport">
 		</MudButton>
 		<MudSpacer/>
+		<ProductBoxesCounter @ref="_productBoxesCounter"/>
 		<MudTextField T="string" Disabled="InProgress" @bind-Value="_searchString" Placeholder="Search"
 		              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
 		              Class="mt-0" id="search-product-field">
@@ -43,7 +44,8 @@
 		<PropertyColumn Property="x => x.OrderCalculation" Title="Рекомендованное количество" Resizable="false" IsEditable="false"/>
 		<PropertyColumn CellClass="quantity-to-order-cell" Filterable="false" IsEditable="true" Property="x => x.QuantityToOrder" Resizable="false" Title="Количество для заказа">
 			<EditTemplate>
-				<MudNumericField @bind-Value="context.Item.QuantityToOrder" id="quantity-to-order-input" T="int"
+				<MudNumericField Value="@context.Item.QuantityToOrder" ValueChanged="@(i => { context.Item.QuantityToOrder = i; context.Actions.CancelEditingItemAsync(); })"
+				                 id="quantity-to-order-input" T="int"
 				                 Min="0" Max="@context.Item.MaxCanBeOrdered" ErrorText="Недопустимое значение"/>
 			</EditTemplate>
 		</PropertyColumn>
@@ -79,7 +81,6 @@
 
 	</ChildRowContent>
 	<PagerContent>
-		<ProductBoxesCounter @ref="_productBoxesCounter"/>
 		<MudDataGridPager id="product-pager" Disabled="InProgress" T="ProductTableItem" PageSizeOptions="new[] { 10, 25, 50, 100 }" RowsPerPageString="Количество на странице"/>
 	</PagerContent>
 </DataGrid>

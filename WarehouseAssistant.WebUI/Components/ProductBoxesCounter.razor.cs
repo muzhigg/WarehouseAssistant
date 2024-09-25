@@ -9,7 +9,7 @@ public partial class ProductBoxesCounter : ComponentBase
     private double _boxesCount;
     private double _selectedBoxesCount;
     
-    public void CountBoxes(ICollection<ProductTableItem> products)
+    internal void CountBoxes(ICollection<ProductTableItem> products)
     {
         _boxesCount = 0;
         foreach (ProductTableItem productTableItem in products)
@@ -26,7 +26,7 @@ public partial class ProductBoxesCounter : ComponentBase
         Debug.WriteLine($"Boxes count: {_boxesCount}");
     }
     
-    public void CountSelectedBoxes(ICollection<ProductTableItem> products)
+    internal void CountSelectedBoxes(ICollection<ProductTableItem> products)
     {
         _selectedBoxesCount = 0;
         foreach (ProductTableItem productTableItem in products)

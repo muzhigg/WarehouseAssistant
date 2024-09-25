@@ -43,7 +43,7 @@ public partial class ProductsCalculationPage : ComponentBase
     private string                      _searchString = "";
     private bool                        _inProgress;
     
-    private ProductBoxesCounter _productBoxesCounter;
+    private ProductBoxesCounter _productBoxesCounter = null!;
     
     private async Task RefreshProductsReferencesAsync()
     {
@@ -168,13 +168,6 @@ public partial class ProductsCalculationPage : ComponentBase
         DialogResult result = await dialog.Result;
         
         InProgress = false;
-    }
-    
-    private void OnCommittedItemChanged(ProductTableItem obj)
-    {
-        Debug.WriteLine("OnCommittedItemChanged");
-        _productBoxesCounter.CountBoxes(_products);
-        _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
     }
     
     private void OnSelectedItemsChanged(HashSet<ProductTableItem> obj)
