@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -15,7 +16,6 @@ public sealed partial class ProductCalculatorDialog
     
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
     
-    // [Inject] public   IRepository<Product> Repository    { get; set; } = null!;
     [Inject] internal IDialogService       DialogService { get; set; } = null!;
     [Inject] private  ILocalStorageService LocalStorage  { get; set; } = null!;
     
@@ -133,25 +133,90 @@ public sealed partial class ProductCalculatorDialog
                     _calculator.CalculateOrderQuantity(productTableItem);
                 }
                 
-                if (ConsiderCurrentQuantity)
-                    productTableItem.QuantityToOrder -= productTableItem.CurrentQuantity;
-                
-                if (productTableItem.DbReference?.QuantityPerBox is { } perBox &&
-                    MinAvgTurnoverForAdditionByBox > 0.0 &&
-                    productTableItem.AverageTurnover >= MinAvgTurnoverForAdditionByBox)
+                // if by box
+                // if by shelf
+                // default
+                if (CalculateInBoxes(productTableItem))
                 {
+                    if (ConsiderCurrentQuantity)
+                        productTableItem.QuantityToOrder -= productTableItem.CurrentQuantity;
+                    
+                    int perBox = productTableItem.DbReference?.QuantityPerBox ?? DefaultPerBox;
+                    
                     try
                     {
                         double boxQuantity = Math.Round((double)productTableItem.QuantityToOrder / perBox, 0,
                             MidpointRounding.AwayFromZero);
+                        
+                        if (boxQuantity <= 0)
+                        {
+                            boxQuantity = 1;
+                        }
+                        
                         productTableItem.QuantityToOrder = (int)(boxQuantity * perBox);
                     }
                     catch (DivideByZeroException)
                     {
                         Snackbar.Add("Ошибка: Количество на коробку не может быть равно нулю", Severity.Error);
+                        Debug.WriteLine($"Error: Quantity per box cannot be zero. Article {productTableItem.Article}");
                     }
                 }
+                else if (CalculateInShelves(productTableItem))
+                {
+                    int perShelf = productTableItem.DbReference?.QuantityPerShelf ??
+                                   throw new NullReferenceException("Quantity per shelf cannot be null");
+                    
+                    if (productTableItem.QuantityToOrder < perShelf) productTableItem.QuantityToOrder = perShelf;
+                    
+                    if (ConsiderCurrentQuantity)
+                        productTableItem.QuantityToOrder -= productTableItem.CurrentQuantity;
+                }
+                else
+                {
+                    if (ConsiderCurrentQuantity)
+                        productTableItem.QuantityToOrder -= productTableItem.CurrentQuantity;
+                }
+                
+                
+                // if (ConsiderCurrentQuantity)
+                //     productTableItem.QuantityToOrder -= productTableItem.CurrentQuantity;
+                
+                // if (productTableItem.DbReference?.QuantityPerBox is { } perBox &&
+                //     MinAvgTurnoverForAdditionByBox > 0.0 &&
+                //     productTableItem.AverageTurnover >= MinAvgTurnoverForAdditionByBox)
+                // {
+                //     try
+                //     {
+                //         double boxQuantity = Math.Round((double)productTableItem.QuantityToOrder / perBox, 0,
+                //             MidpointRounding.AwayFromZero);
+                //         productTableItem.QuantityToOrder = (int)(boxQuantity * perBox);
+                //     }
+                //     catch (DivideByZeroException)
+                //     {
+                //         Snackbar.Add("Ошибка: Количество на коробку не может быть равно нулю", Severity.Error);
+                //     }
+                // }
             }
+        
+        bool CalculateInBoxes(ProductTableItem tableItem)
+        {
+            if (tableItem.DbReference == null)
+                return false;
+            
+            if (tableItem.DbReference.QuantityPerBox is null or <= 0) return false;
+            
+            return tableItem.AverageTurnover >= MinAvgTurnoverForAdditionByBox;
+        }
+        
+        bool CalculateInShelves(ProductTableItem tableItem)
+        {
+            if (tableItem.DbReference == null)
+                return false;
+            
+            if (tableItem.DbReference.QuantityPerShelf is null or <= 0) return false;
+            
+            return true;
+        }
     }
     
     private async Task<bool> ShowManualInputDialog(ProductTableItem product, Product? dbProduct)

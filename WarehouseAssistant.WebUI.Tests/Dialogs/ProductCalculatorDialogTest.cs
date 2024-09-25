@@ -609,4 +609,159 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
         productTableItems[1].QuantityToOrder.Should().Be(9);
         productTableItems[2].QuantityToOrder.Should().Be(7);
     }
+    
+    [Fact]
+    public async Task CalculateProducts_HappyPath()
+    {
+        // Arrange
+        Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
+        Services.AddSingleton(dialogServiceMock.Object);
+        
+        var productTableItems = new List<ProductTableItem>
+        {
+            new ProductTableItem
+            {
+                Article           = "40001732",
+                Name              = "RETI AGE Anti-aging gel-cream",
+                AverageTurnover   = 0.84,
+                AvailableQuantity = 9609,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 7,
+                StockDays         = 8.33,
+                DbReference = new Product
+                {
+                    Article          = "40001732", Name = "RETI AGE Anti-aging gel-cream", QuantityPerBox = 54,
+                    QuantityPerShelf = 10
+                }
+            },
+            new ProductTableItem
+            {
+                Article           = "40001733",
+                Name              = "Товар 2",
+                AverageTurnover   = 0.2,
+                AvailableQuantity = 9609,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 7,
+                StockDays         = 35,
+                DbReference = new Product
+                    { Article = "40001733", Name = "Товар 2", QuantityPerBox = 54, QuantityPerShelf = 20 }
+            },
+            new ProductTableItem
+            {
+                Article           = "40001734",
+                Name              = "Товар 3",
+                AverageTurnover   = 0.3,
+                AvailableQuantity = 9609,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 7,
+                StockDays         = 23.33,
+                DbReference = new Product
+                    { Article = "40001734", Name = "Товар 3", QuantityPerBox = 54, QuantityPerShelf = 20 }
+            },
+            new ProductTableItem
+            {
+                Article           = "40001735",
+                Name              = "Товар 4",
+                AverageTurnover   = 0.1,
+                AvailableQuantity = 9609,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 7,
+                StockDays         = 70,
+                DbReference = new Product
+                    { Article = "40001735", Name = "Товар 4" }
+            },
+        };
+        var cut = RenderComponent<ProductCalculatorDialog>(builder =>
+            builder.Add(p => p.ProductTableItems, productTableItems));
+        
+        cut.Instance.DaysCount                      = 90;
+        cut.Instance.MinAvgTurnoverForAdditionByBox = .4;
+        
+        // Act
+        await cut.Instance.CalculateProducts();
+        
+        // Assert
+        productTableItems[0].QuantityToOrder.Should().Be(54);
+        productTableItems[1].QuantityToOrder.Should().Be(20);
+        productTableItems[2].QuantityToOrder.Should().Be(27);
+        productTableItems[3].QuantityToOrder.Should().Be(9);
+    }
+    
+    [Fact]
+    public async Task CalculateProducts_HappyPath_With_ConsiderCurrentQuantity()
+    {
+        // Arrange
+        Mock<IDialogService> dialogServiceMock = new Mock<IDialogService>();
+        Services.AddSingleton(dialogServiceMock.Object);
+        
+        var productTableItems = new List<ProductTableItem>
+        {
+            new ProductTableItem
+            {
+                Article           = "40001732",
+                Name              = "RETI AGE Anti-aging gel-cream",
+                AverageTurnover   = 1.2,
+                AvailableQuantity = 10000,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 58,
+                StockDays         = 48.33,
+                DbReference = new Product
+                {
+                    Article          = "40001732", Name = "RETI AGE Anti-aging gel-cream", QuantityPerBox = 54,
+                    QuantityPerShelf = 10
+                }
+            },
+            new ProductTableItem
+            {
+                Article           = "40001733",
+                Name              = "Товар 2",
+                AverageTurnover   = 0.2,
+                AvailableQuantity = 9609,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 7,
+                StockDays         = 35,
+                DbReference = new Product
+                    { Article = "40001733", Name = "Товар 2", QuantityPerBox = 54, QuantityPerShelf = 20 }
+            },
+            new ProductTableItem
+            {
+                Article           = "40001734",
+                Name              = "Товар 3",
+                AverageTurnover   = 0.35,
+                AvailableQuantity = 9609,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 7,
+                StockDays         = 20,
+                DbReference = new Product
+                    { Article = "40001734", Name = "Товар 3", QuantityPerBox = 54, QuantityPerShelf = 20 }
+            },
+            new ProductTableItem
+            {
+                Article           = "40001735",
+                Name              = "Товар 4",
+                AverageTurnover   = 0.1,
+                AvailableQuantity = 9609,
+                QuantityToOrder   = 0,
+                CurrentQuantity   = 7,
+                StockDays         = 70,
+                DbReference = new Product
+                    { Article = "40001735", Name = "Товар 4" }
+            },
+        };
+        var cut = RenderComponent<ProductCalculatorDialog>(builder =>
+            builder.Add(p => p.ProductTableItems, productTableItems));
+        
+        cut.Instance.DaysCount                      = 90;
+        cut.Instance.MinAvgTurnoverForAdditionByBox = .4;
+        cut.Instance.ConsiderCurrentQuantity        = true;
+        
+        // Act
+        await cut.Instance.CalculateProducts();
+        
+        // Assert
+        productTableItems[0].QuantityToOrder.Should().Be(54);
+        productTableItems[1].QuantityToOrder.Should().Be(13);
+        productTableItems[2].QuantityToOrder.Should().Be(24);
+        productTableItems[3].QuantityToOrder.Should().Be(0);
+    }
 }
