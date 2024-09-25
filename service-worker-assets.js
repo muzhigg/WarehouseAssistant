@@ -53,7 +53,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-SJPTcHDro2cfBRxtKLl5Qt7RSdJb1mIJokWNpC4lGLo=",
+      "hash": "sha256-qGCkDXkeHF9\/YYAOy6xo6FPwyHmoLSiD7F7Fa4aPqm8=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -157,7 +157,7 @@
       "url": "_framework\/MiniExcel.wasm"
     },
     {
-      "hash": "sha256-EICO\/Uub\/MAF0vGAHDbb819qR+F8GxDsFnjufjxxLl0=",
+      "hash": "sha256-5orYVlhF0MVVLpCaaoI8NI6M8WIqpuLAR\/pTeVls+vk=",
       "url": "_framework\/MudBlazor.wasm"
     },
     {
@@ -297,7 +297,7 @@
       "url": "_framework\/System.ObjectModel.wasm"
     },
     {
-      "hash": "sha256-3pl+iGn+5GasUeAJO5h5WPDCyS5OBhVfzIDjbI58QyE=",
+      "hash": "sha256-o70YUPoiBKB7TlTGWJL+2Tfo0xKXJV+LyRJjZBwnWYM=",
       "url": "_framework\/System.Private.CoreLib.wasm"
     },
     {
@@ -365,23 +365,23 @@
       "url": "_framework\/System.Xml.ReaderWriter.wasm"
     },
     {
-      "hash": "sha256-y5HGLDhFIzEDAFcfx2xY3EnwRC5zzq8+z32IFmKiH2g=",
+      "hash": "sha256-dNSQqaZOg4CNGN12PX\/GL\/4+y2\/sneXRpoAHQtKTgOA=",
       "url": "_framework\/WarehouseAssistant.Core.wasm"
     },
     {
-      "hash": "sha256-9OUksH7dPlQYLVWWc5WXHXP6kVMF\/7\/5+Szs4PTnfoI=",
+      "hash": "sha256-Auqo3KOa7yCqWzUH6av00KCBWl+ag+kcaDZ0LxU7iic=",
       "url": "_framework\/WarehouseAssistant.Data.wasm"
     },
     {
-      "hash": "sha256-PT71sTStfPvFgMikA1iMiN9KAUn7oTgemO1temevlXs=",
+      "hash": "sha256-oOOQodLiX0xiF57XCif8QfY9G74Y8s3w9KsZjv7J4Zw=",
       "url": "_framework\/WarehouseAssistant.Shared.Models.wasm"
     },
     {
-      "hash": "sha256-fFZI2PlsY74yty5OyUJvlSvis9EP6FTeIu7FVrt42BQ=",
+      "hash": "sha256-hGCJlDyVd7nPHnFJ0haEUD2hHK5znfnB3bFIUv8KpLk=",
       "url": "_framework\/WarehouseAssistant.WASM.wasm"
     },
     {
-      "hash": "sha256-uLF8O6TPPwUd7aXZRVuf3xv3N8HGZgh5x1wWJDtUiz4=",
+      "hash": "sha256-BtpTo\/Mpyrs0kCKFNkJN2CSVFrD6HJWE80n7E+4Ropc=",
       "url": "_framework\/WarehouseAssistant.WebUI.wasm"
     },
     {
@@ -401,5 +401,5 @@
       "url": "_content\/WarehouseAssistant.WebUI\/js\/exportFile.js"
     }
   ],
-  "version": "FPO0KgUA"
+  "version": "MFz5OfgY"
 };
