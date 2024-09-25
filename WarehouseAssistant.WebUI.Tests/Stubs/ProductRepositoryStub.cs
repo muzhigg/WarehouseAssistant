@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.Shared.Models.Db;
 
 namespace WarehouseAssistant.WebUI.Tests.Stubs;
 

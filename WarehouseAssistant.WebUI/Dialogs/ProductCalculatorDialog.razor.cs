@@ -4,9 +4,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using WarehouseAssistant.Core.Calculation;
-using WarehouseAssistant.Core.Models;
-using WarehouseAssistant.Data.Models;
-using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.Shared.Models;
+using WarehouseAssistant.Shared.Models.Db;
 
 namespace WarehouseAssistant.WebUI.Dialogs;
 
@@ -14,8 +13,9 @@ public sealed partial class ProductCalculatorDialog
 {
     private const int DefaultPerBox = 54;
     
-    [Inject] public   ISnackbar            Snackbar      { get; set; } = null!;
-    [Inject] public   IRepository<Product> Repository    { get; set; } = null!;
+    [Inject] public ISnackbar Snackbar { get; set; } = null!;
+    
+    // [Inject] public   IRepository<Product> Repository    { get; set; } = null!;
     [Inject] internal IDialogService       DialogService { get; set; } = null!;
     [Inject] private  ILocalStorageService LocalStorage  { get; set; } = null!;
     
@@ -115,29 +115,16 @@ public sealed partial class ProductCalculatorDialog
     
     internal async Task CalculateProducts()
     {
-        List<Product> dbProducts = [];
-        
-        try
-        {
-            dbProducts = await Repository.GetAllAsync() ?? [];
-        }
-        catch (HttpRequestException ex)
-        {
-            Snackbar.Add("Ошибка при загрузке данных: " + ex.Message, Severity.Warning);
-        }
-        
         if (ProductTableItems != null)
             foreach (ProductTableItem productTableItem in ProductTableItems)
             {
-                Product? dbProduct =
-                    dbProducts.FirstOrDefault(dbProduct => dbProduct.Article.Equals(productTableItem.Article));
-                
-                if (NeedAddToDb && dbProduct == null)
-                    dbProduct = await ProductFormDialog.ShowAddDialogAsync(productTableItem, DialogService);
+                if (NeedAddToDb && productTableItem.DbReference == null)
+                    productTableItem.DbReference =
+                        await ProductFormDialog.ShowAddDialogAsync(productTableItem, DialogService);
                 
                 if (productTableItem is { AverageTurnover: <= 0.0, AvailableQuantity: > 0 })
                 {
-                    bool success = await ShowManualInputDialog(productTableItem, dbProduct);
+                    bool success = await ShowManualInputDialog(productTableItem, productTableItem.DbReference);
                     
                     if (!success) continue;
                 }
@@ -149,7 +136,7 @@ public sealed partial class ProductCalculatorDialog
                 if (ConsiderCurrentQuantity)
                     productTableItem.QuantityToOrder -= productTableItem.CurrentQuantity;
                 
-                if (dbProduct?.QuantityPerBox is { } perBox &&
+                if (productTableItem.DbReference?.QuantityPerBox is { } perBox &&
                     MinAvgTurnoverForAdditionByBox > 0.0 &&
                     productTableItem.AverageTurnover >= MinAvgTurnoverForAdditionByBox)
                 {

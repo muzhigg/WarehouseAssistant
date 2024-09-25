@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using WarehouseAssistant.Data.Models;
+using WarehouseAssistant.Shared.Models.Db;
 
 namespace WarehouseAssistant.Data.Repositories
 {

@@ -2,8 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
-using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.Shared.Models.Db;
 
 namespace WarehouseAssistant.WebUI
 {

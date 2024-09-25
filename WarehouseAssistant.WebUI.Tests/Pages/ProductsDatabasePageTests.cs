@@ -9,8 +9,8 @@ using FluentAssertions.BUnit;
 using Moq;
 using MudBlazor;
 using MudBlazor.Services;
-using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Dialogs;
 using WarehouseAssistant.WebUI.Pages;
 

@@ -1,8 +1,8 @@
 ﻿@page "/"
 @using System.Diagnostics
 @using Blazored.LocalStorage
-@using WarehouseAssistant.Data.Models
 @using WarehouseAssistant.Data.Repositories
+@using WarehouseAssistant.Shared.Models.Db
 
 @code {
 	[Inject] private ILocalStorageService LocalStorage      { get; set; } = null!;

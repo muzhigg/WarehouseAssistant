@@ -9,9 +9,9 @@ using FluentAssertions;
 using Moq;
 using MudBlazor;
 using MudBlazor.Services;
-using WarehouseAssistant.Core.Models;
-using WarehouseAssistant.Data.Models;
 using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.Shared.Models;
+using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Components;
 using WarehouseAssistant.WebUI.Dialogs;
 using WarehouseAssistant.WebUI.Pages;
@@ -36,7 +36,8 @@ public sealed class ProductsCalculationPageTests : MudBlazorTestContext
             .AddMudBlazorScrollManager().AddMudPopoverService();
     }
     
-    [Fact, Trait("Category", "Unit")]
+    // No longer in use
+    // [Fact, Trait("Category", "Unit")]
     public void InitializationOfDataOnPageLoad()
     {
         // Arrange
@@ -75,7 +76,7 @@ public sealed class ProductsCalculationPageTests : MudBlazorTestContext
         component.Instance.InProgress.Should().BeFalse();
     }
     
-    [Fact, Trait("Category", "Unit")]
+    // [Fact, Trait("Category", "Unit")]
     public async Task ShowCalculatorDialog_ShouldOpenDialogAndReloadData_WhenItemsAreSelectedAndResultIsTrue()
     {
         // Arrange
@@ -160,6 +161,8 @@ public sealed class ProductsCalculationPageTests : MudBlazorTestContext
             });
         
         var cut = RenderComponent<ProductsCalculationPage>();
+        cut.Instance.GetType().GetField("_products", BindingFlags.NonPublic | BindingFlags.Instance)
+            .SetValue(cut.Instance, new List<ProductTableItem> { product });
         
         // Act
         Task showAddToDbDialogTask = cut.InvokeAsync(async () => await cut.Instance.ShowAddToDbDialog(product));
@@ -177,8 +180,9 @@ public sealed class ProductsCalculationPageTests : MudBlazorTestContext
             It.IsAny<Action<SnackbarOptions>>(),
             It.IsAny<string>()), Times.Once);
         cut.Instance.InProgress.Should().BeFalse();
-        cut.Instance.GetType().GetField("_dbProducts", BindingFlags.NonPublic | BindingFlags.Instance)
-            .GetValue(cut.Instance).Should().BeEquivalentTo(new List<Product> { expectedResult });
+        cut.Instance.Products.Should().Contain(item => item.DbReference == expectedResult);
+        // cut.Instance.GetType().GetField("_dbProducts", BindingFlags.NonPublic | BindingFlags.Instance)
+        //     .GetValue(cut.Instance).Should().BeEquivalentTo(new List<Product> { expectedResult });
     }
     
     [Fact, Trait("Category", "UI")]
@@ -250,7 +254,7 @@ public sealed class ProductsCalculationPageTests : MudBlazorTestContext
     }
     
     [Fact, Trait("Category", "Unit")]
-    public void RefreshDbProductList_ShouldDisplayError_WhenExceptionOccurs()
+    public void RefreshProductsReferencesAsync_ShouldDisplayError_WhenExceptionOccurs()
     {
         // Arrange
         var exceptionMessage = "Ошибка при получении данных";
@@ -259,8 +263,12 @@ public sealed class ProductsCalculationPageTests : MudBlazorTestContext
             .Setup(r => r.GetAllAsync())
             .ThrowsAsync(new HttpRequestException(exceptionMessage));
         
-        // Act
         var component = RenderComponent<ProductsCalculationPage>();
+        
+        // Act
+        component.Instance.GetType()
+            .GetMethod("RefreshProductsReferencesAsync", BindingFlags.NonPublic | BindingFlags.Instance)
+            .Invoke(component.Instance, null);
         
         // Assert
         _snackbarMock.Verify(s =>

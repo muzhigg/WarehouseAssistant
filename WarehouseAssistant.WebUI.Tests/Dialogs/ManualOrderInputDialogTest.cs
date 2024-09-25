@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Moq;
 using MudBlazor;
 using MudBlazor.Services;
-using WarehouseAssistant.Core.Calculation;
+using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.WebUI.Dialogs;
 
 namespace WarehouseAssistant.WebUI.Tests.Dialogs;
