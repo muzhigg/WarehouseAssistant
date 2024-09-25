@@ -38,10 +38,12 @@ public partial class ProductsCalculationPage : ComponentBase
     internal IReadOnlyCollection<ProductTableItem> Products => _products.ToList().AsReadOnly();
 #endif
     
-    private DataGrid<ProductTableItem>?   _dataGrid;
-    private IEnumerable<ProductTableItem> _products     = new List<ProductTableItem>();
-    private string                        _searchString = "";
-    private bool                          _inProgress;
+    private DataGrid<ProductTableItem>? _dataGrid;
+    private List<ProductTableItem>      _products     = new List<ProductTableItem>();
+    private string                      _searchString = "";
+    private bool                        _inProgress;
+    
+    private ProductBoxesCounter _productBoxesCounter;
     
     private async Task RefreshProductsReferencesAsync()
     {
@@ -67,6 +69,13 @@ public partial class ProductsCalculationPage : ComponentBase
                arg.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
     }
     
+    private async Task OnAddToDbDialogButtonClick(ProductTableItem contextItem)
+    {
+        await ShowAddToDbDialog(contextItem);
+        _productBoxesCounter.CountBoxes(_products);
+        _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
+    }
+    
     internal async Task ShowAddToDbDialog(ProductTableItem contextItem)
     {
         InProgress = true;
@@ -82,7 +91,13 @@ public partial class ProductsCalculationPage : ComponentBase
         InProgress = false;
     }
     
-    public async Task ShowFileUploadDialogAsync()
+    private async Task OnFileUploadButtonClick()
+    {
+        await ShowFileUploadDialogAsync();
+        _productBoxesCounter.CountBoxes(_products);
+    }
+    
+    internal async Task ShowFileUploadDialogAsync()
     {
         InProgress = true;
         
@@ -102,11 +117,18 @@ public partial class ProductsCalculationPage : ComponentBase
             await DialogService.ShowAsync<WorksheetUploadDialog<ProductTableItem>>("Загрузка файла", parameters);
         DialogResult result = await dialog.Result;
         
-        if (!result.Canceled) _products = (IEnumerable<ProductTableItem>)result.Data;
+        if (!result.Canceled) _products = (List<ProductTableItem>)result.Data;
         
         await RefreshProductsReferencesAsync();
         
         InProgress = false;
+    }
+    
+    private async Task OnCalculateButtonClick()
+    {
+        await ShowCalculatorDialog();
+        _productBoxesCounter.CountBoxes(_products);
+        _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
     }
     
     public async Task ShowCalculatorDialog()
@@ -146,5 +168,24 @@ public partial class ProductsCalculationPage : ComponentBase
         DialogResult result = await dialog.Result;
         
         InProgress = false;
+    }
+    
+    private void OnCommittedItemChanged(ProductTableItem obj)
+    {
+        Debug.WriteLine("OnCommittedItemChanged");
+        _productBoxesCounter.CountBoxes(_products);
+        _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
+    }
+    
+    private void OnSelectedItemsChanged(HashSet<ProductTableItem> obj)
+    {
+        _productBoxesCounter.CountSelectedBoxes(obj);
+    }
+    
+    private void OnCanceledEditingItem(ProductTableItem obj)
+    {
+        Debug.WriteLine("OnCanceledEditingItem");
+        _productBoxesCounter.CountBoxes(_products);
+        _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
     }
 }

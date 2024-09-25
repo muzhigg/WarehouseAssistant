@@ -8,16 +8,17 @@
           Height="80vh" ColumnResizeMode="ResizeMode.Column" ShowColumnOptions="false" Filterable="true"
           QuickFilter="@ShouldDisplayProduct" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
           MultiSelection="true" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick"
-          ReadOnly="false" RowClass="product-row">
+          ReadOnly="false" RowClass="product-row" CommittedItemChanges="@OnCommittedItemChanged"
+          CanceledEditingItem="@OnCanceledEditingItem" SelectedItemsChanged="@OnSelectedItemsChanged">
 	<ToolBarContent>
 		<MudButton id="open-upload-table-dialog-button" hidden="@_products.Any()" Disabled="InProgress"
-		           Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowFileUploadDialogAsync"
+		           Variant="Variant.Filled" Color="Color.Primary" OnClick="OnFileUploadButtonClick"
 		           StartIcon="@Icons.Material.Filled.TableView">
 			Загрузить таблицу
 		</MudButton>
 		<MudButton id="open-calculator-dialog-button" hidden="@(!_products.Any())"
 		           Disabled="@(InProgress || SelectedProductCount == 0)" Variant="Variant.Filled" Color="Color.Primary"
-		           OnClick="ShowCalculatorDialog" StartIcon="@Icons.Material.Filled.Calculate">
+		           OnClick="OnCalculateButtonClick" StartIcon="@Icons.Material.Filled.Calculate">
 			Рассчитать выбранные
 		</MudButton>
 		<MudButton id="export-table-button" hidden="@(!_products.Any())"
@@ -59,7 +60,10 @@
 				@if (context.Item.DbReference == null)
 				{
 					<MudText>Товар не найден в базе данных</MudText>
-					<MudButton Variant="Variant.Filled" OnClick="() => ShowAddToDbDialog(context.Item)">Добавить в БД</MudButton>
+					<MudButton Variant="Variant.Filled" OnClick="() => OnAddToDbDialogButtonClick(context.Item)">
+						Добавить в
+						БД
+					</MudButton>
 				}
 				else
 				{
@@ -75,6 +79,7 @@
 
 	</ChildRowContent>
 	<PagerContent>
+		<ProductBoxesCounter @ref="_productBoxesCounter"/>
 		<MudDataGridPager id="product-pager" Disabled="InProgress" T="ProductTableItem" PageSizeOptions="new[] { 10, 25, 50, 100 }" RowsPerPageString="Количество на странице"/>
 	</PagerContent>
 </DataGrid>
