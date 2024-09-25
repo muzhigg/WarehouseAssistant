@@ -1,4 +1,5 @@
 ﻿using MiniExcelLibs.Attributes;
+using WarehouseAssistant.Shared.Models.Db;
 
 namespace WarehouseAssistant.Shared.Models;
 
@@ -61,6 +62,8 @@ public sealed class ProductTableItem : ICalculatedTableItem
     }
     
     [ExcelColumn(Ignore = true)] public int MaxCanBeOrdered => (int)Math.Floor(AvailableQuantity * 0.07);
+    
+    [ExcelColumn(Ignore = true)] public Product? DbReference { get; set; }
     
     public bool HasValidName()
     {

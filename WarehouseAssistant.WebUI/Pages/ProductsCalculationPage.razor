@@ -8,16 +8,17 @@
           Height="80vh" ColumnResizeMode="ResizeMode.Column" ShowColumnOptions="false" Filterable="true"
           QuickFilter="@ShouldDisplayProduct" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
           MultiSelection="true" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick"
-          ReadOnly="false" RowClass="product-row">
+          ReadOnly="false" RowClass="product-row" CanceledEditingItem="@OnCanceledEditingItem"
+          SelectedItemsChanged="@OnSelectedItemsChanged">
 	<ToolBarContent>
 		<MudButton id="open-upload-table-dialog-button" hidden="@_products.Any()" Disabled="InProgress"
-		           Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowFileUploadDialogAsync"
+		           Variant="Variant.Filled" Color="Color.Primary" OnClick="OnFileUploadButtonClick"
 		           StartIcon="@Icons.Material.Filled.TableView">
 			Загрузить таблицу
 		</MudButton>
 		<MudButton id="open-calculator-dialog-button" hidden="@(!_products.Any())"
 		           Disabled="@(InProgress || SelectedProductCount == 0)" Variant="Variant.Filled" Color="Color.Primary"
-		           OnClick="ShowCalculatorDialog" StartIcon="@Icons.Material.Filled.Calculate">
+		           OnClick="OnCalculateButtonClick" StartIcon="@Icons.Material.Filled.Calculate">
 			Рассчитать выбранные
 		</MudButton>
 		<MudButton id="export-table-button" hidden="@(!_products.Any())"
@@ -25,6 +26,7 @@
 		           OnClick="ExportTable" StartIcon="@Icons.Material.Filled.ImportExport">
 		</MudButton>
 		<MudSpacer/>
+		<ProductBoxesCounter @ref="_productBoxesCounter"/>
 		<MudTextField T="string" Disabled="InProgress" @bind-Value="_searchString" Placeholder="Search"
 		              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
 		              Class="mt-0" id="search-product-field">
@@ -42,7 +44,8 @@
 		<PropertyColumn Property="x => x.OrderCalculation" Title="Рекомендованное количество" Resizable="false" IsEditable="false"/>
 		<PropertyColumn CellClass="quantity-to-order-cell" Filterable="false" IsEditable="true" Property="x => x.QuantityToOrder" Resizable="false" Title="Количество для заказа">
 			<EditTemplate>
-				<MudNumericField @bind-Value="context.Item.QuantityToOrder" id="quantity-to-order-input" T="int"
+				<MudNumericField Value="@context.Item.QuantityToOrder" ValueChanged="@(i => { context.Item.QuantityToOrder = i; context.Actions.CancelEditingItemAsync(); })"
+				                 id="quantity-to-order-input" T="int"
 				                 Min="0" Max="@context.Item.MaxCanBeOrdered" ErrorText="Недопустимое значение"/>
 			</EditTemplate>
 		</PropertyColumn>
@@ -56,14 +59,17 @@
 			</MudCardHeader>
 			<MudCardContent>
 				<MudText>@($"В наличии на БГЛЦ: {context.Item.AvailableQuantity}. Максимально доступно для заказа: {Math.Ceiling(context.Item.AvailableQuantity * 0.07)}")</MudText>
-				@if (_dbProducts == null || !_dbProducts.Exists(product => product.Article == context.Item.Article))
+				@if (context.Item.DbReference == null)
 				{
 					<MudText>Товар не найден в базе данных</MudText>
-					<MudButton Variant="Variant.Filled" OnClick="() => ShowAddToDbDialog(context.Item)">Добавить в БД</MudButton>
+					<MudButton Variant="Variant.Filled" OnClick="() => OnAddToDbDialogButtonClick(context.Item)">
+						Добавить в
+						БД
+					</MudButton>
 				}
 				else
 				{
-					Product dbItem = _dbProducts.Find(product => product.Article == context.Item.Article)!;
+					Product dbItem = context.Item.DbReference;
 					<MudText>@dbItem.Name</MudText>
 					<MudText>@("Артикул: " + dbItem.Article)</MudText>
 					<MudText>@("Штрих-код: " + @dbItem.Barcode)</MudText>
