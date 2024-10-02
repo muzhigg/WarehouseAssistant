@@ -1,6 +1,6 @@
-﻿namespace WarehouseAssistant.Core.Calculation;
+namespace WarehouseAssistant.Core.Calculation;
 
-public class CalculationOptions
+public class DaysBasedCalculationOptions : ICalculationOptions
 {
     public int  DaysCount               { get; set; }
     public bool ConsiderCurrentQuantity { get; set; }

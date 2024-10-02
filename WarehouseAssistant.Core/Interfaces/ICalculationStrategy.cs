@@ -2,7 +2,9 @@
 
 namespace WarehouseAssistant.Core.Calculation;
 
-public interface ICalculationStrategy<in T> where T : ICalculatedTableItem
+public interface ICalculationStrategy<in TCalculatedTableItem, in TCalculationOptions>
+    where TCalculatedTableItem : ICalculatedTableItem
+    where TCalculationOptions : ICalculationOptions
 {
-    int CalculateQuantity(T data, CalculationOptions options);
+    void CalculateQuantity(TCalculatedTableItem data, TCalculationOptions opt);
 }

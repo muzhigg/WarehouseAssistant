@@ -1,0 +1,73 @@
+@namespace WarehouseAssistant.WebUI.ProductOrder
+
+@using System.Text
+@using WarehouseAssistant.Shared.Models
+@using WarehouseAssistant.WebUI.Dialogs
+@inherits BaseProductCalculatorDialog<WarehouseAssistant.Core.Calculation.DaysBasedCalculationStrategy, WarehouseAssistant.Core.Calculation.DaysBasedCalculationOptions>
+
+@{
+	base.BuildRenderTree(__builder);
+}
+
+@code
+{
+	protected override RenderFragment ChildContent => (__builder) =>
+	{
+		<MudCheckBox T="bool" bind-Value="@Options.ConsiderCurrentQuantity"
+		             Label="Учитывать текущее количество"/>
+		<MudNumericField T="int" bind-Value="@Options.DaysCount" Label="На количество дней" Min="0"/>
+	};
+
+	protected override async Task CalculateQuantity(ProductTableItem productTableItem)
+	{
+		await base.CalculateQuantity(productTableItem);
+
+		if (productTableItem is { AverageTurnover: <= 0.0, AvailableQuantity: > 0 })
+		{
+			await ShowManualInputDialog(productTableItem);
+		}
+		else
+		{
+			Strategy.CalculateQuantity(productTableItem, Options);
+		}
+	}
+
+	private async Task ShowManualInputDialog(ProductTableItem product)
+	{
+		StringBuilder stringBuilder = GetTextForManualInput(product);
+
+		DialogParameters<ManualInputDialog<int>> parameters = new DialogParameters<ManualInputDialog<int>>
+		{
+			{ dialog => dialog.Text, stringBuilder.ToString() },
+			{ dialog => dialog.Min, 0 },
+			{ dialog => dialog.Max, product.MaxCanBeOrdered },
+			{ dialog => dialog.Value, product.QuantityToOrder }
+		};
+
+		IDialogReference dialog = DialogService.Show<ManualInputDialog<int>>("Введите количество", parameters);
+
+		DialogResult? result = await dialog.Result;
+
+		if (result.Canceled)
+		{
+			return;
+		}
+
+		product.QuantityToOrder = (int)result.Data;
+	}
+
+	private static StringBuilder GetTextForManualInput(ProductTableItem product)
+	{
+		StringBuilder stringBuilder =
+			new StringBuilder("Средняя оборачиваемость равна нулю. Требуется ручной ввод")
+				.AppendLine($"Товар: {product.Name}")
+				.AppendLine($"Артикул: {product.Article}");
+
+		if (product.DbReference != null)
+			stringBuilder.AppendLine($"Количество на коробку {product.DbReference.QuantityPerBox}")
+				.AppendLine($"Количество на полку {product.DbReference.QuantityPerBox}");
+
+		stringBuilder.AppendLine($"Максимальное количество: <b>{product.MaxCanBeOrdered}</b>");
+		return stringBuilder;
+	}
+}

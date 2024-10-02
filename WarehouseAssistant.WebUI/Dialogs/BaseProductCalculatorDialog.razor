@@ -1,0 +1,21 @@
+﻿@namespace WarehouseAssistant.WebUI.ProductOrder
+
+@inherits BaseProductCalculatorDialog
+@typeparam TStrategy where TStrategy : WarehouseAssistant.Core.Calculation.ICalculationStrategy<WarehouseAssistant.Shared.Models.ProductTableItem, TOptions>, new()
+	@typeparam TOptions where TOptions : class, WarehouseAssistant.Core.Calculation.ICalculationOptions, new()
+
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h6">Расчет заказа</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudCheckBox id="need-add-to-db-checkbox" T="bool" Label="Добавлять в БД?"
+		             @bind-Value="NeedAddToDb">
+		</MudCheckBox>
+		@ChildContent
+	</DialogContent>
+	<DialogActions>
+		<MudButton id="submit-calculation-button" Color="Color.Primary" OnClick="OnSubmit">Добавить</MudButton>
+		<MudButton Color="Color.Secondary" OnClick="OnCancel">Отмена</MudButton>
+	</DialogActions>
+</MudDialog>

@@ -3,6 +3,8 @@
 @using WarehouseAssistant.Shared.Models.Db
 @using WarehouseAssistant.WebUI.Components
 
+@namespace WarehouseAssistant.WebUI.ProductOrder
+
 <DataGrid T="ProductTableItem" Items="_products" LocalStorageKey="bglc_order" @ref="_dataGrid"
           LoadingProgressColor="Color.Primary" FixedHeader="true" Hover="true" Bordered="true" Striped="true"
           Height="80vh" ColumnResizeMode="ResizeMode.Column" ShowColumnOptions="false" Filterable="true"
@@ -16,11 +18,14 @@
 		           StartIcon="@Icons.Material.Filled.TableView">
 			Загрузить таблицу
 		</MudButton>
-		<MudButton id="open-calculator-dialog-button" hidden="@(!_products.Any())"
-		           Disabled="@(InProgress || SelectedProductCount == 0)" Variant="Variant.Filled" Color="Color.Primary"
-		           OnClick="OnCalculateButtonClick" StartIcon="@Icons.Material.Filled.Calculate">
-			Рассчитать выбранные
-		</MudButton>
+		<MudMenu hidden="@(!_products.Any())" Label="Рассчитать выбранные"
+		         Disabled="@(InProgress || SelectedProductCount == 0)" Variant="Variant.Filled" Color="Color.Primary"
+		         StartIcon="@Icons.Material.Filled.Calculate">
+			<MudMenuItem OnClick="OpenCalculationDialog<DaysBasedCalculatorDialog>">На количество дней</MudMenuItem>
+			<MudMenuItem OnClick="OpenCalculationDialog<IncrementByPercentageCalculatorDialog>">Увеличить в процентах</MudMenuItem>
+			<MudMenuItem OnClick="OpenCalculationDialog<QuantityPerBoxRoundDialog>">Округление в коробки</MudMenuItem>
+			<MudMenuItem OnClick="OpenCalculationDialog<ShelfQuantityAdjustmentCalculatorDialog>">Добавить до количества на полке</MudMenuItem>
+		</MudMenu>
 		<MudButton id="export-table-button" hidden="@(!_products.Any())"
 		           Disabled="@(InProgress || SelectedProductCount == 0)" Variant="Variant.Filled" Color="Color.Primary"
 		           OnClick="ExportTable" StartIcon="@Icons.Material.Filled.ImportExport">

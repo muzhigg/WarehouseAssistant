@@ -1,4 +1,4 @@
-﻿@typeparam TCalculatedItem where TCalculatedItem : class, WarehouseAssistant.Shared.Models.ICalculatedTableItem
+﻿@typeparam T where T : System.Numerics.IMinMaxValue<T>, IEquatable<T>
 
 <MudDialog IsVisible="true" Class="manual-order-input-dialog">
 	<TitleContent>
@@ -6,13 +6,12 @@
 	</TitleContent>
 	<DialogContent>
 		<MudText Class="manual-order-input-text">@Text</MudText>
-		@AdditionalRenderFragment
-		<MudNumericField Class="manual-input-value-field" T="int" @bind-Value="Value" Label="Введите количество вручную"
-		                 Min="0" Max="@Item.MaxCanBeOrdered" Required="true"
+		<MudNumericField Class="manual-input-value-field" T="T" @bind-Value="Value" Label="Введите количество вручную"
+		                 Min="@Min" Max="@Max" Required="true"
 		                 ErrorText="Должно быть положительное число"/>
 	</DialogContent>
 	<DialogActions>
-		<MudButton Disabled="@(Value == 0)" Class="manual-input-submit" Color="Color.Primary"
+		<MudButton Class="manual-input-submit" Color="Color.Primary"
 		           OnClick="ManualInputSubmit">
 			Добавить
 		</MudButton>

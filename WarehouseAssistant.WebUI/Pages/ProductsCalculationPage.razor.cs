@@ -12,7 +12,7 @@ using WarehouseAssistant.WebUI.Dialogs;
 
 [assembly: InternalsVisibleTo("WarehouseAssistant.WebUI.Tests")]
 
-namespace WarehouseAssistant.WebUI.Pages;
+namespace WarehouseAssistant.WebUI.ProductOrder;
 
 [UsedImplicitly]
 public partial class ProductsCalculationPage : ComponentBase
@@ -124,31 +124,31 @@ public partial class ProductsCalculationPage : ComponentBase
         InProgress = false;
     }
     
-    private async Task OnCalculateButtonClick()
-    {
-        await ShowCalculatorDialog();
-        _productBoxesCounter.CountBoxes(_products);
-        _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
-    }
+    // private async Task OnCalculateButtonClick()
+    // {
+    //     await ShowCalculatorDialog();
+    //     _productBoxesCounter.CountBoxes(_products);
+    //     _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
+    // }
     
-    public async Task ShowCalculatorDialog()
-    {
-        if (_dataGrid!.SelectedItems.Count == 0)
-        {
-            Snackbar.Add("Не выбрано ни одного элемента", Severity.Error);
-            return;
-        }
-        
-        InProgress = true;
-        
-        DialogParameters<ProductCalculatorDialog> parameters = [];
-        parameters.Add(dialog => dialog.ProductTableItems, _dataGrid.SelectedItems);
-        
-        IDialogReference dialog = await DialogService.ShowAsync<ProductCalculatorDialog>("Расчет заказа", parameters);
-        DialogResult     result = await dialog.Result;
-        
-        InProgress = false;
-    }
+    // public async Task ShowCalculatorDialog()
+    // {
+    //     if (_dataGrid!.SelectedItems.Count == 0)
+    //     {
+    //         Snackbar.Add("Не выбрано ни одного элемента", Severity.Error);
+    //         return;
+    //     }
+    //     
+    //     InProgress = true;
+    //     
+    //     DialogParameters<BaseProductCalculatorDialog<DaysBasedCalculationStrategy, DaysBasedCalculationOptions>> parameters = [];
+    //     parameters.Add(dialog => dialog.ProductTableItems, _dataGrid.SelectedItems);
+    //     
+    //     IDialogReference dialog = await DialogService.ShowAsync<BaseProductCalculatorDialog<DaysBasedCalculationStrategy, DaysBasedCalculationOptions>>("Расчет заказа", parameters);
+    //     DialogResult     result = await dialog.Result;
+    //     
+    //     InProgress = false;
+    // }
     
     private async Task ExportTable()
     {
@@ -165,7 +165,7 @@ public partial class ProductsCalculationPage : ComponentBase
         
         IDialogReference dialog =
             await DialogService.ShowAsync<ProductOrderExportDialog>("Экспорт заказов", parameters);
-        DialogResult result = await dialog.Result;
+        await dialog.Result;
         
         InProgress = false;
     }
@@ -178,6 +178,29 @@ public partial class ProductsCalculationPage : ComponentBase
     private void OnCanceledEditingItem(ProductTableItem obj)
     {
         Debug.WriteLine("OnCanceledEditingItem");
+        _productBoxesCounter.CountBoxes(_products);
+        _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
+    }
+    
+    private async Task OpenCalculationDialog<TDialog>()
+        where TDialog : BaseProductCalculatorDialog
+    {
+        if (_dataGrid!.SelectedItems.Count == 0)
+        {
+            Snackbar.Add("Не выбрано ни одного элемента", Severity.Error);
+            return;
+        }
+        
+        InProgress = true;
+        
+        DialogParameters<TDialog> parameters = [];
+        parameters.Add(dialog => dialog.ProductTableItems, _dataGrid!.SelectedItems);
+        
+        IDialogReference dialog = await DialogService.ShowAsync<TDialog>("dsa", parameters);
+        await dialog.Result;
+        
+        InProgress = false;
+        
         _productBoxesCounter.CountBoxes(_products);
         _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
     }

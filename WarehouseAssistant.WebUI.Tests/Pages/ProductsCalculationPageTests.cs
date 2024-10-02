@@ -14,7 +14,7 @@ using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Components;
 using WarehouseAssistant.WebUI.Dialogs;
-using WarehouseAssistant.WebUI.Pages;
+using WarehouseAssistant.WebUI.ProductOrder;
 
 namespace WarehouseAssistant.WebUI.Tests.Pages;
 
@@ -73,74 +73,6 @@ public sealed class ProductsCalculationPageTests : MudBlazorTestContext
         await showFileUploadDialogTask;
         component.Instance.Products.Should().BeEquivalentTo(expectedProducts);
         _repositoryMock.Verify(r => r.GetAllAsync(), Times.Once);
-        component.Instance.InProgress.Should().BeFalse();
-    }
-    
-    // [Fact, Trait("Category", "Unit")]
-    public async Task ShowCalculatorDialog_ShouldOpenDialogAndReloadData_WhenItemsAreSelectedAndResultIsTrue()
-    {
-        // Arrange
-        var selectedItems = new List<ProductTableItem>
-        {
-            new ProductTableItem { Article = "123", Name = "Product 1" },
-            new ProductTableItem { Article = "456", Name = "Product 2" }
-        };
-        
-        var dialogResult = DialogResult.Ok(true);
-        
-        _dialogServiceMock
-            .Setup(ds => ds.ShowAsync<ProductCalculatorDialog>(It.IsAny<string>(), It.IsAny<DialogParameters>()))
-            .Returns(async () =>
-            {
-                await Task.Delay(1000);
-                
-                return Mock.Of<IDialogReference>(dr => dr.Result == Task.FromResult(dialogResult));
-            });
-        
-        ComponentFactories.Add<DataGrid<ProductTableItem>>(
-            Mock.Of<DataGrid<ProductTableItem>>(dg => dg.SelectedItems == selectedItems.ToHashSet()));
-        
-        IRenderedComponent<ProductsCalculationPage> component = RenderComponent<ProductsCalculationPage>();
-        
-        // Act
-        Task showCalculatorDialogTask =
-            component.InvokeAsync(async () => await component.Instance.ShowCalculatorDialog());
-        
-        // Assert
-        component.Instance.InProgress.Should().BeTrue();
-        await showCalculatorDialogTask;
-        _snackbarMock.Verify(snackbar => snackbar.Add("Не выбрано ни одного элемента",
-            It.IsAny<Severity>(),
-            It.IsAny<Action<SnackbarOptions>>(),
-            It.IsAny<string>()), Times.Never);
-        _dialogServiceMock.Verify(ds => ds.ShowAsync<ProductCalculatorDialog>(
-            "Расчет заказа",
-            It.Is<DialogParameters>(p =>
-                p.Get<IEnumerable<ProductTableItem>>("ProductTableItems").SequenceEqual(selectedItems))
-        ), Times.Once);
-        
-        _repositoryMock.Verify(r => r.GetAllAsync(), Times.Exactly(2));
-        component.Instance.InProgress.Should().BeFalse();
-    }
-    
-    [Fact, Trait("Category", "Unit")]
-    public async Task ShowCalculatorDialog_ShouldShowError_WhenNoItemsAreSelected()
-    {
-        // Arrange
-        ComponentFactories.Add<DataGrid<ProductTableItem>>(
-            Mock.Of<DataGrid<ProductTableItem>>(dg => dg.SelectedItems == new HashSet<ProductTableItem>()));
-        
-        IRenderedComponent<ProductsCalculationPage> component = RenderComponent<ProductsCalculationPage>();
-        
-        // Act
-        await component.Instance.ShowCalculatorDialog();
-        
-        // Assert
-        _snackbarMock.Verify(sb => sb.Add("Не выбрано ни одного элемента",
-                Severity.Error,
-                It.IsAny<Action<SnackbarOptions>>(),
-                It.IsAny<string>()),
-            Times.Once);
         component.Instance.InProgress.Should().BeFalse();
     }
     
@@ -323,8 +255,8 @@ public sealed class ProductsCalculationPageTests : MudBlazorTestContext
             .NotBeNull("Table should be in loading state while InProgress is true");
         component.Find("#open-upload-table-dialog-button").HasAttribute("disabled")
             .Should().BeTrue("Button should be disabled while InProgress is true");
-        component.Find("#open-calculator-dialog-button").HasAttribute("disabled")
-            .Should().BeTrue("Button should be disabled while InProgress is true");
+        // component.Find("#open-calculator-dialog-button").HasAttribute("disabled")
+        //     .Should().BeTrue("Button should be disabled while InProgress is true");
         component.Find("#search-product-field").HasAttribute("disabled")
             .Should().BeTrue("Search field should be disabled while InProgress is true");
     }
@@ -359,8 +291,8 @@ public sealed class ProductsCalculationPageTests : MudBlazorTestContext
         Assert.Throws<ElementNotFoundException>(() => component.Find(".mud-table-loading"));
         component.Find("#open-upload-table-dialog-button").HasAttribute("disabled")
             .Should().BeFalse("Button should be enabled while InProgress is false");
-        component.Find("#open-calculator-dialog-button").HasAttribute("disabled")
-            .Should().BeFalse("Button should be enabled while InProgress is false");
+        // component.Find("#open-calculator-dialog-button").HasAttribute("disabled")
+        //     .Should().BeFalse("Button should be enabled while InProgress is false");
         component.Find("#search-product-field").HasAttribute("disabled")
             .Should().BeFalse("Search field should be enabled while InProgress is false");
     }

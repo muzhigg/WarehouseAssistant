@@ -1,0 +1,61 @@
+@namespace WarehouseAssistant.WebUI.ProductOrder
+
+@using System.Text
+@using WarehouseAssistant.Data.Repositories
+@using WarehouseAssistant.Shared.Models
+@using WarehouseAssistant.Shared.Models.Db
+@using WarehouseAssistant.WebUI.Dialogs
+@inherits BaseProductCalculatorDialog<WarehouseAssistant.Core.Calculation.QuantityPerBoxRoundingStrategy, WarehouseAssistant.Core.Calculation.CalculationOptions>
+
+@{
+	base.BuildRenderTree(__builder);
+}
+
+@code
+{
+	[Inject] public IRepository<Product> ProductRepository { get; set; } = null!;
+
+	protected override async Task CalculateQuantity(ProductTableItem productTableItem)
+	{
+		await base.CalculateQuantity(productTableItem);
+
+		if (productTableItem.DbReference == null)
+			return;
+
+		if (productTableItem.DbReference.QuantityPerBox is null or <= 0)
+		{
+			if (await ShowManualInput(productTableItem) == false) return;
+		}
+
+		Strategy.CalculateQuantity(productTableItem, Options);
+	}
+
+	private async Task<bool> ShowManualInput(ProductTableItem productTableItem)
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.AppendLine("Необходимо ввести количество единиц товара в коробке.")
+			.AppendLine($"<b>Название:</b> {productTableItem.Name}")
+			.AppendLine($"<b>Артикул:</b> {productTableItem.Article}");
+
+		DialogParameters<ManualInputDialog<int>> parameters = new DialogParameters<ManualInputDialog<int>>
+		{
+			{ dialog => dialog.Text, sb.ToString() },
+			{ dialog => dialog.Min, 0 },
+			{ dialog => dialog.Max, int.MaxValue }
+		};
+
+		var dialog = DialogService.Show<ManualInputDialog<int>>("Введите количество", parameters);
+
+		var result = await dialog.Result;
+
+		if (result.Canceled)
+		{
+			return false;
+		}
+
+		productTableItem.DbReference!.QuantityPerBox = (int)result.Data;
+
+		await ProductRepository.UpdateAsync(productTableItem.DbReference);
+		return true;
+	}
+}
