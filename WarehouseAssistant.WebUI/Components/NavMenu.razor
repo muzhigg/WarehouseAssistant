@@ -1,25 +1,31 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
 @inject NavigationManager Navigation
 <MudNavMenu>
-    <MudNavLink OnClick="@(() => Goto(""))" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">Главная</MudNavLink>
-    <MudNavGroup Title="Расчет заказа" Icon="@Icons.Material.Filled.Calculate">
-        <MudNavLink OnClick="@(() => Goto("order/products"))" >БГЛЦ</MudNavLink>
-        <MudNavLink OnClick="@(() => Goto("order/marketingmaterials"))" >ММ</MudNavLink>
-    </MudNavGroup>
-    <MudNavLink OnClick="@(() => Goto("reception"))" Icon="@Icons.Material.Filled.ShoppingCart">Прием товара</MudNavLink>
-    <MudNavLink OnClick="@(() => Goto("print-tips"))" Icon="@Icons.Material.Filled.Print">Печать подсказок</MudNavLink>
-    <MudNavGroup Title="База данных" Icon="@Icons.Material.Filled.Storage">
-        <MudNavLink OnClick="@(() => Goto("database/products"))" >Товары</MudNavLink>
-        <MudNavLink OnClick="@(() => Goto("database/mms"))" >Маркетинговые материалы</MudNavLink>
-    </MudNavGroup>
+	<MudNavLink OnClick="@(() => Goto(""))" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">
+		Главная
+	</MudNavLink>
+	<MudNavGroup Title="Расчет заказа" Icon="@Icons.Material.Filled.Calculate">
+		<MudNavLink OnClick="@(() => Goto("order/products"))">БГЛЦ</MudNavLink>
+		<MudNavLink OnClick="@(() => Goto("order/marketingmaterials"))">ММ</MudNavLink>
+	</MudNavGroup>
+	<MudNavLink OnClick="@(() => Goto("reception"))" Icon="@Icons.Material.Filled.ShoppingCart">
+		Прием товара
+	</MudNavLink>
+	<MudNavLink OnClick="@(() => Goto("print-tips"))" Icon="@Icons.Material.Filled.Print">Печать подсказок</MudNavLink>
+	<MudNavGroup Title="База данных" Icon="@Icons.Material.Filled.Storage">
+		<MudNavLink OnClick="@(() => Goto("database/products"))">Товары</MudNavLink>
+		<MudNavLink OnClick="@(() => Goto("database/mms"))">Маркетинговые материалы</MudNavLink>
+	</MudNavGroup>
+	<MudNavLink OnClick="@(() => Goto("analysis/averageconsumption"))">Рассчитать средний расход</MudNavLink>
 </MudNavMenu>
 
 @code {
-    [Parameter] public Action? OnClick { get; set; }
+	[Parameter] public Action? OnClick { get; set; }
 
-    private void Goto(string uri)
-    {
-        Navigation.NavigateTo(uri);
-        OnClick?.Invoke();
-    }
+	private void Goto(string uri)
+	{
+		Navigation.NavigateTo(uri);
+		OnClick?.Invoke();
+	}
+
 }

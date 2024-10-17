@@ -47,21 +47,21 @@ public partial class BaseProductCalculatorDialog<TStrategy, TOptions> : BaseProd
     private async Task OnSubmit(MouseEventArgs obj)
     {
         await CalculateProducts();
+        await LocalStorage.SetItemAsync($"{typeof(TStrategy).Name}_{typeof(TOptions).Name}_calc_opt", Options);
         MudDialog.Close();
     }
     
-    internal async Task CalculateProducts()
+    private async Task CalculateProducts()
     {
         if (ProductTableItems != null)
             foreach (ProductTableItem productTableItem in ProductTableItems)
                 await CalculateQuantity(productTableItem);
     }
     
-    protected virtual async Task CalculateQuantity(ProductTableItem productTableItem)
+    internal virtual async Task CalculateQuantity(ProductTableItem productTableItem)
     {
         if (NeedAddToDb && productTableItem.DbReference == null)
-            productTableItem.DbReference =
-                await ProductFormDialog.ShowAddDialogAsync(productTableItem, DialogService);
+            await ProductFormDialog.ShowAddDialogAsync(productTableItem, DialogService);
     }
     
     private void OnCancel(MouseEventArgs obj)

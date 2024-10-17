@@ -104,7 +104,7 @@ public partial class ProductsDatabasePage : ComponentBase
     private async Task ShowAddProductDialog()
     {
         InProgress = true;
-        Product? product = await ProductFormDialog.ShowAddDialogAsync(new Product(), DialogService);
+        Product? product = await ProductFormDialog.ShowAddDialogAsync(DialogService);
         if (product != null)
             _products.Add(product);
         

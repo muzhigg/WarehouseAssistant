@@ -1,5 +1,4 @@
 @namespace WarehouseAssistant.WebUI.ProductOrder
-
 @using System.Text
 @using WarehouseAssistant.Data.Repositories
 @using WarehouseAssistant.Shared.Models
@@ -15,20 +14,27 @@
 {
 	protected override RenderFragment ChildContent => (__builder) =>
 	{
-		<MudCheckBox T="bool" bind-Value="@Options.ConsiderCurrentQuantity"
+		<MudCheckBox id="consider-current-quantity" T="bool" @bind-Value="@Options.ConsiderCurrentQuantity"
 		             Label="Учитывать текущее количество"/>
 	};
 
-	protected override async Task CalculateQuantity(ProductTableItem productTableItem)
+	internal override async Task CalculateQuantity(ProductTableItem productTableItem)
 	{
 		await base.CalculateQuantity(productTableItem);
 
 		if (productTableItem.DbReference == null)
+		{
+			Snackbar.Add($"Не удалось найти товар {productTableItem.Name} в базе данных", Severity.Error);
 			return;
+		}
 
 		if (productTableItem.DbReference.QuantityPerShelf is null or 0)
 		{
-			if (await ShowManualInput(productTableItem) == false) return;
+			if (await ShowManualInput(productTableItem) == false)
+			{
+				Snackbar.Add($"Не удалось найти количество на полке для товара {productTableItem.Name}", Severity.Error);
+				return;
+			}
 		}
 
 		Strategy.CalculateQuantity(productTableItem, Options);
@@ -48,7 +54,7 @@
 			{ dialog => dialog.Min, 0 },
 		};
 
-		var dialog = DialogService.Show<ManualInputDialog<int>>(
+		var dialog = await DialogService.ShowAsync<ManualInputDialog<int>>(
 			"Введите количество на полке",
 			parameters);
 

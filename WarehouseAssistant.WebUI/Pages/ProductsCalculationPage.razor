@@ -3,73 +3,119 @@
 @using WarehouseAssistant.Shared.Models.Db
 @using WarehouseAssistant.WebUI.Components
 
+@code {
+
+	private string QuantityToOrderCellStyleFunc(ProductTableItem arg)
+	{
+		string style = "";
+
+		if (arg.QuantityToOrder > 0)
+		{
+			style += "background-color:var(--mud-palette-success);";
+			style += "color:var(--mud-palette-success-text);";
+		}
+
+		return style;
+	}
+
+	private string RowStyleFunc(ProductTableItem arg1, int arg2)
+	{
+		string style = "";
+
+		if (arg1.QuantityToOrder == arg1.MaxCanBeOrdered && arg1.QuantityToOrder != arg1.AvailableQuantity)
+		{
+			style += "background-color:var(--mud-palette-warning);";
+			style += "color:var(--mud-palette-warning-text);";
+		}
+
+		return style;
+	}
+
+}
+
 @namespace WarehouseAssistant.WebUI.ProductOrder
 
-<DataGrid T="ProductTableItem" Items="_products" LocalStorageKey="bglc_order" @ref="_dataGrid"
-          LoadingProgressColor="Color.Primary" FixedHeader="true" Hover="true" Bordered="true" Striped="true"
-          Height="80vh" ColumnResizeMode="ResizeMode.Column" ShowColumnOptions="false" Filterable="true"
-          QuickFilter="@ShouldDisplayProduct" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
-          MultiSelection="true" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick"
-          ReadOnly="false" RowClass="product-row" CanceledEditingItem="@OnCanceledEditingItem"
-          SelectedItemsChanged="@OnSelectedItemsChanged">
-	<ToolBarContent>
-		<MudButton id="open-upload-table-dialog-button" hidden="@_products.Any()" Disabled="InProgress"
-		           Variant="Variant.Filled" Color="Color.Primary" OnClick="OnFileUploadButtonClick"
-		           StartIcon="@Icons.Material.Filled.TableView">
-			Загрузить таблицу
-		</MudButton>
-		<MudMenu hidden="@(!_products.Any())" Label="Рассчитать выбранные"
-		         Disabled="@(InProgress || SelectedProductCount == 0)" Variant="Variant.Filled" Color="Color.Primary"
+<Table TItem="ProductTableItem" @ref="_table" RowStyleFunc="RowStyleFunc"
+       RowClass="product-row" TableImported="RefreshProductsReferencesAsync">
+
+	<ToolBarTemplate>
+		<MudMenu hidden="@(!context.Items?.Any())" Label="Рассчитать выбранные"
+		         Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Filled"
+		         Color="Color.Primary"
 		         StartIcon="@Icons.Material.Filled.Calculate">
 			<MudMenuItem OnClick="OpenCalculationDialog<DaysBasedCalculatorDialog>">На количество дней</MudMenuItem>
 			<MudMenuItem OnClick="OpenCalculationDialog<IncrementByPercentageCalculatorDialog>">Увеличить в процентах</MudMenuItem>
 			<MudMenuItem OnClick="OpenCalculationDialog<QuantityPerBoxRoundDialog>">Округление в коробки</MudMenuItem>
 			<MudMenuItem OnClick="OpenCalculationDialog<ShelfQuantityAdjustmentCalculatorDialog>">Добавить до количества на полке</MudMenuItem>
 		</MudMenu>
-		<MudButton id="export-table-button" hidden="@(!_products.Any())"
-		           Disabled="@(InProgress || SelectedProductCount == 0)" Variant="Variant.Filled" Color="Color.Primary"
-		           OnClick="ExportTable" StartIcon="@Icons.Material.Filled.ImportExport">
+		<MudButton id="export-table-button" hidden="@(!context.Items?.Any())"
+		           Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Filled"
+		           Color="Color.Primary"
+		           OnClick="OpenExportTableDialog" StartIcon="@Icons.Material.Filled.ImportExport">
 		</MudButton>
-		<MudSpacer/>
-		<ProductBoxesCounter @ref="_productBoxesCounter"/>
-		<MudTextField T="string" Disabled="InProgress" @bind-Value="_searchString" Placeholder="Search"
-		              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
-		              Class="mt-0" id="search-product-field">
-		</MudTextField>
-	</ToolBarContent>
-	<Columns>
+	</ToolBarTemplate>
+
+	<ColumnsTemplate>
 		<HierarchyColumn T="ProductTableItem"></HierarchyColumn>
 		<SelectColumn T="ProductTableItem"/>
-		<PropertyColumn Property="x => x.Name" Title="Название" Sortable="false" Resizable="false" IsEditable="false"/>
-		<PropertyColumn Property="x => x.Article" Title="Артикул" Sortable="false" Resizable="false" IsEditable="false"/>
-		<PropertyColumn Property="x => x.AvailableQuantity" Title="Доступное количество на БГЛЦ" Sortable="false" Resizable="false" IsEditable="false"/>
-		<PropertyColumn Property="x => x.CurrentQuantity" Title="Текущее количество в СПб" Sortable="false" Resizable="false" IsEditable="false"/>
-		<PropertyColumn Property="x => x.AverageTurnover" Title="Средняя оборачиваемость в день" Resizable="false" IsEditable="false"/>
-		<PropertyColumn Property="x => x.StockDays" Title="Запас на количество дней" Resizable="false" IsEditable="false"/>
-		<PropertyColumn Property="x => x.OrderCalculation" Title="Рекомендованное количество" Resizable="false" IsEditable="false"/>
-		<PropertyColumn CellClass="quantity-to-order-cell" Filterable="false" IsEditable="true" Property="x => x.QuantityToOrder" Resizable="false" Title="Количество для заказа">
+		<PropertyColumn T="ProductTableItem" TProperty="string" Property="x => x.Name" Title="Название" Sortable="false"
+		                Resizable="false" IsEditable="false"/>
+		<PropertyColumn T="ProductTableItem" TProperty="string" Property="x => x.Article" Title="Артикул"
+		                Sortable="false" Resizable="false" IsEditable="false"/>
+		<PropertyColumn T="ProductTableItem" TProperty="int" Property="x => x.AvailableQuantity"
+		                Title="Доступное количество на БГЛЦ" Sortable="false" Resizable="false" IsEditable="false"/>
+		<PropertyColumn T="ProductTableItem" TProperty="int" Property="x => x.CurrentQuantity"
+		                Title="Текущее количество в СПб" Sortable="false" Resizable="false" IsEditable="false"/>
+		<PropertyColumn T="ProductTableItem" TProperty="double" Property="x => x.AverageTurnover"
+		                Title="Средняя оборачиваемость в день" Resizable="false" IsEditable="false"/>
+		<PropertyColumn T="ProductTableItem" TProperty="double" Property="x => x.StockDays"
+		                Title="Запас на количество дней" Resizable="false" IsEditable="false"/>
+		<PropertyColumn T="ProductTableItem" TProperty="double" Property="x => x.OrderCalculation"
+		                Title="Рекомендованное количество" Resizable="false" IsEditable="false"/>
+		<PropertyColumn T="ProductTableItem" TProperty="int" CellClass="quantity-to-order-cell" Filterable="false"
+		                IsEditable="true" Property="x => x.QuantityToOrder" Resizable="false"
+		                Title="Количество для заказа" CellStyleFunc="QuantityToOrderCellStyleFunc">
 			<EditTemplate>
-				<MudNumericField Value="@context.Item.QuantityToOrder" ValueChanged="@(i => { context.Item.QuantityToOrder = i; context.Actions.CancelEditingItemAsync(); })"
-				                 id="quantity-to-order-input" T="int"
+				<MudNumericField Value="@context.Item.QuantityToOrder"
+				                 ValueChanged="@(i => { context.Item.QuantityToOrder = i; context.Actions.CancelEditingItemAsync(); return Task.CompletedTask; })"
+				                 Class="quantity-to-order-input" T="int"
 				                 Min="0" Max="@context.Item.MaxCanBeOrdered" ErrorText="Недопустимое значение"/>
 			</EditTemplate>
+			<FooterTemplate>
+				@{
+					double boxes = 0;
+					foreach (ProductTableItem productTableItem in context.Items)
+					{
+						int? perBox = productTableItem.DbReference?.QuantityPerBox;
+
+						if (perBox.HasValue == false)
+						{
+							perBox = 54;
+						}
+
+						boxes += (double)productTableItem.QuantityToOrder / perBox.Value;
+					}
+				}
+				<MudText Typo="Typo.body2">@($"Коробок: {boxes:F}") </MudText>
+			</FooterTemplate>
 		</PropertyColumn>
-	</Columns>
-	<ChildRowContent>
+	</ColumnsTemplate>
+
+	<ChildRowTemplate>
 		<MudCard>
 			<MudCardHeader>
 				<CardHeaderContent>
 					<MudText Typo="Typo.h6">@context.Item.Name</MudText>
 				</CardHeaderContent>
 			</MudCardHeader>
+
 			<MudCardContent>
-				<MudText>@($"В наличии на БГЛЦ: {context.Item.AvailableQuantity}. Максимально доступно для заказа: {Math.Ceiling(context.Item.AvailableQuantity * 0.07)}")</MudText>
+				<MudText>@($"В наличии на БГЛЦ: {context.Item.AvailableQuantity}. Максимально доступно для заказа: {context.Item.MaxCanBeOrdered}")</MudText>
 				@if (context.Item.DbReference == null)
 				{
 					<MudText>Товар не найден в базе данных</MudText>
-					<MudButton Variant="Variant.Filled" OnClick="() => OnAddToDbDialogButtonClick(context.Item)">
-						Добавить в
-						БД
+					<MudButton Variant="Variant.Filled" OnClick="() => ShowAddToDbDialog(context.Item)">
+						Добавить в базу данных
 					</MudButton>
 				}
 				else
@@ -80,12 +126,11 @@
 					<MudText>@("Штрих-код: " + @dbItem.Barcode)</MudText>
 					<MudText>@("Количество на коробку: " + @dbItem.QuantityPerBox)</MudText>
 					<MudText>@("Количество на полку: " + @dbItem.QuantityPerShelf)</MudText>
+					<MudButton Variant="Variant.Text" OnClick="() => ShowEditDbDialog(dbItem)">
+						Редактировать данные
+					</MudButton>
 				}
 			</MudCardContent>
 		</MudCard>
-
-	</ChildRowContent>
-	<PagerContent>
-		<MudDataGridPager id="product-pager" Disabled="InProgress" T="ProductTableItem" PageSizeOptions="new[] { 10, 25, 50, 100 }" RowsPerPageString="Количество на странице"/>
-	</PagerContent>
-</DataGrid>
+	</ChildRowTemplate>
+</Table>

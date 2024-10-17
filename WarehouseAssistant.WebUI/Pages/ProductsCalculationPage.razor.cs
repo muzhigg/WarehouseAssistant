@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
-using MiniExcelLibs.Attributes;
 using MudBlazor;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models;
@@ -17,41 +16,19 @@ namespace WarehouseAssistant.WebUI.ProductOrder;
 [UsedImplicitly]
 public partial class ProductsCalculationPage : ComponentBase
 {
-    public bool InProgress
-    {
-        get => _inProgress;
-        private set
-        {
-            _inProgress = value;
-            _dataGrid?.SetLoading(value);
-            StateHasChanged();
-        }
-    }
-    
-    private int SelectedProductCount => _dataGrid?.SelectedItems.Count ?? 0;
-    
     [Inject] private ISnackbar            Snackbar      { get; set; } = null!;
     [Inject] private IDialogService       DialogService { get; set; } = null!;
     [Inject] private IRepository<Product> Repository    { get; set; } = null!;
     
-#if DEBUG
-    internal IReadOnlyCollection<ProductTableItem> Products => _products.ToList().AsReadOnly();
-#endif
+    private Table<ProductTableItem> _table = null!;
     
-    private DataGrid<ProductTableItem>? _dataGrid;
-    private List<ProductTableItem>      _products     = new List<ProductTableItem>();
-    private string                      _searchString = "";
-    private bool                        _inProgress;
-    
-    private ProductBoxesCounter _productBoxesCounter = null!;
-    
-    private async Task RefreshProductsReferencesAsync()
+    private async Task RefreshProductsReferencesAsync(List<ProductTableItem> items)
     {
         try
         {
             var dbProducts = await Repository.GetAllAsync();
             if (dbProducts != null)
-                foreach (ProductTableItem tableItem in _products)
+                foreach (ProductTableItem tableItem in items)
                     tableItem.DbReference = dbProducts.FirstOrDefault(p => p.Article == tableItem.Article);
         }
         catch (HttpRequestException e)
@@ -62,146 +39,33 @@ public partial class ProductsCalculationPage : ComponentBase
         }
     }
     
-    private bool ShouldDisplayProduct(ProductTableItem arg)
+    private async Task ShowAddToDbDialog(ProductTableItem contextItem)
     {
-        return string.IsNullOrWhiteSpace(_searchString) ||
-               arg.Article.Contains(_searchString) ||
-               arg.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
+        await ProductFormDialog.ShowAddDialogAsync(contextItem, DialogService);
     }
     
-    private async Task OnAddToDbDialogButtonClick(ProductTableItem contextItem)
+    private async Task ShowEditDbDialog(Product contextItem)
     {
-        await ShowAddToDbDialog(contextItem);
-        _productBoxesCounter.CountBoxes(_products);
-        _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
+        await ProductFormDialog.ShowEditDialogAsync(contextItem, DialogService);
     }
     
-    internal async Task ShowAddToDbDialog(ProductTableItem contextItem)
+    private async Task OpenExportTableDialog()
     {
-        InProgress = true;
-        
-        Product? dbReference = await ProductFormDialog.ShowAddDialogAsync(contextItem, DialogService);
-        
-        if (dbReference != null)
-        {
-            contextItem.DbReference = dbReference;
-            Snackbar.Add("Товар успешно добавлен в базу данных", Severity.Success);
-        }
-        
-        InProgress = false;
-    }
-    
-    private async Task OnFileUploadButtonClick()
-    {
-        await ShowFileUploadDialogAsync();
-        _productBoxesCounter.CountBoxes(_products);
-    }
-    
-    internal async Task ShowFileUploadDialogAsync()
-    {
-        InProgress = true;
-        
-        DialogParameters<WorksheetUploadDialog<ProductTableItem>> parameters = [];
-        parameters.Add(uploadDialog => uploadDialog.ExcelColumns, [
-            new DynamicExcelColumn(nameof(ProductTableItem.Name)),
-            new DynamicExcelColumn(nameof(ProductTableItem.AvailableQuantity)),
-            new DynamicExcelColumn(nameof(ProductTableItem.OrderCalculation)),
-            new DynamicExcelColumn(nameof(ProductTableItem.Article)),
-            new DynamicExcelColumn(nameof(ProductTableItem.CurrentQuantity)),
-            new DynamicExcelColumn(nameof(ProductTableItem.AverageTurnover)),
-            new DynamicExcelColumn(nameof(ProductTableItem.StockDays)),
-            new DynamicExcelColumn(nameof(ProductTableItem.QuantityToOrder)) { Ignore = true }
-        ]);
-        
-        IDialogReference dialog =
-            await DialogService.ShowAsync<WorksheetUploadDialog<ProductTableItem>>("Загрузка файла", parameters);
-        DialogResult result = await dialog.Result;
-        
-        if (!result.Canceled) _products = (List<ProductTableItem>)result.Data;
-        
-        await RefreshProductsReferencesAsync();
-        
-        InProgress = false;
-    }
-    
-    // private async Task OnCalculateButtonClick()
-    // {
-    //     await ShowCalculatorDialog();
-    //     _productBoxesCounter.CountBoxes(_products);
-    //     _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
-    // }
-    
-    // public async Task ShowCalculatorDialog()
-    // {
-    //     if (_dataGrid!.SelectedItems.Count == 0)
-    //     {
-    //         Snackbar.Add("Не выбрано ни одного элемента", Severity.Error);
-    //         return;
-    //     }
-    //     
-    //     InProgress = true;
-    //     
-    //     DialogParameters<BaseProductCalculatorDialog<DaysBasedCalculationStrategy, DaysBasedCalculationOptions>> parameters = [];
-    //     parameters.Add(dialog => dialog.ProductTableItems, _dataGrid.SelectedItems);
-    //     
-    //     IDialogReference dialog = await DialogService.ShowAsync<BaseProductCalculatorDialog<DaysBasedCalculationStrategy, DaysBasedCalculationOptions>>("Расчет заказа", parameters);
-    //     DialogResult     result = await dialog.Result;
-    //     
-    //     InProgress = false;
-    // }
-    
-    private async Task ExportTable()
-    {
-        if (_dataGrid!.SelectedItems.Count == 0)
-        {
-            Snackbar.Add("Не выбрано ни одного элемента", Severity.Error);
-            return;
-        }
-        
-        InProgress = true;
-        
-        DialogParameters<ProductOrderExportDialog> parameters = new();
-        parameters.Add(dialog => dialog.Products, _dataGrid.SelectedItems);
+        DialogParameters<ProductOrderExportDialog> parameters = [];
+        parameters.Add(dialog => dialog.Products, _table.SelectedItems);
         
         IDialogReference dialog =
             await DialogService.ShowAsync<ProductOrderExportDialog>("Экспорт заказов", parameters);
         await dialog.Result;
-        
-        InProgress = false;
     }
     
-    private void OnSelectedItemsChanged(HashSet<ProductTableItem> obj)
-    {
-        _productBoxesCounter.CountSelectedBoxes(obj);
-    }
-    
-    private void OnCanceledEditingItem(ProductTableItem obj)
-    {
-        Debug.WriteLine("OnCanceledEditingItem");
-        _productBoxesCounter.CountBoxes(_products);
-        _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
-    }
-    
-    private async Task OpenCalculationDialog<TDialog>()
+    internal async Task OpenCalculationDialog<TDialog>()
         where TDialog : BaseProductCalculatorDialog
     {
-        if (_dataGrid!.SelectedItems.Count == 0)
-        {
-            Snackbar.Add("Не выбрано ни одного элемента", Severity.Error);
-            return;
-        }
-        
-        InProgress = true;
-        
         DialogParameters<TDialog> parameters = [];
-        parameters.Add(dialog => dialog.ProductTableItems, _dataGrid!.SelectedItems);
+        parameters.Add(dialog => dialog.ProductTableItems, _table.SelectedItems);
         
-        IDialogReference dialog = await DialogService.ShowAsync<TDialog>("dsa", parameters);
+        IDialogReference dialog = DialogService.Show<TDialog>("dsa", parameters);
         await dialog.Result;
-        
-        InProgress = false;
-        
-        _productBoxesCounter.CountBoxes(_products);
-        _productBoxesCounter.CountSelectedBoxes(_dataGrid!.SelectedItems);
     }
 }

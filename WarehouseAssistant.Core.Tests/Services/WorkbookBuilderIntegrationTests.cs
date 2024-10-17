@@ -20,6 +20,11 @@ public sealed class WorkbookBuilderIntegrationTests
         {
             return string.IsNullOrEmpty(Article) == false;
         }
+        
+        public bool MatchesSearchString(string searchString)
+        {
+            return true;
+        }
     }
     
     [Fact]

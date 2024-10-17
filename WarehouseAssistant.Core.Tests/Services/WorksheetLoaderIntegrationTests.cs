@@ -33,6 +33,11 @@ public sealed class WorksheetLoaderIntegrationTests(ITestOutputHelper log)
         {
             return string.IsNullOrEmpty(Article) == false && Article.Length == 3;
         }
+        
+        public bool MatchesSearchString(string searchString)
+        {
+            return true;
+        }
     }
     
     [Fact]

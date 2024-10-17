@@ -1,0 +1,62 @@
+@inherits MudComponentBase
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.Forms
+@using MiniExcelLibs.Attributes
+@typeparam TTableItem where TTableItem : class, WarehouseAssistant.Shared.Models.ITableItem, new()
+
+<MudButton Class="table-import-button" Variant="Variant.Filled" Color="Color.Primary"
+           OnClick="OpenDialog" StartIcon="@Icons.Material.Filled.TableView"
+           Disabled="@Disabled">
+	Загрузить таблицу
+</MudButton>
+
+<MudDialog @bind-IsVisible="_isDialogVisible">
+	<TitleContent>
+		<MudText Typo="Typo.h6">Выберите таблицу</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudPaper Class="pa-4 mt-2">
+			<MudFileUpload T="IBrowserFile" Accept=".xlsx" MaxFileCount="1" FilesChanged="OnFilesChanged">
+				<ButtonTemplate>
+					<MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" for="@context.Id"
+					           StartIcon="@Icons.Material.Filled.CloudUpload">
+						@(_selectedFile != null ? _selectedFile.Name : "Выберите файл")
+					</MudButton>
+				</ButtonTemplate>
+			</MudFileUpload>
+
+			<MudForm @bind-IsValid="_isValid" @ref="_form">
+				<MudGrid>
+					@foreach (PropertyInfo propertyInfo in _tableItemProperties)
+					{
+						ExcelColumnAttribute columnAttr = propertyInfo.GetCustomAttribute<ExcelColumnAttribute>()!;
+
+						<!-- Dropdown for selecting the corresponding Excel column for each property -->
+						<MudItem xs="12" md="6">
+							<MudSelect Class="import-column-select" T="string" Label="@columnAttr.Name"
+							           @bind-Value="_selectedColumns[propertyInfo.Name]"
+							           Required="true" @onchange="_ => CheckFormValidity()">
+								@foreach ((string? letter, string? name) in _columns)
+								{
+									<MudSelectItem Value="@letter">@($"{letter} - {name}")</MudSelectItem>
+								}
+							</MudSelect>
+						</MudItem>
+					}
+				</MudGrid>
+			</MudForm>
+		</MudPaper>
+
+		<MudOverlay Visible="@_isLoading" DarkBackground="true" Absolute="true" AutoClose="false">
+			<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true"/>
+		</MudOverlay>
+
+	</DialogContent>
+	<DialogActions>
+		<MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="CancelDialog">Отмена</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ImportFile"
+		           Disabled="@(_selectedFile == null || !_isValid)">
+			Импортировать
+		</MudButton>
+	</DialogActions>
+</MudDialog>

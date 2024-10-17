@@ -8,7 +8,7 @@ public sealed class ShelfQuantityAdjustmentStrategy : ICalculationStrategy<Produ
     {
         if (data.DbReference?.QuantityPerShelf is null or 0) return;
         
-        if (data.QuantityToOrder == 0) return;
+        // if (data.QuantityToOrder == 0) return;
         
         if (!(data.QuantityToOrder < data.DbReference.QuantityPerShelf)) return;
         

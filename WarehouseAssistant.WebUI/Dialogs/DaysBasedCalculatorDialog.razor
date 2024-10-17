@@ -1,5 +1,4 @@
 @namespace WarehouseAssistant.WebUI.ProductOrder
-
 @using System.Text
 @using WarehouseAssistant.Shared.Models
 @using WarehouseAssistant.WebUI.Dialogs
@@ -13,12 +12,12 @@
 {
 	protected override RenderFragment ChildContent => (__builder) =>
 	{
-		<MudCheckBox T="bool" bind-Value="@Options.ConsiderCurrentQuantity"
+		<MudCheckBox id="consider-current-quantity" T="bool" @bind-Value="@Options.ConsiderCurrentQuantity"
 		             Label="Учитывать текущее количество"/>
-		<MudNumericField T="int" bind-Value="@Options.DaysCount" Label="На количество дней" Min="0"/>
+		<MudNumericField id="days-count" T="int" @bind-Value="@Options.DaysCount" Label="На количество дней" Min="0"/>
 	};
 
-	protected override async Task CalculateQuantity(ProductTableItem productTableItem)
+	internal override async Task CalculateQuantity(ProductTableItem productTableItem)
 	{
 		await base.CalculateQuantity(productTableItem);
 
@@ -44,7 +43,7 @@
 			{ dialog => dialog.Value, product.QuantityToOrder }
 		};
 
-		IDialogReference dialog = DialogService.Show<ManualInputDialog<int>>("Введите количество", parameters);
+		IDialogReference dialog = await DialogService.ShowAsync<ManualInputDialog<int>>("Введите количество", parameters);
 
 		DialogResult? result = await dialog.Result;
 

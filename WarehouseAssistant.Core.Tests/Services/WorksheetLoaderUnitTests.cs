@@ -40,6 +40,11 @@ public sealed class WorksheetLoaderUnitTests
         {
             return !string.IsNullOrEmpty(Article);
         }
+        
+        public bool MatchesSearchString(string searchString)
+        {
+            return true;
+        }
     }
     
     private readonly Mock<IExcelQueryService> _mockExcelQueryService = new();

@@ -4,7 +4,7 @@
 @typeparam TStrategy where TStrategy : WarehouseAssistant.Core.Calculation.ICalculationStrategy<WarehouseAssistant.Shared.Models.ProductTableItem, TOptions>, new()
 	@typeparam TOptions where TOptions : class, WarehouseAssistant.Core.Calculation.ICalculationOptions, new()
 
-<MudDialog>
+<MudDialog id="@($"product-calculator-dialog-{typeof(TStrategy).Name}")">
 	<TitleContent>
 		<MudText Typo="Typo.h6">Расчет заказа</MudText>
 	</TitleContent>
@@ -15,7 +15,9 @@
 		@ChildContent
 	</DialogContent>
 	<DialogActions>
-		<MudButton id="submit-calculation-button" Color="Color.Primary" OnClick="OnSubmit">Добавить</MudButton>
 		<MudButton Color="Color.Secondary" OnClick="OnCancel">Отмена</MudButton>
+		<MudButton id="submit-calculation-button" Color="Color.Primary" Variant="Variant.Filled" OnClick="OnSubmit">
+			Добавить
+		</MudButton>
 	</DialogActions>
 </MudDialog>

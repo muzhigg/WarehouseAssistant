@@ -4,8 +4,6 @@ namespace WarehouseAssistant.Core.Calculation;
 
 public sealed class DaysBasedCalculationStrategy : ICalculationStrategy<ProductTableItem, DaysBasedCalculationOptions>
 {
-    private readonly QuantityPerBoxRoundingStrategy _boxRoundingStrategy = new QuantityPerBoxRoundingStrategy();
-    
     public void CalculateQuantity(ProductTableItem product, DaysBasedCalculationOptions options)
     {
         double result = product.AverageTurnover * options.DaysCount;

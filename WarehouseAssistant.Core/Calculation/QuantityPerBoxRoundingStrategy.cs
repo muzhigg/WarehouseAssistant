@@ -9,8 +9,8 @@ public sealed class QuantityPerBoxRoundingStrategy : ICalculationStrategy<Produc
         if (data.DbReference?.QuantityPerBox is null or 0)
             return;
         
-        if (data.QuantityToOrder == 0)
-            return;
+        // if (data.QuantityToOrder == 0)
+        //     return;
         
         double result = Math.Round(data.QuantityToOrder / (double)data.DbReference.QuantityPerBox, 0,
             MidpointRounding.AwayFromZero);

@@ -74,4 +74,15 @@ public sealed class ProductTableItem : ICalculatedTableItem
     {
         return !string.IsNullOrEmpty(Article) && Article.Length == 8 && Article.All(char.IsDigit);
     }
+    
+    public bool MatchesSearchString(string searchString)
+    {
+        if (string.IsNullOrEmpty(searchString))
+        {
+            return true;
+        }
+        
+        return Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+               Article.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+    }
 }
