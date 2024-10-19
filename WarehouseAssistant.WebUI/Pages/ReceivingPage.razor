@@ -1,0 +1,22 @@
+@page "/receiving"
+@using WarehouseAssistant.Shared.Models
+@using WarehouseAssistant.WebUI.Components
+
+<Table TItem="ReceivingItem">
+	<ColumnsTemplate>
+		<PropertyColumn T="ReceivingItem" TProperty="string" Property="x => x.Name"
+		                Title="Название" Sortable="true" Resizable="false" IsEditable="false"/>
+		<PropertyColumn T="ReceivingItem" TProperty="string" Property="x => x.Article"
+		                Title="Артикул" Sortable="false" Resizable="false" IsEditable="false"/>
+		<PropertyColumn T="ReceivingItem" TProperty="int" Property="x => x.ExpectedQuantity"
+		                Title="Ожидаемое количество" Sortable="false" Resizable="false" IsEditable="false"
+		                Filterable="false"/>
+		<PropertyColumn T="ReceivingItem" TProperty="int" Property="x => x.ReceivedQuantity"
+		                Title="Принятое количество" Sortable="false" Resizable="false" IsEditable="true">
+			<EditTemplate>
+				<MudNumericField T="int" @bind-Value="@context.Item.ReceivedQuantity"
+				                 Min="0" Max="int.MaxValue" ErrorText="Недопустимое значение"/>
+			</EditTemplate>
+		</PropertyColumn>
+	</ColumnsTemplate>
+</Table>
