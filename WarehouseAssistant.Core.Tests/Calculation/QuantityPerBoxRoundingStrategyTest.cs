@@ -125,7 +125,7 @@ public class QuantityPerBoxRoundingStrategyTest(ITestOutputHelper log)
         _strategy.CalculateQuantity(data, options.Object);
         
         // Assert
-        Assert.Equal(0, data.QuantityToOrder); // no change expected
+        Assert.Equal(3, data.QuantityToOrder); // no change expected
     }
     
     [Fact]

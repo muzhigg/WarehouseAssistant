@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -12,7 +11,6 @@ using WarehouseAssistant.WebUI.Dialogs;
 namespace WarehouseAssistant.WebUI.Pages;
 
 [UsedImplicitly]
-[SuppressMessage("Usage", "BL0005:Component parameter should not be set outside of its component.")]
 public partial class ProductsDatabasePage : ComponentBase
 {
     public bool InProgress
@@ -42,7 +40,7 @@ public partial class ProductsDatabasePage : ComponentBase
     
     private void ShowError(string message)
     {
-        SnackBar?.Add(message, Severity.Error);
+        SnackBar.Add(message, Severity.Error);
         Console.Error.WriteLine(message);
     }
     
