@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models;
@@ -67,5 +68,26 @@ public partial class ProductsCalculationPage : ComponentBase
         
         IDialogReference dialog = DialogService.Show<TDialog>("dsa", parameters);
         await dialog.Result;
+    }
+    
+    private async Task RemoveSelectedProductsAsync(MouseEventArgs obj)
+    {
+        bool? confirmed = await DialogService.ShowMessageBox("Внимание!",
+            "Вы действительно хотите удалить выбранные товары?", "Удалить", "Отмена");
+        
+        if (confirmed == true)
+        {
+            await _table.RemoveSelectedItemsAsync();
+            
+            StateHasChanged();
+        }
+    }
+    
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        
+        Debug.WriteLine($"Items count: {_table.Items.Count}");
+        Debug.WriteLine($"Selected items count: {_table.SelectedItems.Count}");
     }
 }

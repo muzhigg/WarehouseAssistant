@@ -22,7 +22,7 @@
 	{
 		string style = "";
 
-		if (arg1.QuantityToOrder == arg1.MaxCanBeOrdered && arg1.QuantityToOrder != arg1.AvailableQuantity)
+		if (arg1.QuantityToOrder == arg1.MaxCanBeOrdered && arg1.QuantityToOrder != 0)
 		{
 			style += "background-color:var(--mud-palette-warning);";
 			style += "color:var(--mud-palette-warning-text);";
@@ -41,18 +41,23 @@
 	<ToolBarTemplate>
 		<MudMenu hidden="@(!context.Items?.Any())" Label="Рассчитать выбранные"
 		         Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Filled"
-		         Color="Color.Primary" Class="mr-1"
-		         StartIcon="@Icons.Material.Filled.Calculate">
+		         Color="Color.Primary" Class="mr-2" StartIcon="@Icons.Material.Filled.Calculate">
 			<MudMenuItem OnClick="OpenCalculationDialog<DaysBasedCalculatorDialog>">На количество дней</MudMenuItem>
 			<MudMenuItem OnClick="OpenCalculationDialog<IncrementByPercentageCalculatorDialog>">Увеличить в процентах</MudMenuItem>
 			<MudMenuItem OnClick="OpenCalculationDialog<QuantityPerBoxRoundDialog>">Округление в коробки</MudMenuItem>
 			<MudMenuItem OnClick="OpenCalculationDialog<ShelfQuantityAdjustmentCalculatorDialog>">Добавить до количества на полке</MudMenuItem>
 		</MudMenu>
 		<MudButton id="export-table-button" hidden="@(!context.Items?.Any())"
-		           Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Filled"
-		           Color="Color.Primary" Class="ml-1"
+		           Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Outlined"
+		           Color="Color.Primary" Class="mx-2"
 		           OnClick="OpenExportTableDialog" StartIcon="@Icons.Material.Filled.ImportExport">
 			Экспорт таблицы
+		</MudButton>
+		<MudButton id="remove-products-button" hidden="@(!context.Items?.Any())"
+		           Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Filled"
+		           Color="Color.Error" Class="ml-2"
+		           OnClick="RemoveSelectedProductsAsync" StartIcon="@Icons.Material.Filled.Delete">
+			Удалить выбранные
 		</MudButton>
 	</ToolBarTemplate>
 
@@ -103,7 +108,7 @@
 	</ColumnsTemplate>
 
 	<ChildRowTemplate>
-		<MudCard>
+		<MudCard Class="m-3 p-3" Style="@("background-color: var(--mud-palette-background)")">
 			<MudCardHeader>
 				<CardHeaderContent>
 					<MudText Typo="Typo.h6">@context.Item.Name</MudText>
@@ -111,23 +116,27 @@
 			</MudCardHeader>
 
 			<MudCardContent>
-				<MudText>@($"В наличии на БГЛЦ: {context.Item.AvailableQuantity}. Максимально доступно для заказа: {context.Item.MaxCanBeOrdered}")</MudText>
+				<MudText
+					Typo="Typo.body1">
+					@($"В наличии на БГЛЦ: {context.Item.AvailableQuantity}. Максимально доступно для заказа: {context.Item.MaxCanBeOrdered}")
+				</MudText>
 				@if (context.Item.DbReference == null)
 				{
-					<MudText>Товар не найден в базе данных</MudText>
-					<MudButton Variant="Variant.Filled" OnClick="() => ShowAddToDbDialog(context.Item)">
+					<MudText Typo="Typo.body2" Color="Color.Secondary">Товар не найден в базе данных</MudText>
+					<MudButton Variant="Variant.Filled" Color="Color.Primary"
+					           OnClick="() => ShowAddToDbDialog(context.Item)">
 						Добавить в базу данных
 					</MudButton>
 				}
 				else
 				{
 					Product dbItem = context.Item.DbReference;
-					<MudText>@dbItem.Name</MudText>
-					<MudText>@("Артикул: " + dbItem.Article)</MudText>
-					<MudText>@("Штрих-код: " + @dbItem.Barcode)</MudText>
-					<MudText>@("Количество на коробку: " + @dbItem.QuantityPerBox)</MudText>
-					<MudText>@("Количество на полку: " + @dbItem.QuantityPerShelf)</MudText>
-					<MudButton Variant="Variant.Text" OnClick="() => ShowEditDbDialog(dbItem)">
+
+					<MudText Typo="Typo.body2">@($"Артикул: {dbItem.Article}")</MudText>
+					<MudText Typo="Typo.body2">@($"Штрих-код: {dbItem.Barcode}")</MudText>
+					<MudText Typo="Typo.body2">@($"Количество на коробку: {dbItem.QuantityPerBox}")</MudText>
+					<MudText Typo="Typo.body2">@($"Количество на полку: {dbItem.QuantityPerShelf}")</MudText>
+					<MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="() => ShowEditDbDialog(dbItem)">
 						Редактировать данные
 					</MudButton>
 				}

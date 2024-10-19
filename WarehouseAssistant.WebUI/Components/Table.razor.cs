@@ -8,7 +8,7 @@ public partial class Table<TItem> : ComponentBase
     where TItem : class, ITableItem, new()
 {
     private            string?                             _searchString;
-    [Parameter] public List<TItem>?                        Items                  { get; set; } = new();
+    [Parameter] public List<TItem>                         Items                  { get; set; } = [];
     [Parameter] public bool                                ReadOnly               { get; set; }
     [Parameter] public RenderFragment<Table<TItem>>?       ToolBarTemplate        { get; set; }
     [Parameter] public RenderFragment?                     ColumnsTemplate        { get; set; }
@@ -33,8 +33,8 @@ public partial class Table<TItem> : ComponentBase
         }
     }
     
-    public int            SelectedCount => DataGridRef.SelectedItems.Count;
-    public HashSet<TItem> SelectedItems => DataGridRef.SelectedItems;
+    internal int            SelectedCount => DataGridRef.SelectedItems.Count;
+    internal HashSet<TItem> SelectedItems => DataGridRef.SelectedItems;
     
     private bool SearchFunc(TItem arg)
     {
@@ -45,5 +45,20 @@ public partial class Table<TItem> : ComponentBase
     {
         Items = obj;
         TableImported.InvokeAsync(obj);
+    }
+    
+    internal async Task RemoveSelectedItemsAsync()
+    {
+        if (SelectedCount == 0) return;
+        
+        var itemsToRemove = new List<TItem>(SelectedItems);
+        foreach (TItem item in itemsToRemove)
+        {
+            await DataGridRef.SetSelectedItemAsync(item);
+            Items.Remove(item);
+        }
+        
+        StateHasChanged();
+        OnSelectedItemsChanged?.Invoke(SelectedItems);
     }
 }
