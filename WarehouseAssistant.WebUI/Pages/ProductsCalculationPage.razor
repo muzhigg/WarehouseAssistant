@@ -41,7 +41,7 @@
 	<ToolBarTemplate>
 		<MudMenu hidden="@(!context.Items?.Any())" Label="Рассчитать выбранные"
 		         Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Filled"
-		         Color="Color.Primary"
+		         Color="Color.Primary" Class="mr-1"
 		         StartIcon="@Icons.Material.Filled.Calculate">
 			<MudMenuItem OnClick="OpenCalculationDialog<DaysBasedCalculatorDialog>">На количество дней</MudMenuItem>
 			<MudMenuItem OnClick="OpenCalculationDialog<IncrementByPercentageCalculatorDialog>">Увеличить в процентах</MudMenuItem>
@@ -50,8 +50,9 @@
 		</MudMenu>
 		<MudButton id="export-table-button" hidden="@(!context.Items?.Any())"
 		           Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Filled"
-		           Color="Color.Primary"
+		           Color="Color.Primary" Class="ml-1"
 		           OnClick="OpenExportTableDialog" StartIcon="@Icons.Material.Filled.ImportExport">
+			Экспорт таблицы
 		</MudButton>
 	</ToolBarTemplate>
 

@@ -69,9 +69,7 @@ public partial class TableImportButton<TTableItem> : MudComponentBase
     private void InitializeSelectedColumns()
     {
         foreach (var propertyInfo in _tableItemProperties)
-        {
             _selectedColumns.Add(propertyInfo.Name, null);
-        }
     }
     
     private void OpenDialog(MouseEventArgs obj)
@@ -140,9 +138,7 @@ public partial class TableImportButton<TTableItem> : MudComponentBase
             
             // If a match is found, set the matched column letter
             if (!string.IsNullOrEmpty(matchedColumn.Key))
-            {
                 _selectedColumns[propertyInfo.Name] = matchedColumn.Key;
-            }
         }
     }
     
