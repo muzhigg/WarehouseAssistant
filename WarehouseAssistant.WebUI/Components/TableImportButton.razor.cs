@@ -74,6 +74,18 @@ public partial class TableImportButton<TTableItem> : MudComponentBase
     private void CancelDialog()
     {
         _isDialogVisible = false;
+        ResetValues();
+    }
+    
+    private void ResetValues()
+    {
+        _selectedFile = null;
+        _columns.Clear();
+        _selectedColumns.Clear();
+        InitializeSelectedColumns();
+        _form?.ResetAsync();
+        _isValid = false;
+        StateHasChanged();
     }
     
     private async Task OnFilesChanged(IBrowserFile? obj)
