@@ -28,4 +28,11 @@
 		<MudDataGridPager id="product-pager" Disabled="Loading" T="TItem" PageSizeOptions="new[] { 10, 25, 50, 100 }"
 		                  RowsPerPageString="Количество на странице"/>
 	</PagerContent>
+	<NoRecordsContent>
+		<div style="text-align: center; padding: 2rem;">
+			<MudText Typo="Typo.h6" Color="Color.Secondary">
+				Пожалуйста, импортируйте таблицу, чтобы начать работу.
+			</MudText>
+		</div>
+	</NoRecordsContent>
 </DataGrid>
