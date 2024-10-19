@@ -69,6 +69,13 @@ public partial class ProductOrderExportDialog : ComponentBase
         {
             Snackbar.Add("Нет данных для экспорта", Severity.Error);
             Cancel();
+            return;
+        }
+        
+        if (Products.All(p => p.QuantityToOrder == 0))
+        {
+            Snackbar.Add("Нет данных для экспорта", Severity.Error);
+            Cancel();
         }
     }
     

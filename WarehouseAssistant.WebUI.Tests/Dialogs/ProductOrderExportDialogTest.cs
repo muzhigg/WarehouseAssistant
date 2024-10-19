@@ -94,4 +94,77 @@ public class ProductOrderExportDialogTest
         // orderItems.Should().Contain(item => item.Article == tableItems[3].Article && item.Quantity == 3);
         // orderItems.Should().Contain(item => item.Article == tableItems[4].Article && item.Quantity == 2);
     }
+    
+    [Fact]
+    public void DivideProductsIntoOrders_Should_SkipItems_With_Zero_QuantityToOrder()
+    {
+        // Arrange
+        var dialog = new ProductOrderExportDialog();
+        var dbProducts = new List<Product>()
+        {
+            new Product() { Name = "Товар 1", Article = "40000067", QuantityPerBox = 54 },
+            new Product() { Name = "Товар 2", Article = "40000141", QuantityPerBox = 40 },
+            new Product() { Name = "Товар 3", Article = "40000658", QuantityPerBox = 40 },
+            new Product() { Name = "Товар 4", Article = "40001457", QuantityPerBox = 40 },
+            new Product() { Name = "Товар 5", Article = "40000063", QuantityPerBox = 48 },
+            new Product() { Name = "Товар 6", Article = "40000068", QuantityPerBox = 84 },
+            new Product() { Name = "Товар 7", Article = "40004036", QuantityPerBox = 54 },
+            new Product() { Name = "Товар 8", Article = "40003920", QuantityPerBox = 60 },
+        };
+        
+        var tableItems = new List<ProductTableItem>()
+        {
+            new ProductTableItem()
+            {
+                Name = "Товар 1", Article = "40000067", AvailableQuantity = 100000, QuantityToOrder = 0, StockDays = 1,
+                DbReference = dbProducts.First(p => p.Article == "40000067")
+            },
+            new ProductTableItem()
+            {
+                Name        = "Товар 2", Article = "40000141", AvailableQuantity = 100000, QuantityToOrder = 220,
+                StockDays   = 2,
+                DbReference = dbProducts.First(p => p.Article == "40000141")
+            },
+            new ProductTableItem()
+            {
+                Name        = "Товар 3", Article = "40000658", AvailableQuantity = 100000, QuantityToOrder = 245,
+                StockDays   = 3,
+                DbReference = dbProducts.First(p => p.Article == "40000658")
+            },
+            new ProductTableItem()
+            {
+                Name        = "Товар 4", Article = "40001457", AvailableQuantity = 100000, QuantityToOrder = 123,
+                StockDays   = 4,
+                DbReference = dbProducts.First(p => p.Article == "40001457")
+            },
+            new ProductTableItem()
+            {
+                Name = "Товар 5", Article = "40000063", AvailableQuantity = 100000, QuantityToOrder = 50, StockDays = 5,
+                DbReference = dbProducts.First(p => p.Article == "40000063")
+            },
+            new ProductTableItem()
+            {
+                Name = "Товар 6", Article = "40000068", AvailableQuantity = 100000, QuantityToOrder = 26, StockDays = 6,
+                DbReference = dbProducts.First(p => p.Article == "40000068")
+            },
+            new ProductTableItem()
+            {
+                Name = "Товар 7", Article = "40004036", AvailableQuantity = 100000, QuantityToOrder = 29, StockDays = 7,
+                DbReference = dbProducts.First(p => p.Article == "40004036")
+            },
+            new ProductTableItem()
+            {
+                Name = "Товар 8", Article = "40003920", AvailableQuantity = 100000, QuantityToOrder = 60, StockDays = 8,
+                DbReference = dbProducts.First(p => p.Article == "40003920")
+            },
+        };
+        
+        var orders = dialog.DivideProductsIntoOrders(tableItems, 5);
+        
+        // Assert
+        foreach ((string? key, List<ProductOrderExportDialog.OrderItem>? value) in orders)
+        {
+            value.Should().NotContain(item => item.Article == "40000067");
+        }
+    }
 }
