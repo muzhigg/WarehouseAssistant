@@ -4,7 +4,7 @@
 @using MiniExcelLibs.Attributes
 @typeparam TTableItem where TTableItem : class, WarehouseAssistant.Shared.Models.ITableItem, new()
 
-<MudButton Class="table-import-button" Variant="Variant.Filled" Color="Color.Primary"
+<MudButton hidden="@_hidden" Class="table-import-button" Variant="Variant.Filled" Color="Color.Primary"
            OnClick="OpenDialog" StartIcon="@Icons.Material.Filled.TableView"
            Disabled="@Disabled">
 	Загрузить таблицу

@@ -36,6 +36,14 @@ public partial class TableImportButton<TTableItem> : MudComponentBase
     
     [Parameter] public EventCallback<List<TTableItem>> OnParsed { get; set; }
     [Parameter] public bool                            Disabled { get; set; }
+    private            bool                            _hidden;
+    
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        if (parameters.TryGetValue("hidden", out bool hidden)) _hidden = hidden;
+        
+        return base.SetParametersAsync(parameters);
+    }
     
     protected override void OnInitialized()
     {
