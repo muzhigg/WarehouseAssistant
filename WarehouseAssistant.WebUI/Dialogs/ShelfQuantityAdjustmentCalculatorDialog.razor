@@ -1,0 +1,72 @@
+@namespace WarehouseAssistant.WebUI.ProductOrder
+@using System.Text
+@using WarehouseAssistant.Data.Repositories
+@using WarehouseAssistant.Shared.Models
+@using WarehouseAssistant.Shared.Models.Db
+@using WarehouseAssistant.WebUI.Dialogs
+@inherits BaseProductCalculatorDialog<WarehouseAssistant.Core.Calculation.ShelfQuantityAdjustmentStrategy, WarehouseAssistant.Core.Calculation.CalculationOptions>
+
+@{
+	base.BuildRenderTree(__builder);
+}
+
+@code
+{
+	protected override RenderFragment ChildContent => (__builder) =>
+	{
+		<MudCheckBox id="consider-current-quantity" T="bool" @bind-Value="@Options.ConsiderCurrentQuantity"
+		             Label="Учитывать текущее количество"/>
+	};
+
+	internal override async Task CalculateQuantity(ProductTableItem productTableItem)
+	{
+		await base.CalculateQuantity(productTableItem);
+
+		if (productTableItem.DbReference == null)
+		{
+			Snackbar.Add($"Не удалось найти товар {productTableItem.Name} в базе данных", Severity.Error);
+			return;
+		}
+
+		if (productTableItem.DbReference.QuantityPerShelf is null or 0)
+		{
+			if (await ShowManualInput(productTableItem) == false)
+			{
+				Snackbar.Add($"Не удалось найти количество на полке для товара {productTableItem.Name}", Severity.Error);
+				return;
+			}
+		}
+
+		Strategy.CalculateQuantity(productTableItem, Options);
+	}
+
+	private async Task<bool> ShowManualInput(ProductTableItem productTableItem)
+	{
+		StringBuilder sb = new StringBuilder()
+			.AppendLine("Количетсво на полке не указано. Пожалуйста, обновите информацию о товаре в базе данных.")
+			.AppendLine("<b>Товар:</b> " + productTableItem.DbReference!.Name)
+			.AppendLine("<b>Артикул:</b> " + productTableItem.DbReference.Article);
+
+		DialogParameters<ManualInputDialog<int>> parameters = new DialogParameters<ManualInputDialog<int>>
+		{
+			{ dialog => dialog.Text, sb.ToString() },
+			{ dialog => dialog.Max, int.MaxValue },
+			{ dialog => dialog.Min, 0 },
+		};
+
+		var dialog = await DialogService.ShowAsync<ManualInputDialog<int>>(
+			"Введите количество на полке",
+			parameters);
+
+		var result = await dialog.Result;
+
+		if (result.Canceled)
+			return false;
+
+		productTableItem.DbReference.QuantityPerShelf = (int)result.Data;
+		await ProductService.UpdateAsync(productTableItem.DbReference);
+		return true;
+	}
+
+	[Inject] public IRepository<Product> ProductService { get; set; } = null!;
+}

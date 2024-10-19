@@ -2,19 +2,21 @@
 
 namespace WarehouseAssistant.Core.Calculation;
 
-public sealed class OrderCalculator<T>(ICalculationStrategy<T> calculationStrategy, CalculationOptions options)
-    where T : ICalculatedTableItem
+[Obsolete(
+    "This class is deprecated and will be removed in a future version. Please use the ICalculationStrategy interface instead.")]
+public sealed class OrderCalculator<TItem, TOptions>(
+    ICalculationStrategy<TItem, TOptions> calculationStrategy,
+    TOptions                              options)
+    where TItem : ICalculatedTableItem where TOptions : ICalculationOptions
 {
-    public int CalculateOrderQuantity(T data)
+    public void CalculateOrderQuantity(TItem data)
     {
-        return calculationStrategy.CalculateQuantity(data, options);
+        calculationStrategy.CalculateQuantity(data, options);
     }
     
-    public void CalculateOrderQuantity(IEnumerable<T> data)
+    public void CalculateOrderQuantity(IEnumerable<TItem> data)
     {
-        foreach (T calculatedTableItem in data)
-        {
+        foreach (TItem calculatedTableItem in data)
             CalculateOrderQuantity(calculatedTableItem);
-        }
     }
 }

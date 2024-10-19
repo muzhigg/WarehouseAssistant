@@ -2,16 +2,16 @@
 @using WarehouseAssistant.Shared.Models.Db
 @using WarehouseAssistant.WebUI.Components
 
-<DataGrid Items="_products" @ref="_dataGrid" LocalStorageKey="products_db_grid_filters" T="Product"
+<DataGrid Items="_products" @ref="_dataGrid" T="Product"
           LoadingProgressColor="Color.Primary" FixedHeader="true" Hover="true" Bordered="true" Striped="true"
           Height="80vh" ColumnResizeMode="ResizeMode.None" QuickFilter="FilterFunc"
           FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
           Filterable="true" ShowColumnOptions="false" SortMode="SortMode.Multiple"
-          ReadOnly="false" EditMode="DataGridEditMode.Form" EditTrigger="DataGridEditTrigger.Manual" CommittedItemChanges="OnProductChanged"
+          ReadOnly="false" CommittedItemChanges="OnProductChanged"
           MultiSelection="true" Class="db-products-grid" RowClass="db-products-grid-row">
 
 	<ToolBarContent>
-		<MudButton Color="Color.Primary" OnClick="ShowAddProductDialog" Disabled="InProgress">Добавить</MudButton>
+		<MudButton id="db-grid-add-product-button" Color="Color.Primary" OnClick="ShowAddProductDialog" Disabled="InProgress">Добавить</MudButton>
 		<MudButton Color="Color.Secondary" Disabled="InProgress" OnClick="OnDeleteButtonClicked">Удалить</MudButton>
 		<MudSpacer></MudSpacer>
 		<MudTextField T="string" Disabled="InProgress" @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start"
@@ -21,12 +21,12 @@
 
 	<Columns>
 		<SelectColumn T="Product" ShowInFooter="false"/>
-		<PropertyColumn Property="arg => arg.Article" Title="Артикул" IsEditable="false"></PropertyColumn>
-		<PropertyColumn Property="arg => arg.Name" Title="Название" Required="true"></PropertyColumn>
-		<PropertyColumn Property="arg => arg.Barcode" Title="Штрихкод" Required="false"></PropertyColumn>
-		<PropertyColumn Property="arg => arg.QuantityPerBox" Title="Кол-во на коробку" Required="false"></PropertyColumn>
-		<PropertyColumn Property="arg => arg.QuantityPerShelf" Title="Кол-во на полку" Required="false"></PropertyColumn>
-		<TemplateColumn>
+		<PropertyColumn T="Product" TProperty="string" Property="arg => arg.Article" Title="Артикул"/>
+		<PropertyColumn T="Product" TProperty="string" Property="arg => arg.Name" Title="Название"/>
+		<PropertyColumn T="Product" TProperty="long?" Property="arg => arg.Barcode" Title="Штрихкод"/>
+		<PropertyColumn T="Product" TProperty="int?" Property="arg => arg.QuantityPerBox" Title="Кол-во на коробку"/>
+		<PropertyColumn T="Product" TProperty="int?" Property="arg => arg.QuantityPerShelf" Title="Кол-во на полку"/>
+		<TemplateColumn T="Product" Filterable="false">
 			<CellTemplate>
 				<MudIconButton Class="edit-product-button" Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit"
 				               OnClick="@(() => ShowEditProductDialog(context.Item))" Disabled="InProgress"/>

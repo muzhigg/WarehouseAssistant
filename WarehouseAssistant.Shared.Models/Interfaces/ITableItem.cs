@@ -8,4 +8,6 @@ public interface ITableItem
     public bool HasValidName();
     
     public bool HasValidArticle();
+    
+    public bool MatchesSearchString(string searchString);
 }

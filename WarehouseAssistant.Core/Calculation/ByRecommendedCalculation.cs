@@ -2,12 +2,12 @@
 
 namespace WarehouseAssistant.Core.Calculation;
 
-public class ByRecommendedCalculation : ICalculationStrategy<ProductTableItem>
+public class ByRecommendedCalculation : ICalculationStrategy<ProductTableItem, ICalculationOptions>
 {
-    public int CalculateQuantity(ProductTableItem product, CalculationOptions options)
+    public void CalculateQuantity(ProductTableItem product, ICalculationOptions options)
     {
         if (product.OrderCalculation > 0)
-            return 0;
+            return;
         
         double result = Math.Abs(product.OrderCalculation);
         
@@ -15,6 +15,5 @@ public class ByRecommendedCalculation : ICalculationStrategy<ProductTableItem>
             result = Math.Max(0.0, result - product.CurrentQuantity);
         
         product.QuantityToOrder = (int)Math.Floor(result);
-        return product.QuantityToOrder;
     }
 }

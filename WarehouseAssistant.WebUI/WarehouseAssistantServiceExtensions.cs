@@ -4,6 +4,7 @@ using MudBlazor;
 using MudBlazor.Services;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models.Db;
+using WarehouseAssistant.WebUI.Services;
 
 namespace WarehouseAssistant.WebUI
 {
@@ -28,6 +29,7 @@ namespace WarehouseAssistant.WebUI
             AddLocalStorage(services);
             
             services.AddScoped<IRepository<Product>, ProductRepository>();
+            services.AddScoped<TableOperationState>();
             
             return services;
         }

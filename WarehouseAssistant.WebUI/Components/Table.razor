@@ -1,0 +1,38 @@
+@typeparam TItem where TItem : class, WarehouseAssistant.Shared.Models.ITableItem, new()
+
+<DataGrid T="TItem" Items="@Items" @ref="DataGridRef" Class="table-container"
+          LoadingProgressColor="Color.Primary" FixedHeader="true" Hover="true" Bordered="true" Striped="true"
+          Height="80vh" ColumnResizeMode="ResizeMode.Column" ShowColumnOptions="false" Filterable="true"
+          QuickFilter="SearchFunc" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
+          MultiSelection="true" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick"
+          ReadOnly="@ReadOnly" RowClass="@RowClass" CanceledEditingItem="@OnCanceledEditingItem"
+          SelectedItemsChanged="@OnSelectedItemsChanged" RowStyleFunc="@RowStyleFunc">
+	<ToolBarContent>
+		<TableImportButton hidden="@(Items?.Any())" TTableItem="TItem" Disabled="DataGridRef.Loading"
+		                   OnParsed="OnTableImported"/>
+		@ToolBarTemplate?.Invoke(this)
+		<MudSpacer/>
+		<MudTextField T="string" Disabled="Loading" @bind-Value="_searchString" Placeholder="Search"
+		              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
+		              Class="mt-0" id="table-search-field">
+		</MudTextField>
+	</ToolBarContent>
+	<Columns>
+		@ColumnsTemplate
+	</Columns>
+	<ChildRowContent>
+		@ChildRowTemplate?.Invoke(context)
+	</ChildRowContent>
+	<PagerContent>
+		@PagerTemplate
+		<MudDataGridPager id="product-pager" Disabled="Loading" T="TItem" PageSizeOptions="new[] { 10, 25, 50, 100 }"
+		                  RowsPerPageString="Количество на странице"/>
+	</PagerContent>
+	<NoRecordsContent>
+		<div style="text-align: center; padding: 2rem;">
+			<MudText Typo="Typo.h6" Color="Color.Secondary">
+				Пожалуйста, импортируйте таблицу, чтобы начать работу.
+			</MudText>
+		</div>
+	</NoRecordsContent>
+</DataGrid>

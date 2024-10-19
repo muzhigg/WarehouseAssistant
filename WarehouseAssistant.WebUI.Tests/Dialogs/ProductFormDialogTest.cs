@@ -37,7 +37,7 @@ public class ProductFormDialogTest : MudBlazorTestContext
         // Arrange
         var productTableItem    = new ProductTableItem { Article = "123", Name = "Test Product" };
         var dialogReferenceMock = new Mock<IDialogReference>();
-        var dialogResult        = DialogResult.Ok(new Product { Article = "123", Name = "Test Product" });
+        var dialogResult        = DialogResult.Ok(true);
         dialogReferenceMock.Setup(d => d.Result).ReturnsAsync(dialogResult);
         _dialogServiceMock.Setup(d =>
                 d.ShowAsync<ProductFormDialog>(It.IsAny<string>(), It.IsAny<DialogParameters<ProductFormDialog>>()))
@@ -47,9 +47,10 @@ public class ProductFormDialogTest : MudBlazorTestContext
         var result = await ProductFormDialog.ShowAddDialogAsync(productTableItem, _dialogServiceMock.Object);
         
         // Assert
-        result.Should().NotBeNull();
-        result.Article.Should().Be("123");
-        result.Name.Should().Be("Test Product");
+        result.Should().BeTrue();
+        productTableItem.DbReference.Should().NotBeNull();
+        productTableItem.DbReference!.Article.Should().Be("123");
+        productTableItem.DbReference.Name.Should().Be("Test Product");
     }
     
     [Fact]
@@ -68,53 +69,50 @@ public class ProductFormDialogTest : MudBlazorTestContext
         var result = await ProductFormDialog.ShowAddDialogAsync(productTableItem, _dialogServiceMock.Object);
         
         // Assert
-        Assert.Null(result);
+        result.Should().BeFalse();
+        productTableItem.DbReference.Should().BeNull();
     }
     
     [Fact]
-    public async Task ShowEditDialogAsync_HappyPath_ReturnsProduct()
+    public async Task ShowEditDialogAsync_ShouldEditProduct()
     {
         // Arrange
-        var product             = new Product { Article = "123", Name = "Test Product" };
-        var dialogReferenceMock = new Mock<IDialogReference>();
-        var dialogResult        = DialogResult.Ok(product);
-        dialogReferenceMock.Setup(d => d.Result).ReturnsAsync(dialogResult);
-        _dialogServiceMock.Setup(d =>
-                d.ShowAsync<ProductFormDialog>(It.IsAny<string>(), It.IsAny<DialogParameters<ProductFormDialog>>()))
-            .ReturnsAsync(dialogReferenceMock.Object);
-        _dialogServiceMock.Setup(d =>
-                d.Show<ProductFormDialog>(It.IsAny<string>(), It.IsAny<DialogParameters<ProductFormDialog>>()))
-            .Returns(dialogReferenceMock.Object);
+        var product = new Product { Article = "123", Name = "Test Product" };
+        
+        Services.AddMudBlazorDialog();
+        var dialogProvider = RenderComponent<MudDialogProvider>();
+        var dialogService  = Services.GetRequiredService<IDialogService>() as DialogService;
+        
+        dialogProvider.InvokeAsync(async () => await ProductFormDialog.ShowEditDialogAsync(product, dialogService));
         
         // Act
-        var result = await ProductFormDialog.ShowEditDialogAsync(product, _dialogServiceMock.Object);
+        dialogProvider.Find("#product-name-field").Change("New Name");
+        dialogProvider.InvokeAsync(async () => await dialogProvider.FindComponent<MudForm>().Instance.Validate());
+        dialogProvider.Find("#product-form-dialog-submit-button").Click();
         
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("123", result.Article);
-        Assert.Equal("Test Product", result.Name);
+        product.Name.Should().Be("New Name");
     }
     
     [Fact]
-    public async Task ShowEditDialogAsync_DialogCanceled_ReturnsNull()
+    public async Task ShowEditDialogAsync_DialogCanceled_NotChangeProduct()
     {
         // Arrange
-        var product             = new Product { Article = "123", Name = "Test Product" };
-        var dialogReferenceMock = new Mock<IDialogReference>();
-        var dialogResult        = DialogResult.Cancel();
-        dialogReferenceMock.Setup(d => d.Result).ReturnsAsync(dialogResult);
-        _dialogServiceMock.Setup(d =>
-                d.ShowAsync<ProductFormDialog>(It.IsAny<string>(), It.IsAny<DialogParameters<ProductFormDialog>>()))
-            .ReturnsAsync(dialogReferenceMock.Object);
-        _dialogServiceMock.Setup(d =>
-                d.Show<ProductFormDialog>(It.IsAny<string>(), It.IsAny<DialogParameters<ProductFormDialog>>()))
-            .Returns(dialogReferenceMock.Object);
+        var product = new Product { Article = "123", Name = "Test Product" };
+        
+        Services.AddMudBlazorDialog();
+        var dialogProvider = RenderComponent<MudDialogProvider>();
+        var dialogService  = Services.GetRequiredService<IDialogService>() as DialogService;
+        
+        dialogProvider.InvokeAsync(async () => await ProductFormDialog.ShowEditDialogAsync(product, dialogService));
         
         // Act
-        var result = await ProductFormDialog.ShowEditDialogAsync(product, _dialogServiceMock.Object);
+        dialogProvider.Find("#product-name-field").Change("New Name");
+        // dialogProvider.InvokeAsync(async () => await dialogProvider.FindComponent<MudForm>().Instance.Validate());
+        dialogProvider.Find("#product-form-dialog-cancel-button").Click();
         
         // Assert
-        Assert.Null(result);
+        product.Name.Should().Be("Test Product");
     }
     
     [Fact]
