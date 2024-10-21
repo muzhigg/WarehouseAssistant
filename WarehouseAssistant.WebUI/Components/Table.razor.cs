@@ -36,6 +36,16 @@ public partial class Table<TItem> : ComponentBase
     internal int            SelectedCount => DataGridRef.SelectedItems.Count;
     internal HashSet<TItem> SelectedItems => DataGridRef.SelectedItems;
     
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+            if (ChildRowTemplate is not null)
+                DataGridRef.ChildRowContent = ChildRowTemplate;
+        }
+    }
+    
     private bool SearchFunc(TItem arg)
     {
         return string.IsNullOrEmpty(_searchString) || arg.MatchesSearchString(_searchString);

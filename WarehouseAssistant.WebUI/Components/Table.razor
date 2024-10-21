@@ -20,9 +20,6 @@
 	<Columns>
 		@ColumnsTemplate
 	</Columns>
-	<ChildRowContent>
-		@ChildRowTemplate?.Invoke(context)
-	</ChildRowContent>
 	<PagerContent>
 		@PagerTemplate
 		<MudDataGridPager id="product-pager" Disabled="Loading" T="TItem" PageSizeOptions="new[] { 10, 25, 50, 100 }"
