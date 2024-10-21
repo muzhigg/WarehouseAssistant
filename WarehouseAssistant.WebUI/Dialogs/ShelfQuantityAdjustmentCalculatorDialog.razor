@@ -18,10 +18,8 @@
 		             Label="Учитывать текущее количество"/>
 	};
 
-	internal override async Task CalculateQuantity(ProductTableItem productTableItem)
+	protected override async Task CalculateQuantity(ProductTableItem productTableItem)
 	{
-		await base.CalculateQuantity(productTableItem);
-
 		if (productTableItem.DbReference == null)
 		{
 			Snackbar.Add($"Не удалось найти товар {productTableItem.Name} в базе данных", Severity.Error);

@@ -1,5 +1,4 @@
 @namespace WarehouseAssistant.WebUI.ProductOrder
-@using WarehouseAssistant.Shared.Models
 @inherits BaseProductCalculatorDialog<WarehouseAssistant.Core.Calculation.IncrementByPercentageStrategy, WarehouseAssistant.Core.Calculation.IncrementByPercentageOptions>
 
 @{
@@ -12,11 +11,4 @@
 	{
 		<MudNumericField id="percentage-input" T="double" Label="Процент" @bind-Value="Options.Percentage" Min="0" Max="100"/>
 	};
-
-	internal override async Task CalculateQuantity(ProductTableItem productTableItem)
-	{
-		await base.CalculateQuantity(productTableItem);
-
-		Strategy.CalculateQuantity(productTableItem, Options);
-	}
 }

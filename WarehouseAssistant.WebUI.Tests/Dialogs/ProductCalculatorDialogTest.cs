@@ -90,7 +90,8 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
         dialog.Instance.NeedAddToDb = true;
         
         // Act
-        dialog.InvokeAsync(() => dialog.Instance.CalculateQuantity(productTableItems[0]));
+        dialog.InvokeAsync(() => dialog.Instance.CalculateProducts());
+        // dialog.InvokeAsync(() => dialog.Instance.CalculateQuantity(productTableItems[0]));
         
         // Assert
         dialogServiceMock.Verify(service => service.ShowAsync<ProductFormDialog>(
@@ -122,7 +123,8 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
             parameters.Add(p => p.ProductTableItems, new List<ProductTableItem> { productTableItem }));
         
         // Act
-        dialog.InvokeAsync(() => dialog.Instance.CalculateQuantity(productTableItem));
+        dialog.InvokeAsync(() => dialog.Instance.CalculateProducts());
+        // dialog.InvokeAsync(() => dialog.Instance.CalculateQuantity(productTableItem));
         
         // Assert
         dialogServiceMock.Verify(service => service.ShowAsync<ManualInputDialog<int>>(
@@ -183,7 +185,8 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
         dialog.Instance.NeedAddToDb = true;
         
         // Act
-        dialog.InvokeAsync(() => dialog.Instance.CalculateQuantity(productTableItems[0]));
+        dialog.InvokeAsync(() => dialog.Instance.CalculateProducts());
+        // dialog.InvokeAsync(() => dialog.Instance.CalculateQuantity(productTableItems[0]));
         
         // Assert
         dialogServiceMock.Verify(service => service.ShowAsync<ProductFormDialog>(
@@ -246,7 +249,8 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
         dialog.Instance.NeedAddToDb = true;
         
         // Act
-        dialog.InvokeAsync(() => dialog.Instance.CalculateQuantity(productTableItems[0]));
+        dialog.InvokeAsync(() => dialog.Instance.CalculateProducts());
+        // dialog.InvokeAsync(() => dialog.Instance.CalculateQuantity(productTableItems[0]));
         
         // Assert
         dialogServiceMock.Verify(service => service.ShowAsync<ProductFormDialog>(
@@ -287,7 +291,7 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
             parameters.Add(p => p.ProductTableItems, new List<ProductTableItem> { productTableItem }));
         
         // Act
-        dialog.InvokeAsync(() => dialog.Instance.CalculateQuantity(productTableItem));
+        dialog.InvokeAsync(() => dialog.Instance.CalculateProducts());
         
         // Assert
         dialogServiceMock.Verify(service => service.ShowAsync<ManualInputDialog<int>>(
@@ -351,7 +355,7 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
         dialog.Instance.NeedAddToDb = true;
         
         // Act
-        dialog.InvokeAsync(() => dialog.Instance.CalculateQuantity(productTableItems[0]));
+        dialog.InvokeAsync(() => dialog.Instance.CalculateProducts());
         
         // Assert
         dialogServiceMock.Verify(service => service.ShowAsync<ProductFormDialog>(
@@ -392,7 +396,7 @@ public class ProductCalculatorDialogTest : MudBlazorTestContext
             parameters.Add(p => p.ProductTableItems, new List<ProductTableItem> { productTableItem }));
         
         // Act
-        dialog.InvokeAsync(() => dialog.Instance.CalculateQuantity(productTableItem));
+        dialog.InvokeAsync(() => dialog.Instance.CalculateProducts());
         
         // Assert
         dialogServiceMock.Verify(service => service.ShowAsync<ManualInputDialog<int>>(
