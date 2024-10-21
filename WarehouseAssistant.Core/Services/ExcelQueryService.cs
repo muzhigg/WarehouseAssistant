@@ -16,21 +16,14 @@ internal sealed class ExcelQueryService : IExcelQueryService
         where T : class, new()
     {
         return ParseFromReader<T>(stream, excelType, configuration);
-        
-        // try
-        // {
-        //     return stream.Query<T>(excelType: excelType, configuration: configuration).ToArray();
-        // }
-        // catch (ExcelInvalidCastException)
-        // {
-        //     return ParseFromReader<T>(stream, excelType, configuration);
-        // }
     }
     
     private int GetColumnIndex(PropertyInfo info,                 DynamicExcelColumn?       dynamicExcelColumn,
         ExcelColumnAttribute?               excelColumnAttribute, ExcelColumnNameAttribute? columnNameAttr,
         Dictionary<string, int>             columns)
     {
+        if (dynamicExcelColumn is { Index: not -1 }) return dynamicExcelColumn.Index;
+        
         // Проверка по Aliases
         string[] aliases = dynamicExcelColumn?.Aliases
                            ?? excelColumnAttribute?.Aliases
@@ -50,8 +43,7 @@ internal sealed class ExcelQueryService : IExcelQueryService
         if (columns.TryGetValue(name, out int nameIndex)) return nameIndex;
         
         // Проверка по Index
-        return dynamicExcelColumn?.Index
-               ?? excelColumnAttribute?.Index
+        return excelColumnAttribute?.Index
                ?? info.GetCustomAttribute<ExcelColumnIndexAttribute>()?.ExcelColumnIndex
                ?? -1;
     }
@@ -87,8 +79,7 @@ internal sealed class ExcelQueryService : IExcelQueryService
                     Ignore       = ignore || index == -1,
                     Index        = index
                 };
-            })
-            .ToArray();
+            });
     }
     
     private void PopulateItem<TTableItem>(TTableItem item, MiniExcelDataReader reader,
@@ -119,7 +110,8 @@ internal sealed class ExcelQueryService : IExcelQueryService
         
         reader.Read();
         
-        Dictionary<string, int> columns = GetColumnIndices(reader);
+        // first row cell is a key || column index is a value
+        Dictionary<string, int> columns = GetColumnIndices(reader, configuration);
         
         PropertyConfig[] props = GetPropertiesWithConfiguration<TTableItem>(configuration, columns).ToArray();
         
@@ -133,9 +125,25 @@ internal sealed class ExcelQueryService : IExcelQueryService
         return result;
     }
     
-    private Dictionary<string, int> GetColumnIndices(MiniExcelDataReader reader)
+    /// <summary>
+    /// Get column indices from reader
+    /// </summary>
+    /// <returns>Dictionary of column name and index</returns>
+    private Dictionary<string, int> GetColumnIndices(MiniExcelDataReader reader, OpenXmlConfiguration configuration)
     {
-        return Enumerable.Range(0, reader.FieldCount)
-            .ToDictionary(i => reader.GetValue(i).ToString() ?? string.Empty, i => i);
+        Dictionary<string, int> dictionary = new Dictionary<string, int>();
+        foreach (int i in Enumerable.Range(0, reader.FieldCount))
+        {
+            if (configuration.DynamicColumns?.Any(column => column.Index == i) == true)
+            {
+                dictionary.Add(configuration.DynamicColumns.First(column => column.Index == i).Key, i);
+                continue;
+            }
+            
+            string key = reader.GetValue(i)?.ToString() ?? string.Empty;
+            dictionary.TryAdd(key, i);
+        }
+        
+        return dictionary;
     }
 }

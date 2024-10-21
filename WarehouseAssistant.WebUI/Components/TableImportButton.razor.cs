@@ -105,9 +105,14 @@ public partial class TableImportButton<TTableItem> : MudComponentBase
         
         await using MemoryStream                memoryStream = await CopyFileToMemoryStream(_selectedFile);
         await using WorksheetLoader<TTableItem> sheetLoader  = new(memoryStream);
+        
         _columns = await sheetLoader.GetColumnsAsync();
         
-        MatchColumnsWithProperties();
+        MatchColumnsWithPropertiesUsingHeaderRow();
+        
+        if (_selectedColumns.Values.Any(string.IsNullOrEmpty))
+            await MatchColumnsWithPropertiesAsync(sheetLoader);
+        
         CheckFormValidity();
         _isLoading = false;
         StateHasChanged();
@@ -122,7 +127,36 @@ public partial class TableImportButton<TTableItem> : MudComponentBase
         return memoryStream;
     }
     
-    private void MatchColumnsWithProperties()
+    private async Task MatchColumnsWithPropertiesAsync(WorksheetLoader<TTableItem> sheetLoader)
+    {
+        foreach (PropertyInfo propertyInfo in _tableItemProperties)
+        {
+            ExcelColumnAttribute? columnAttr = propertyInfo.GetCustomAttribute<ExcelColumnAttribute>();
+            
+            string? columnLetter = await sheetLoader.FindColumnLetterAsync(columnAttr!.Name);
+            
+            if (columnAttr.Aliases != null)
+            {
+                if (string.IsNullOrEmpty(columnLetter))
+                {
+                    foreach (string alias in columnAttr.Aliases)
+                    {
+                        columnLetter = await sheetLoader.FindColumnLetterAsync(alias);
+                        if (columnLetter is not null) break;
+                    }
+                }
+            }
+            
+            if (columnLetter is not null)
+            {
+                _selectedColumns[propertyInfo.Name] = columnLetter;
+                _columns[columnLetter]              = columnAttr.Name;
+            }
+        }
+    }
+    
+    
+    private void MatchColumnsWithPropertiesUsingHeaderRow()
     {
         foreach (PropertyInfo propertyInfo in _tableItemProperties)
         {
@@ -156,9 +190,12 @@ public partial class TableImportButton<TTableItem> : MudComponentBase
             .ToArray();
         
         // Parse items using the selected column mapping
-        var tableItems = sheetLoader.ParseItems(selectedColumns)
-            .Where(item => item.HasValidName() && item.HasValidArticle())
-            .ToList();
+        var tableItems = new List<TTableItem>();
+        foreach (TTableItem item in sheetLoader.ParseItems(selectedColumns))
+        {
+            if (item.HasValidName() && item.HasValidArticle())
+                tableItems.Add(item);
+        }
         
         // Invoke the OnParsed event callback with the parsed items
         await OnParsed.InvokeAsync(tableItems);

@@ -41,6 +41,29 @@ public sealed class WorksheetLoader<TTableItem> : IDisposable, IAsyncDisposable
         return result;
     }
     
+    public async Task<string?> FindColumnLetterAsync(string name, int maxRows = 10)
+    {
+        _stream.Position = 0;
+        int                  r     = 0;
+        IEnumerable<dynamic> query = await _excelQueryService.QueryAsync(_stream, ExcelType.XLSX);
+        
+        foreach (IDictionary<string, object> row in query)
+        {
+            r++;
+            if (r > maxRows)
+                break;
+            
+            foreach (KeyValuePair<string, object> column in row)
+            {
+                string columnName = column.Value as string ?? string.Empty;
+                
+                if (!string.IsNullOrEmpty(columnName) && columnName == name) return column.Key;
+            }
+        }
+        
+        return null;
+    }
+    
     /// <summary>
     /// Извлекает первую строку Excel-файла и возвращает словарь, где ключи — это буквы столбцов,
     /// а значения — это соответствующие значения из ячеек первой строки.
