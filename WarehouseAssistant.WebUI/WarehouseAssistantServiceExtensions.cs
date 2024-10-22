@@ -4,7 +4,6 @@ using MudBlazor;
 using MudBlazor.Services;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models.Db;
-using WarehouseAssistant.WebUI.Services;
 
 namespace WarehouseAssistant.WebUI
 {
@@ -29,24 +28,14 @@ namespace WarehouseAssistant.WebUI
             AddLocalStorage(services);
             
             services.AddScoped<IRepository<Product>, ProductRepository>();
-            services.AddScoped<TableOperationState>();
+            services.AddScoped<ReceivingItemRepository>();
             
             return services;
         }
         
         private static void AddLocalStorage(IServiceCollection services)
         {
-            services.AddBlazoredLocalStorage(cfg =>
-            {
-                cfg.JsonSerializerOptions.IgnoreReadOnlyProperties = true;
-                //cfg.JsonSerializerOptions.Converters.Add(
-                //    new TypeMappingConverter<IFilterDefinition<Product>, FilterDefinition<Product>>());
-                //cfg.JsonSerializerOptions.Converters.Add(
-                //    new TypeMappingConverter<IFilterDefinition<MarketingMaterial>, FilterDefinition<MarketingMaterial>>());
-                //cfg.JsonSerializerOptions.Converters.Add(
-                //    new TypeMappingConverter<IFilterDefinition<ProductTableItem>, FilterDefinition<ProductTableItem>>());
-                //cfg.JsonSerializerOptions.Converters.Add(new ObjectConverter());
-            });
+            services.AddBlazoredLocalStorage(cfg => { cfg.JsonSerializerOptions.IgnoreReadOnlyProperties = true; });
         }
     }
 }

@@ -4,8 +4,6 @@ namespace WarehouseAssistant.WebUI.Components;
 
 public class DataGrid<T> : MudDataGrid<T>
 {
-    // [Inject] private TableOperationState OperationState { get; set; } = null!;
-    
     public new virtual HashSet<T> SelectedItems
     {
         get => base.SelectedItems;

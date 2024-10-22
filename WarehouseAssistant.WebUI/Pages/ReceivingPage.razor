@@ -2,7 +2,7 @@
 @using WarehouseAssistant.Shared.Models
 @using WarehouseAssistant.WebUI.Components
 
-<Table TItem="ReceivingItem">
+<Table TItem="ReceivingItem" @ref="_table">
 	<ColumnsTemplate>
 		<PropertyColumn T="ReceivingItem" TProperty="string" Property="x => x.Name"
 		                Title="Название" Sortable="true" Resizable="false" IsEditable="false"/>
@@ -20,3 +20,7 @@
 		</PropertyColumn>
 	</ColumnsTemplate>
 </Table>
+
+<MudOverlay Visible="@_isBusy" DarkBackground="true" Absolute="true" AutoClose="false">
+	<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true"/>
+</MudOverlay>
