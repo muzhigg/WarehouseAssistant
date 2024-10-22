@@ -13,7 +13,7 @@
       "url": "icon-512.png"
     },
     {
-      "hash": "sha256-k9zZNMfPpWrMf1MIddgpbHgxZ0PRW5hLZQA45lsEVIk=",
+      "hash": "sha256-5G19aEgCVOqF41j99uUbrNX7FkJDZxc3QX7WSpUYWRQ=",
       "url": "index.html"
     },
     {
@@ -53,7 +53,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-QP9TQMNk5QavlbJWm\/Ld6+hVPymJHzhfLY2LqNCGSYw=",
+      "hash": "sha256-dlfR2YANXSj2O0GgNe5xpTcvko0Sxnk9jDt0of8yK+0=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -369,23 +369,23 @@
       "url": "_framework\/System.Xml.ReaderWriter.wasm"
     },
     {
-      "hash": "sha256-cXIXc9gdhjAvqwj\/k9qw864j4+C5Xdnlvod5ZCHOUnY=",
+      "hash": "sha256-U9aBNaGEm5R5e2DFH26dnuZ6GU+hflmVxx943bHsz2w=",
       "url": "_framework\/WarehouseAssistant.Core.wasm"
     },
     {
-      "hash": "sha256-SmLor8rkxAvuOzQU7xITQonfPX3E598PMhiNTmlZKZo=",
+      "hash": "sha256-AypXJo\/5NTwpWufW6Tc0Xf5FD6YqoMtCoONB+PbQ2fY=",
       "url": "_framework\/WarehouseAssistant.Data.wasm"
     },
     {
-      "hash": "sha256-+3xoSorNkS9sn5bCR0BRx2motUWba62tjV0KGJKYeZM=",
+      "hash": "sha256-QJ7B4plCckrYHC0GS002gAWp5W4wG7Fawi17mM8m57Q=",
       "url": "_framework\/WarehouseAssistant.Shared.Models.wasm"
     },
     {
-      "hash": "sha256-hjMOEG3RYIk9GnNU6WshbLKvo0WIQca\/EGgdDxpOWJE=",
+      "hash": "sha256-DmunBdEuCm9tjK+unwnLl\/ymw0EepBMm8KVy6J\/z6oM=",
       "url": "_framework\/WarehouseAssistant.WASM.wasm"
     },
     {
-      "hash": "sha256-58hzO18t+g3n\/6L9FGfizkCgGgzNak8YoxQEQ9R5uiM=",
+      "hash": "sha256-FEEuO66WtpGRbeoukRkUfoSAJ89Pf1QnLG5GWj7z4PM=",
       "url": "_framework\/WarehouseAssistant.WebUI.wasm"
     },
     {
@@ -405,5 +405,5 @@
       "url": "_content\/WarehouseAssistant.WebUI\/js\/exportFile.js"
     }
   ],
-  "version": "KTIq2hSf"
+  "version": "CHEf2wGJ"
 };
