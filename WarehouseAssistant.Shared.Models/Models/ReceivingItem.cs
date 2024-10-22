@@ -15,12 +15,12 @@ public class ReceivingItem : ITableItem
     
     public bool HasValidName()
     {
-        return true;
+        return !string.IsNullOrEmpty(Name);
     }
     
     public bool HasValidArticle()
     {
-        return true;
+        return ExpectedQuantity > 0;
     }
     
     public bool MatchesSearchString(string searchString)
