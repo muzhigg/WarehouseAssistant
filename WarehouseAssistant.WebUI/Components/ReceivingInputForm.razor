@@ -1,0 +1,15 @@
+@using Microsoft.AspNetCore.Components.Forms
+@inherits MudComponentBase
+
+<EditForm hidden="@_hidden" OnValidSubmit="OnValidSubmit" Model="@_model" Class="d-inline-flex">
+	<DataAnnotationsValidator/>
+	<MudTextField T="string?" Label="Артикул/штрихкод" @bind-Value="@_model.Id" For="@(() => _model.Id)"
+	              Placeholder="Введите артикул или отсканируйте штрихкод" Adornment="Adornment.Start"
+	              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"
+	              Clearable="true" Required="true" Disabled="@Disabled"/>
+	<MudNumericField T="int" Min="1" Label="Количество" @bind-Value="@_model.Quantity" Placeholder="Введите количество"
+	                 Class="mx-2 mt-0" Required="true" Disabled="@Disabled" For="@(() => _model.Quantity)"/>
+	<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@Disabled">
+		Добавить
+	</MudButton>
+</EditForm>

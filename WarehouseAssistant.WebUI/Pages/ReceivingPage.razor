@@ -3,6 +3,9 @@
 @using WarehouseAssistant.WebUI.Components
 
 <Table TItem="ReceivingItem" @ref="_table">
+	<ToolBarTemplate>
+		<ReceivingInputForm Class="d-inline" hidden="@(!_table.Items?.Any())"></ReceivingInputForm>
+	</ToolBarTemplate>
 	<ColumnsTemplate>
 		<PropertyColumn T="ReceivingItem" TProperty="string" Property="x => x.Name"
 		                Title="Название" Sortable="true" Resizable="false" IsEditable="false"/>
