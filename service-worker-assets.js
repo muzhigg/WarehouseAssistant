@@ -53,7 +53,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-dlfR2YANXSj2O0GgNe5xpTcvko0Sxnk9jDt0of8yK+0=",
+      "hash": "sha256-813CJJmB6EzHj2d7r3lNsdNLkaYWFTy+gnMR3TXvBeo=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -65,20 +65,32 @@
       "url": "_framework\/JetBrains.Annotations.wasm"
     },
     {
-      "hash": "sha256-pLay49VkwnpA+CuI9bbL3TaLOx0ffA1+rdK8cAJ2ENM=",
+      "hash": "sha256-YW4oGakyyqb+Y+z6lggdp2AEXlWAhcShd4BIDTfAfMc=",
+      "url": "_framework\/Microsoft.AspNetCore.Authorization.wasm"
+    },
+    {
+      "hash": "sha256-AD6kJGY\/ueRfX9RuZkPE3iP2BiaPuw3eJBt\/8F8XabQ=",
+      "url": "_framework\/Microsoft.AspNetCore.Components.Authorization.wasm"
+    },
+    {
+      "hash": "sha256-mtDib9xLYC45S58zxcWarhL53L09GUkDDYpy6s0IRXk=",
       "url": "_framework\/Microsoft.AspNetCore.Components.Forms.wasm"
     },
     {
-      "hash": "sha256-4bvdxWyCwqLz8GGvmmNVhiw3nChHiuBGgmCqbvhzgEE=",
+      "hash": "sha256-8AaDv3nBKkY1p38fUd+mYve2zB\/A\/P7uP+PyDRhRQjg=",
       "url": "_framework\/Microsoft.AspNetCore.Components.wasm"
     },
     {
-      "hash": "sha256-6kM7Tb3YBRdKcmqgzmZs3f6Epj30gtjbZiuWC3YXwCA=",
+      "hash": "sha256-0rW0bJ6R8W1Jljyi3TjzhuZOmPAQiHvEgsoTw\/efr4s=",
       "url": "_framework\/Microsoft.AspNetCore.Components.Web.wasm"
     },
     {
       "hash": "sha256-6L9uXgCk1UuMKDP+\/aFLwPbMq4VkQjNgN3de6qVcOLo=",
       "url": "_framework\/Microsoft.AspNetCore.Components.WebAssembly.wasm"
+    },
+    {
+      "hash": "sha256-nq7YR9CSVTU9Ccciv+diRlP9L9SZI\/E4yr0ZHh9RbqE=",
+      "url": "_framework\/Microsoft.AspNetCore.Metadata.wasm"
     },
     {
       "hash": "sha256-LLZ32w6dIlJmy+I1\/qQj6REq+KQIbnrOWVuIeWV95Rk=",
@@ -117,7 +129,7 @@
       "url": "_framework\/Microsoft.Extensions.Configuration.wasm"
     },
     {
-      "hash": "sha256-n\/M9RqOKM8Re9Q7m33o\/oVWx6lD4GM\/bN+uVDcoR3HI=",
+      "hash": "sha256-6fSQG8IkgQfYXhpDmfWyOfBPYuFJ8PKlvZwAQApr5lY=",
       "url": "_framework\/Microsoft.Extensions.DependencyInjection.Abstractions.wasm"
     },
     {
@@ -273,7 +285,7 @@
       "url": "_framework\/System.Net.Http.Json.wasm"
     },
     {
-      "hash": "sha256-wBVvvjNVlqaVkTtr8Wmhzyt5CnBMCrbpgR1CS4hgFrg=",
+      "hash": "sha256-dzgRBkWFCfz4ZMvh279lw\/YabOhg3zcbgixeGBd69FI=",
       "url": "_framework\/System.Net.Http.wasm"
     },
     {
@@ -301,7 +313,7 @@
       "url": "_framework\/System.ObjectModel.wasm"
     },
     {
-      "hash": "sha256-gX0sLFqPm3JO7C0fCBvtROg35paWIb9b3+YdSgs92b4=",
+      "hash": "sha256-tvi3AMGci0KKhHTSxCe3L+n7OoeLG\/Td2COYLSLodys=",
       "url": "_framework\/System.Private.CoreLib.wasm"
     },
     {
@@ -325,8 +337,12 @@
       "url": "_framework\/System.Runtime.Serialization.Formatters.wasm"
     },
     {
-      "hash": "sha256-NEYjsU5Qo8qtBWayOAkKXAwCA1kw2DArctXtefCSIR4=",
+      "hash": "sha256-HVxniIPo4rNoYcSseUDDHADzLngAokE\/rx1IpKcHCEQ=",
       "url": "_framework\/System.Runtime.wasm"
+    },
+    {
+      "hash": "sha256-Lb7XL6SGF3DEebtK8+ZaH2+MmM67W3gJsdHEvJqkF84=",
+      "url": "_framework\/System.Security.Claims.wasm"
     },
     {
       "hash": "sha256-76vlt7\/hD1EFix3LPaupfK+Fd8uPPHFOvZp6RV1s1mY=",
@@ -369,23 +385,23 @@
       "url": "_framework\/System.Xml.ReaderWriter.wasm"
     },
     {
-      "hash": "sha256-U9aBNaGEm5R5e2DFH26dnuZ6GU+hflmVxx943bHsz2w=",
+      "hash": "sha256-6jqZFVAtM1z+iHbSyxGgV9SM9gu1GSCou7j0DC1U84A=",
       "url": "_framework\/WarehouseAssistant.Core.wasm"
     },
     {
-      "hash": "sha256-AypXJo\/5NTwpWufW6Tc0Xf5FD6YqoMtCoONB+PbQ2fY=",
+      "hash": "sha256-UDG3vqjxPxsPWvQL4SZT3dpsKL8qUdBBfWL6ucLaoI4=",
       "url": "_framework\/WarehouseAssistant.Data.wasm"
     },
     {
-      "hash": "sha256-QJ7B4plCckrYHC0GS002gAWp5W4wG7Fawi17mM8m57Q=",
+      "hash": "sha256-8y3j590egLnzwwUSrMXW1T9cfApXuOLQSOtX674NkLM=",
       "url": "_framework\/WarehouseAssistant.Shared.Models.wasm"
     },
     {
-      "hash": "sha256-DmunBdEuCm9tjK+unwnLl\/ymw0EepBMm8KVy6J\/z6oM=",
+      "hash": "sha256-2fqLq18ZdOxo57vS95gG8+tteHou4qubD3Gtv9m04\/s=",
       "url": "_framework\/WarehouseAssistant.WASM.wasm"
     },
     {
-      "hash": "sha256-FEEuO66WtpGRbeoukRkUfoSAJ89Pf1QnLG5GWj7z4PM=",
+      "hash": "sha256-uApP6XW7Wku1mnFaBg8vzXo+lPLKJHKxv4ms80Dn9rw=",
       "url": "_framework\/WarehouseAssistant.WebUI.wasm"
     },
     {
@@ -405,5 +421,5 @@
       "url": "_content\/WarehouseAssistant.WebUI\/js\/exportFile.js"
     }
   ],
-  "version": "CHEf2wGJ"
+  "version": "dlP3lOrn"
 };
