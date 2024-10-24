@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
@@ -8,11 +7,10 @@ namespace WarehouseAssistant.WebUI.Components;
 
 public partial class ReceivingInputForm : MudComponentBase
 {
-    [Parameter] public bool               Disabled { get; set; }
-    private            bool               _hidden;
-    private            string             _idInput       = "";
-    private            int                _quantityInput = 1;
-    private            ReceivingInputData _model         = new();
+    [Parameter] public bool                              Disabled      { get; set; }
+    [Parameter] public EventCallback<ReceivingInputData> OnInputSubmit { get; set; }
+    private            bool                              _hidden;
+    private            ReceivingInputData                _model = new();
     
     public override Task SetParametersAsync(ParameterView parameters)
     {
@@ -23,6 +21,10 @@ public partial class ReceivingInputForm : MudComponentBase
     
     private void OnValidSubmit(EditContext obj)
     {
-        Debug.WriteLine("Valid submit");
+        if (_model.Id.Length == 4)
+            _model.Id = "4000" + _model.Id;
+        
+        OnInputSubmit.InvokeAsync(_model);
+        _model = new ReceivingInputData();
     }
 }

@@ -2,9 +2,11 @@
 @using WarehouseAssistant.Shared.Models
 @using WarehouseAssistant.WebUI.Components
 
+<audio id="errorSfx" src="/sound/error.wav"></audio>
+
 <Table TItem="ReceivingItem" @ref="_table">
 	<ToolBarTemplate>
-		<ReceivingInputForm Class="d-inline" hidden="@(!_table.Items?.Any())"></ReceivingInputForm>
+		<ReceivingInputForm Class="d-inline" hidden="@(!_table.Items?.Any())" OnInputSubmit="OnInputProvided"/>
 	</ToolBarTemplate>
 	<ColumnsTemplate>
 		<PropertyColumn T="ReceivingItem" TProperty="string" Property="x => x.Name"

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
 using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Services;
 
@@ -31,7 +32,7 @@ namespace WarehouseAssistant.WebUI
             services.AddAuthorizationCore();
             services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
             services.AddScoped<IRepository<Product>, ProductRepository>();
-            services.AddScoped<ReceivingItemRepository>();
+            services.AddScoped<IRepository<ReceivingItem>, ReceivingItemRepository>();
             
             return services;
         }

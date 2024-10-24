@@ -13,3 +13,8 @@ function DownloadExcelFile(filename, content) {
 
     URL.revokeObjectURL(exportUrl);
 }
+
+function playNotificationSound(url) {
+    let audio = new Audio(url);
+    audio.play();
+}
