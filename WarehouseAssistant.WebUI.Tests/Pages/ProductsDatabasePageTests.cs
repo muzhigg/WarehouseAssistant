@@ -46,11 +46,11 @@ public sealed class ProductsDatabasePageTests : MudBlazorTestContext
         {
             new Product
             {
-                Article = "123", Name = "Product 1", Barcode = 111111, QuantityPerBox = 10, QuantityPerShelf = 5
+                Article = "123", Name = "Product 1", Barcode = "111111", QuantityPerBox = 10, QuantityPerShelf = 5
             },
             new Product
             {
-                Article = "456", Name = "Product 2", Barcode = 222222, QuantityPerBox = 20, QuantityPerShelf = 10
+                Article = "456", Name = "Product 2", Barcode = "222222", QuantityPerBox = 20, QuantityPerShelf = 10
             }
         };
         _repositoryMock.Setup(repo => repo.GetAllAsync()).ReturnsAsync(products);

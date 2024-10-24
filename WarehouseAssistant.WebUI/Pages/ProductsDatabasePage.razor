@@ -1,6 +1,8 @@
 ﻿@page "/database/products"
+@using Microsoft.AspNetCore.Authorization
 @using WarehouseAssistant.Shared.Models.Db
 @using WarehouseAssistant.WebUI.Components
+@attribute [Authorize]
 
 <DataGrid Items="_products" @ref="_dataGrid" T="Product"
           LoadingProgressColor="Color.Primary" FixedHeader="true" Hover="true" Bordered="true" Striped="true"
@@ -23,7 +25,7 @@
 		<SelectColumn T="Product" ShowInFooter="false"/>
 		<PropertyColumn T="Product" TProperty="string" Property="arg => arg.Article" Title="Артикул"/>
 		<PropertyColumn T="Product" TProperty="string" Property="arg => arg.Name" Title="Название"/>
-		<PropertyColumn T="Product" TProperty="long?" Property="arg => arg.Barcode" Title="Штрихкод"/>
+		<PropertyColumn T="Product" TProperty="string?" Property="arg => arg.Barcode" Title="Штрихкод"/>
 		<PropertyColumn T="Product" TProperty="int?" Property="arg => arg.QuantityPerBox" Title="Кол-во на коробку"/>
 		<PropertyColumn T="Product" TProperty="int?" Property="arg => arg.QuantityPerShelf" Title="Кол-во на полку"/>
 		<TemplateColumn T="Product" Filterable="false">

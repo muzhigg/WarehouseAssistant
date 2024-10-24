@@ -5,7 +5,7 @@
 			              Required="true" Validation="@(new Func<string, Task<string>>(ArticleValidation))"/>
 			<MudTextField id="product-name-field" T="string?" @bind-Value="ProductName" Label="Название"
 			              Required="true"/>
-			<MudTextField id="barcode-field" T="long?" @bind-Value="Barcode" Label="Штрих-код"/>
+			<MudTextField id="barcode-field" T="string?" @bind-Value="Barcode" Label="Штрих-код"/>
 			<MudTextField id="quantity-per-box-field" T="int?" @bind-Value="QuantityPerBox"
 			              Label="Количество на коробку"/>
 			<MudTextField id="quantity-per-shelf-field" T="int?" @bind-Value="QuantityPerShelf"

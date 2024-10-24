@@ -26,14 +26,29 @@ namespace WarehouseAssistant.Data.Repositories
             await httpClient.PostAsJsonAsync(Uri, marketingMaterial);
         }
         
+        public async Task AddRangeAsync(IEnumerable<MarketingMaterial> objects)
+        {
+            throw new NotImplementedException();
+        }
+        
         public async Task UpdateAsync(MarketingMaterial marketingMaterial)
         {
             await httpClient.PutAsJsonAsync($"{Uri}/{marketingMaterial.Article}", marketingMaterial);
         }
         
+        public async Task UpdateRangeAsync(IEnumerable<MarketingMaterial> objects)
+        {
+            throw new NotImplementedException();
+        }
+        
         public async Task DeleteAsync(string? article)
         {
             await httpClient.DeleteAsync($"{Uri}/{article}");
+        }
+        
+        public async Task DeleteRangeAsync(IEnumerable<string> articles)
+        {
+            throw new NotImplementedException();
         }
         
         public Task<bool> ValidateAccessKeyAsync(string accessKey)

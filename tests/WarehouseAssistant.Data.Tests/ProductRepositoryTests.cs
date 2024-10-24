@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using FluentAssertions;
 using Moq;
 using Moq.Contrib.HttpClient;
 using Newtonsoft.Json;
@@ -119,7 +120,7 @@ public class ProductRepositoryTests
     {
         // Arrange
         var products = new List<Product> { new Product { Article = "article1" }, new Product { Article = "article2" } };
-        _mockHttpMessageHandler.SetupRequest(HttpMethod.Get, $"{Uri}")
+        _mockHttpMessageHandler.SetupRequest(HttpMethod.Get, $"{Uri}/all")
             .ReturnsResponse(HttpStatusCode.OK,
                 new StringContent(JsonConvert.SerializeObject(products), Encoding.UTF8, "application/json"));
         
@@ -221,7 +222,7 @@ public class ProductRepositoryTests
     }
     
     [Fact]
-    public async Task DeleteAsync_NonExistentArticle_NoException()
+    public async Task DeleteAsync_NonExistentArticle_Should_ThrowException()
     {
         // Arrange
         var article = "non-existent-article";
@@ -230,11 +231,9 @@ public class ProductRepositoryTests
         _mockHttpMessageHandler.SetupAnyRequest()
             .ReturnsResponse(HttpStatusCode.NotFound);
         
-        // Act
-        await _productRepository.DeleteAsync(article);
-        
-        // Assert
-        // No exception thrown
+        // Act & Assert
+        var result = await Assert.ThrowsAsync<HttpRequestException>(() => _productRepository.DeleteAsync(article));
+        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
     
     [Fact]

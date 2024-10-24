@@ -44,24 +44,28 @@ public partial class BaseProductCalculatorDialog<TStrategy, TOptions> : BaseProd
         }
     }
     
-    private async Task OnSubmit(MouseEventArgs obj)
+    private async Task OnSubmit()
     {
         await CalculateProducts();
         await LocalStorage.SetItemAsync($"{typeof(TStrategy).Name}_{typeof(TOptions).Name}_calc_opt", Options);
         MudDialog.Close();
     }
     
-    private async Task CalculateProducts()
+    internal async Task CalculateProducts()
     {
         if (ProductTableItems != null)
             foreach (ProductTableItem productTableItem in ProductTableItems)
+            {
+                if (NeedAddToDb && productTableItem.DbReference == null)
+                    await ProductFormDialog.ShowAddDialogAsync(productTableItem, DialogService);
                 await CalculateQuantity(productTableItem);
+            }
     }
     
-    internal virtual async Task CalculateQuantity(ProductTableItem productTableItem)
+    protected virtual Task CalculateQuantity(ProductTableItem productTableItem)
     {
-        if (NeedAddToDb && productTableItem.DbReference == null)
-            await ProductFormDialog.ShowAddDialogAsync(productTableItem, DialogService);
+        Strategy.CalculateQuantity(productTableItem, Options);
+        return Task.CompletedTask;
     }
     
     private void OnCancel(MouseEventArgs obj)

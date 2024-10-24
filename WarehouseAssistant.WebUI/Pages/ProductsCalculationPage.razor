@@ -46,6 +46,7 @@
 			<MudMenuItem OnClick="OpenCalculationDialog<IncrementByPercentageCalculatorDialog>">Увеличить в процентах</MudMenuItem>
 			<MudMenuItem OnClick="OpenCalculationDialog<QuantityPerBoxRoundDialog>">Округление в коробки</MudMenuItem>
 			<MudMenuItem OnClick="OpenCalculationDialog<ShelfQuantityAdjustmentCalculatorDialog>">Добавить до количества на полке</MudMenuItem>
+			<MudMenuItem OnClick="OpenCalculationDialog<SubtractCurrentQuantityCalculator>">Вычесть текущее количество</MudMenuItem>
 		</MudMenu>
 		<MudButton id="export-table-button" hidden="@(!context.Items?.Any())"
 		           Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Outlined"
