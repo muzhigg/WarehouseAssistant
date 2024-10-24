@@ -73,7 +73,7 @@ namespace WarehouseAssistant.WebUI.Dialogs
         
         public string? ProductName { get; set; }
         
-        public long? Barcode { get; set; }
+        public string? Barcode { get; set; }
         
         public int? QuantityPerBox { get; set; }
         

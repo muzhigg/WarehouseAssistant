@@ -24,14 +24,29 @@ public class ProductRepositoryStub : IRepository<Product>
         return;
     }
     
+    public async Task AddRangeAsync(IEnumerable<Product> objects)
+    {
+        throw new System.NotImplementedException();
+    }
+    
     public async Task UpdateAsync(Product product)
     {
         return;
     }
     
+    public async Task UpdateRangeAsync(IEnumerable<Product> objects)
+    {
+        throw new System.NotImplementedException();
+    }
+    
     public async Task DeleteAsync(string? article)
     {
         return;
+    }
+    
+    public async Task DeleteRangeAsync(IEnumerable<string> articles)
+    {
+        throw new System.NotImplementedException();
     }
     
     public Task<bool> ValidateAccessKeyAsync(string accessKey)
