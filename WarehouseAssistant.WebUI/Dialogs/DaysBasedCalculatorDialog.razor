@@ -17,10 +17,8 @@
 		<MudNumericField id="days-count" T="int" @bind-Value="@Options.DaysCount" Label="На количество дней" Min="0"/>
 	};
 
-	internal override async Task CalculateQuantity(ProductTableItem productTableItem)
+	protected override async Task CalculateQuantity(ProductTableItem productTableItem)
 	{
-		await base.CalculateQuantity(productTableItem);
-
 		if (productTableItem is { AverageTurnover: <= 0.0, AvailableQuantity: > 0 })
 		{
 			await ShowManualInputDialog(productTableItem);
