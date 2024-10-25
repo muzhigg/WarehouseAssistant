@@ -4,9 +4,13 @@
 
 <audio id="errorSfx" src="/sound/error.wav"></audio>
 
-<Table TItem="ReceivingItem" @ref="_table">
+<Table TItem="ReceivingItem" @ref="_table" TableImported="OnTableImported">
 	<ToolBarTemplate>
 		<ReceivingInputForm Class="d-inline" hidden="@(!_table.Items?.Any())" OnInputSubmit="OnInputProvided"/>
+		<MudButton hidden="@(!_table.Items?.Any())" Variant="Variant.Outlined" Color="Color.Primary"
+		           OnClick="CompleteReceiving" Class="pl-2 pr-2">
+			Завершить
+		</MudButton>
 	</ToolBarTemplate>
 	<ColumnsTemplate>
 		<PropertyColumn T="ReceivingItem" TProperty="string" Property="x => x.Name"

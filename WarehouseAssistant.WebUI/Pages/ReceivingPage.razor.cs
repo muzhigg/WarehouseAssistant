@@ -1,4 +1,7 @@
 using System.Diagnostics;
+using System.Timers;
+using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
@@ -7,23 +10,31 @@ using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Components;
 using WarehouseAssistant.WebUI.Models;
+using Timer = System.Timers.Timer;
 
 namespace WarehouseAssistant.WebUI.Pages;
 
-public partial class ReceivingPage : ComponentBase
+[UsedImplicitly]
+[Authorize]
+public partial class ReceivingPage : ComponentBase, IDisposable
 {
     [Inject] public IRepository<ReceivingItem> Repository        { get; set; } = null!;
     [Inject] public IRepository<Product>       ProductRepository { get; set; } = null!;
     [Inject] public ISnackbar                  Snackbar          { get; set; } = null!;
     [Inject] public IJSRuntime                 JsRuntime         { get; set; } = null!;
+    [Inject] public IDialogService             DialogService     { get; set; } = null!;
     
     private Table<ReceivingItem> _table = null!;
     private bool                 _isBusy;
     
     private List<Product>? _dbProducts;
+    private Timer          _timer = new Timer(300000);
     
     protected override async Task OnInitializedAsync()
     {
+        _timer.Elapsed   += TimerOnElapsed;
+        _timer.AutoReset =  true;
+        
         try
         {
             _dbProducts = await ProductRepository.GetAllAsync();
@@ -35,30 +46,37 @@ public partial class ReceivingPage : ComponentBase
         }
     }
     
+    private void TimerOnElapsed(object? sender, ElapsedEventArgs e)
+    {
+        Repository.UpdateRangeAsync(_table.Items);
+        Snackbar.Add("Данные сохранены.", Severity.Success);
+    }
+    
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // _isBusy = true;
-        //
-        // try
-        // {
-        //     Debug.WriteLine("ReceivingPage: Trying to load items.");
-        //     
-        //     if (await Repository.HasActiveSessionAsync())
-        //     {
-        //         Debug.WriteLine("ReceivingPage: Active session found.");
-        //         var items = await Repository.GetItemsAsync();
-        //         _table.Items = items;
-        //         StateHasChanged();
-        //     }
-        // }
-        // catch (Exception e)
-        // {
-        //     Snackbar.Add($"Ошибка при обращении к базе данных: {e.Message}", Severity.Error);
-        // }
-        // finally
-        // {
-        //     _isBusy = false;
-        // }
+        _isBusy = true;
+        
+        try
+        {
+            Debug.WriteLine("ReceivingPage: Trying to load last session.");
+            
+            var items = await Repository.GetAllAsync();
+            
+            if (items != null && items.Count != 0)
+            {
+                Debug.WriteLine("ReceivingPage: Active session found.");
+                _table.Items = items;
+                StateHasChanged();
+            }
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add($"Ошибка при обращении к базе данных: {e.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isBusy = false;
+        }
         
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -88,7 +106,7 @@ public partial class ReceivingPage : ComponentBase
         await JsRuntime.InvokeVoidAsync("playNotificationSound", soundUrl);
     }
     
-    private void Receive(ReceivingInputData obj)
+    internal void Receive(ReceivingInputData obj)
     {
         ReceivingItem? tableItem = null;
         
@@ -133,5 +151,63 @@ public partial class ReceivingPage : ComponentBase
         {
             Snackbar.Add($"Товар {tableItem.Article} получен полностью.", Severity.Success);
         }
+    }
+    
+    private async Task CompleteReceiving()
+    {
+        // TODO: Complete receiving session and save data to database.
+        // TODO: Play Success sound
+        
+        bool? confirmed = await DialogService.ShowMessageBox("Вы уверены?",
+            "Приёмка будет завершена. Все накопленные данные будут удалены. Продолжить?", yesText: "Да", noText: "Нет");
+        
+        if (confirmed == true)
+            return;
+        
+        Snackbar.Add("Приёмка завершена.", Severity.Success);
+        
+        try
+        {
+            _isBusy = true;
+            await Repository.DeleteRangeAsync(_table.Items.Select(item => item.Article));
+            Snackbar.Add("Данные удалены.", Severity.Success);
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add($"Ошибка при обращении к базе данных: {e.Message}", Severity.Error);
+            Debug.WriteLine(e);
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+        
+        _table.Items.Clear();
+    }
+    
+    private async Task OnTableImported(List<ReceivingItem> obj)
+    {
+        _isBusy        = true;
+        _timer.Enabled = true;
+        
+        try
+        {
+            await Repository.AddRangeAsync(obj);
+            Snackbar.Add("Данные сохранены.", Severity.Success);
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add($"Ошибка при обращении к базе данных: {e.Message}", Severity.Error);
+            Debug.WriteLine(e);
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+    
+    public void Dispose()
+    {
+        _timer.Dispose();
     }
 }
