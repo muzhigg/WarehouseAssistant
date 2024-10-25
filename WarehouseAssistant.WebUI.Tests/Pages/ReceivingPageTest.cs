@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using Microsoft.JSInterop;
 using Moq;
 using MudBlazor;
+using MudBlazor.Services;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
@@ -17,6 +18,7 @@ public class ReceivingPageTest : MudBlazorTestContext
     private readonly Mock<IRepository<Product>>       _productRepoMock   = new();
     private readonly Mock<ISnackbar>                  _snackbarMock      = new();
     private readonly Mock<IJSRuntime>                 _jsRuntimeMock     = new();
+    private readonly Mock<IDialogService>             _dialogServiceMock = new();
     
     public ReceivingPageTest()
     {
@@ -24,6 +26,10 @@ public class ReceivingPageTest : MudBlazorTestContext
         Services.AddSingleton(_productRepoMock.Object);
         Services.AddSingleton(_snackbarMock.Object);
         Services.AddSingleton(_jsRuntimeMock.Object);
+        Services.AddSingleton(_dialogServiceMock.Object);
+        Services.AddMudEventManager();
+        Services.AddMudLocalization();
+        Services.AddMudBlazorKeyInterceptor().AddMudBlazorScrollManager();
     }
     
     [Fact]

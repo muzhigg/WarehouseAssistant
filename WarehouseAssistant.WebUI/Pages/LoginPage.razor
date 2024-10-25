@@ -49,6 +49,7 @@
 			{
 // var result = await response.Content.ReadFromJsonAsync<AuthenticationResponse>();
 				string token = await response.Content.ReadAsStringAsync();
+				Debug.WriteLine(token);
 				if (!string.IsNullOrEmpty(token))
 				{
 					((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(token);

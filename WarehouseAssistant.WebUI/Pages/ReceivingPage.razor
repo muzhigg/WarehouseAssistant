@@ -1,6 +1,9 @@
 @page "/receiving"
+@using Microsoft.AspNetCore.Authorization
 @using WarehouseAssistant.Shared.Models
 @using WarehouseAssistant.WebUI.Components
+
+@attribute [Authorize]
 
 <audio id="errorSfx" src="/sound/error.wav"></audio>
 

@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace WarehouseAssistant.Data.Repositories;
@@ -9,8 +11,23 @@ public abstract class RepositoryBase<T>(HttpClient httpClient) : IRepository<T> 
     
     public virtual async Task DeleteRangeAsync(IEnumerable<string> articles)
     {
-        var response = await httpClient.PostAsJsonAsync($"{Uri}/remove-range", articles);
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"{Uri}/remove-range")
+        {
+            Content = JsonContent.Create(articles)
+        };
+        
+        request.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", httpClient.DefaultRequestHeaders.Authorization.Parameter);
+        
+        Debug.WriteLine(request.Headers.Authorization.Scheme);
+        Debug.WriteLine(request.Headers.Authorization.Parameter);
+        var response = await httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
+        
+        
+        // var response = await httpClient.PostAsJsonAsync($"{Uri}/remove-range", articles);
+        // await httpClient.DeleteFromJsonAsync($"{Uri}/remove-range", articles);
+        // response.EnsureSuccessStatusCode();
     }
     
     private bool? _isAuthenticated;

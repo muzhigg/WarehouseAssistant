@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using Blazored.LocalStorage;
@@ -10,6 +11,7 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
 {
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        Debug.WriteLine("GetAuthenticationStateAsync");
         // Получаем токен из локального хранилища
         var token = await localStorageService.GetItemAsync<string>("authToken");
         
@@ -22,11 +24,15 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
         var identity = new ClaimsIdentity(claims, "jwt");
         
         var user = new ClaimsPrincipal(identity);
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        Debug.WriteLine($"Token: {token}");
+        Debug.WriteLine(httpClient.DefaultRequestHeaders.Authorization.Parameter == null);
         return new AuthenticationState(user);
     }
     
     public void MarkUserAsAuthenticated(string token)
     {
+        Debug.WriteLine(token);
         var claims   = JwtParser.ParseClaimsFromJwt(token);
         var identity = new ClaimsIdentity(claims, "jwt");
         
@@ -34,7 +40,8 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
         
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
-        localStorageService.SetItemAsync("authToken", token);
+        // localStorageService.SetItemAsync("authToken", token);
+        Debug.WriteLine(token);
     }
     
     public void MarkUserAsLoggedOut()
