@@ -19,12 +19,12 @@ public partial class ReceivingInputForm : MudComponentBase
         return base.SetParametersAsync(parameters);
     }
     
-    private void OnValidSubmit(EditContext obj)
+    private async Task OnValidSubmit(EditContext obj)
     {
         if (_model.Id.Length == 4)
             _model.Id = "4000" + _model.Id;
         
-        OnInputSubmit.InvokeAsync(_model);
+        await OnInputSubmit.InvokeAsync(_model);
         _model = new ReceivingInputData();
     }
 }
