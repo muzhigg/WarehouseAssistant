@@ -29,8 +29,8 @@ namespace WarehouseAssistant.WebUI
                 config.SnackbarConfiguration.SnackbarVariant        = Variant.Filled;
             });
             AddLocalStorage(services);
-            services.AddAuthorizationCore();
             services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+            services.AddAuthorizationCore();
             services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<IRepository<ReceivingItem>, ReceivingItemRepository>();
             

@@ -1,3 +1,21 @@
 ﻿@page "/"
-@using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
+@using WarehouseAssistant.WebUI.Services
+@attribute [AllowAnonymous]
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<AuthorizeView>
+	<Authorized>
+		<MudText Typo="Typo.h6"
+		         Class="font-italic font-weight-bold">
+			@($"Добро пожаловать, {context.User.FindFirst("sub")?.Value}")
+		</MudText>
+		<MudButton Variant="Variant.Outlined"
+		           OnClick="() => ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsLoggedOut()">
+			Выйти
+		</MudButton>
+	</Authorized>
+	<NotAuthorized>
+		<LoginForm/>
+	</NotAuthorized>
+</AuthorizeView>
