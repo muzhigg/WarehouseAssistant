@@ -33,7 +33,7 @@ namespace WarehouseAssistant.WebUI
             services.AddAuthorizationCore();
             services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<IRepository<ReceivingItem>, ReceivingItemRepository>();
-            
+            services.AddScoped<SnackbarWithSoundService>();
             return services;
         }
         
