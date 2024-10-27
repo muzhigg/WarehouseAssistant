@@ -98,7 +98,7 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
             if (!state.User.IsInRole("Admin") && !state.User.IsInRole("Editor"))
             {
                 Snackbar.Add("Нет прав на добавление/редактирование товаров", Severity.Error);
-                MudDialog?.Close();
+                MudDialog?.Cancel();
             }
         }
         
