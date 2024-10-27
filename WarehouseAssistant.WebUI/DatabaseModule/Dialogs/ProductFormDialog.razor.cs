@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models;
@@ -73,6 +74,8 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
         
         [CascadingParameter] private MudDialogInstance? MudDialog { get; set; }
         
+        [Inject] public AuthenticationStateProvider AuthenticationState { get; set; } = null!;
+        
         public string? Article { get; set; }
         
         public string? ProductName { get; set; }
@@ -86,12 +89,17 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
         private bool    _isValid;
         private MudForm _form = null!;
         
-        protected override Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
-            if (Db.CanWrite == false)
-                Snackbar.Add("Нет доступа для записи в базу данных", Severity.Error);
+            await base.OnInitializedAsync();
             
-            return Task.CompletedTask;
+            var state = await AuthenticationState.GetAuthenticationStateAsync();
+            
+            if (!state.User.IsInRole("Admin") && !state.User.IsInRole("Editor"))
+            {
+                Snackbar.Add("Нет прав на добавление/редактирование товаров", Severity.Error);
+                MudDialog?.Close();
+            }
         }
         
         protected override void OnParametersSet()
