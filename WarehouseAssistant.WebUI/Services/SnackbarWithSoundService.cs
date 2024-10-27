@@ -26,7 +26,7 @@ public class SnackbarWithSoundService(IJSRuntime jsRuntime, ISnackbar snackbarSe
         return true;
     }
     
-    public Snackbar? Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+    public virtual Snackbar? Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         Dictionary<string, object> componentParameters = null, Severity severity = Severity.Normal,
         Action<SnackbarOptions>    configure           = null, string   key      = "") where T : IComponent
     {
@@ -38,8 +38,9 @@ public class SnackbarWithSoundService(IJSRuntime jsRuntime, ISnackbar snackbarSe
         return instance;
     }
     
-    public Snackbar? Add(string message, Severity severity = Severity.Normal, Action<SnackbarOptions> configure = null,
-        string                  key = "")
+    public virtual Snackbar? Add(string message, Severity severity = Severity.Normal,
+        Action<SnackbarOptions>         configure = null,
+        string                          key       = "")
     {
         var instance = snackbarService.Add(message, severity, configure, key);
         
@@ -49,8 +50,8 @@ public class SnackbarWithSoundService(IJSRuntime jsRuntime, ISnackbar snackbarSe
         return instance;
     }
     
-    public Snackbar? Add(RenderFragment message,          Severity severity = Severity.Normal,
-        Action<SnackbarOptions>         configure = null, string   key      = "")
+    public virtual Snackbar? Add(RenderFragment message,          Severity severity = Severity.Normal,
+        Action<SnackbarOptions>                 configure = null, string   key      = "")
     {
         var instance = snackbarService.Add(message, severity, configure, key);
         
@@ -60,17 +61,17 @@ public class SnackbarWithSoundService(IJSRuntime jsRuntime, ISnackbar snackbarSe
         return instance;
     }
     
-    public void Clear()
+    public virtual void Clear()
     {
         snackbarService.Clear();
     }
     
-    public void Remove(Snackbar snackbar)
+    public virtual void Remove(Snackbar snackbar)
     {
         snackbarService.Remove(snackbar);
     }
     
-    public void RemoveByKey(string key)
+    public virtual void RemoveByKey(string key)
     {
         snackbarService.RemoveByKey(key);
     }
