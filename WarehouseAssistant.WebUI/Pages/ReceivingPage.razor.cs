@@ -17,18 +17,18 @@ namespace WarehouseAssistant.WebUI.Pages;
 [UsedImplicitly]
 public partial class ReceivingPage : ComponentBase, IDisposable
 {
-    [Inject] public  IRepository<ReceivingItem> Repository        { get; set; } = null!;
-    [Inject] public  IRepository<Product>       ProductRepository { get; set; } = null!;
-    [Inject] public  ISnackbar                  Snackbar          { get; set; } = null!;
-    [Inject] public  IJSRuntime                 JsRuntime         { get; set; } = null!;
-    [Inject] public  IDialogService             DialogService     { get; set; } = null!;
+    [Inject] private IRepository<ReceivingItem> Repository        { get; set; } = null!;
+    [Inject] private IRepository<Product>       ProductRepository { get; set; } = null!;
+    [Inject] private ISnackbar                  Snackbar          { get; set; } = null!;
+    [Inject] private IJSRuntime                 JsRuntime         { get; set; } = null!;
+    [Inject] private IDialogService             DialogService     { get; set; } = null!;
     [Inject] private IProductFormDialogService  ProductFormDialog { get; set; } = null!;
     
     private Table<ReceivingItem> _table = null!;
     private bool                 _isBusy;
     
     private          List<Product>? _dbProducts;
-    private readonly Timer          _timer           = new Timer(300000);
+    private readonly Timer          _timer           = new(300000);
     private          MudMessageBox  _articleInputBox = null!;
     private          string?        _articleInput;
     
@@ -41,16 +41,13 @@ public partial class ReceivingPage : ComponentBase, IDisposable
         {
             _isBusy     = true;
             _dbProducts = await ProductRepository.GetAllAsync();
-            Debug.WriteLine("ReceivingPage: Trying to load last session.");
             
             var items = await Repository.GetAllAsync();
             
-            if (items != null && items.Count != 0)
+            if (items?.Count > 0)
             {
-                Debug.WriteLine("ReceivingPage: Active session found.");
                 _table.Items   = items;
                 _timer.Enabled = true;
-                StateHasChanged();
             }
         }
         catch (HttpRequestException e)
@@ -75,72 +72,66 @@ public partial class ReceivingPage : ComponentBase, IDisposable
         _isBusy = true;
         await Receive(obj);
         _isBusy = false;
-        StateHasChanged();
     }
     
+    private async Task<ReceivingItem?> FindByBarcodeInDatabaseAsync(ReceivingInputData obj)
+    {
+        ReceivingItem? tableItem = null;
+        
+        if (_dbProducts != null)
+        {
+            if (_dbProducts.Any(product => product.Article == _articleInput))
+            {
+                var dbProduct = _dbProducts.First(product => product.Article == _articleInput);
+                dbProduct.Barcode = obj.Id;
+                try
+                {
+                    await ProductRepository.UpdateAsync(dbProduct);
+                }
+                catch (HttpRequestException e)
+                {
+                    Snackbar.Add($"Ошибка при обращении к базе данных: {e.Message}", Severity.Error);
+                    Debug.WriteLine(e);
+                }
+                
+                tableItem = _table.Items.FirstOrDefault(item => item.Article == _articleInput);
+            }
+            else
+            {
+                tableItem = _table.Items.FirstOrDefault(item => item.Article == _articleInput);
+                
+                if (tableItem != null)
+                {
+                    Product dbProduct = new Product()
+                    {
+                        Article = _articleInput,
+                        Barcode = obj.Id,
+                        Name    = tableItem.Name,
+                    };
+                    var success = await ProductFormDialog.ShowAddDialogAsync(dbProduct);
+                    
+                    if (success)
+                        _dbProducts.Add(dbProduct);
+                }
+            }
+        }
+        
+        return tableItem;
+    }
     
     internal async Task Receive(ReceivingInputData obj)
     {
         ReceivingItem? tableItem = null;
         
-        foreach (ReceivingItem receivingItem in _table.Items)
-        {
-            if (receivingItem.Article == obj.Id)
-            {
-                tableItem = receivingItem;
-                break;
-            }
-            
-            if (_dbProducts != null &&
-                _dbProducts.Any(p => p.Barcode == obj.Id && p.Article == receivingItem.Article))
-            {
-                tableItem = receivingItem;
-                break;
-            }
-        }
+        tableItem = FindTableItem(obj);
         
         if (tableItem == null && obj.Id.Length > 10)
         {
             bool? confirmed = await _articleInputBox.Show();
             if (confirmed is true && string.IsNullOrEmpty(_articleInput) == false)
             {
-                if (_dbProducts != null)
-                {
-                    if (_dbProducts.Any(product => product.Article == _articleInput))
-                    {
-                        var dbProduct = _dbProducts.First(product => product.Article == _articleInput);
-                        dbProduct.Barcode = obj.Id;
-                        try
-                        {
-                            await ProductRepository.UpdateAsync(dbProduct);
-                        }
-                        catch (HttpRequestException e)
-                        {
-                            Snackbar.Add($"Ошибка при обращении к базе данных: {e.Message}", Severity.Error);
-                            Debug.WriteLine(e);
-                        }
-                        
-                        tableItem = _table.Items.FirstOrDefault(item => item.Article == _articleInput);
-                    }
-                    else
-                    {
-                        tableItem = _table.Items.FirstOrDefault(item => item.Article == _articleInput);
-                        
-                        if (tableItem != null)
-                        {
-                            Product dbProduct = new Product()
-                            {
-                                Article = _articleInput,
-                                Barcode = obj.Id,
-                                Name    = tableItem.Name,
-                            };
-                            var success = await ProductFormDialog.ShowAddDialogAsync(dbProduct);
-                            
-                            if (success)
-                                _dbProducts.Add(dbProduct);
-                        }
-                    }
-                }
+                await FindByBarcodeInDatabaseAsync(obj);
+                _articleInput = null;
             }
         }
         
@@ -167,6 +158,28 @@ public partial class ReceivingPage : ComponentBase, IDisposable
         {
             Snackbar.Add($"Товар {tableItem.Article} получен полностью.", Severity.Success);
         }
+    }
+    
+    private ReceivingItem? FindTableItem(ReceivingInputData obj)
+    {
+        ReceivingItem? tableItem = null;
+        foreach (ReceivingItem receivingItem in _table.Items)
+        {
+            if (receivingItem.Article == obj.Id)
+            {
+                tableItem = receivingItem;
+                break;
+            }
+            
+            if (_dbProducts != null &&
+                _dbProducts.Any(p => p.Barcode == obj.Id && p.Article == receivingItem.Article))
+            {
+                tableItem = receivingItem;
+                break;
+            }
+        }
+        
+        return tableItem;
     }
     
     private async Task CompleteReceiving()
