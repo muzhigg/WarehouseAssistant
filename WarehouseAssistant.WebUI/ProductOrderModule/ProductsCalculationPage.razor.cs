@@ -10,17 +10,19 @@ using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Components;
 using WarehouseAssistant.WebUI.DatabaseModule;
 using WarehouseAssistant.WebUI.Dialogs;
+using WarehouseAssistant.WebUI.ProductOrder;
 
 [assembly: InternalsVisibleTo("WarehouseAssistant.WebUI.Tests")]
 
-namespace WarehouseAssistant.WebUI.ProductOrder;
+namespace WarehouseAssistant.WebUI.ProductOrderModule;
 
 [UsedImplicitly]
 public partial class ProductsCalculationPage : ComponentBase
 {
-    [Inject] private ISnackbar            Snackbar      { get; set; } = null!;
-    [Inject] private IDialogService       DialogService { get; set; } = null!;
-    [Inject] private IRepository<Product> Repository    { get; set; } = null!;
+    [Inject] private ISnackbar                 Snackbar          { get; set; } = null!;
+    [Inject] private IDialogService            DialogService     { get; set; } = null!;
+    [Inject] private IRepository<Product>      Repository        { get; set; } = null!;
+    [Inject] private IProductFormDialogService ProductFormDialog { get; set; } = null!;
     
     private Table<ProductTableItem> _table = null!;
     
@@ -43,12 +45,12 @@ public partial class ProductsCalculationPage : ComponentBase
     
     private async Task ShowAddToDbDialog(ProductTableItem contextItem)
     {
-        await ProductFormDialog.ShowAddDialogAsync(contextItem, DialogService);
+        await ProductFormDialog.ShowAddDialogAsync(contextItem);
     }
     
     private async Task ShowEditDbDialog(Product contextItem)
     {
-        await ProductFormDialog.ShowEditDialogAsync(contextItem, DialogService);
+        await ProductFormDialog.ShowEditDialogAsync(contextItem);
     }
     
     private async Task OpenExportTableDialog()
@@ -67,7 +69,7 @@ public partial class ProductsCalculationPage : ComponentBase
         DialogParameters<TDialog> parameters = [];
         parameters.Add(dialog => dialog.ProductTableItems, _table.SelectedItems);
         
-        IDialogReference dialog = DialogService.Show<TDialog>("dsa", parameters);
+        IDialogReference dialog = await DialogService.ShowAsync<TDialog>("dsa", parameters);
         await dialog.Result;
     }
     
@@ -82,13 +84,5 @@ public partial class ProductsCalculationPage : ComponentBase
             
             StateHasChanged();
         }
-    }
-    
-    protected override void OnAfterRender(bool firstRender)
-    {
-        base.OnAfterRender(firstRender);
-        
-        Debug.WriteLine($"Items count: {_table.Items.Count}");
-        Debug.WriteLine($"Selected items count: {_table.SelectedItems.Count}");
     }
 }
