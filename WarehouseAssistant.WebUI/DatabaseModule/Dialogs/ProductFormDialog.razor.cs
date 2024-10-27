@@ -88,6 +88,7 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
         
         private bool    _isValid;
         private MudForm _form = null!;
+        private bool    _isLoading;
         
         protected override async Task OnInitializedAsync()
         {
@@ -121,8 +122,11 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
                 _form.Validate();
         }
         
+        // TODO Add log
         private async Task Submit()
         {
+            _isLoading = true;
+            
             EditedProduct.Article          = Article;
             EditedProduct.Name             = ProductName;
             EditedProduct.Barcode          = Barcode;
@@ -146,6 +150,10 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
                 Snackbar.Add($"Ошибка при сохранении товара {e.Message}", Severity.Error);
                 MudDialog?.Close(false);
             }
+            finally
+            {
+                _isLoading = false;
+            }
         }
         
         private void Cancel()
@@ -161,8 +169,14 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
             
             if (StartsAndEndsWithNonWhitespaceChar(arg) == false) return "Артикул не должен содержать пробелы";
             
-            if (await Db.GetByArticleAsync(arg) != null) return "Товар с данным артикулом существует";
+            _isLoading = true;
+            if (await Db.GetByArticleAsync(arg) != null)
+            {
+                _isLoading = false;
+                return "Товар с данным артикулом существует";
+            }
             
+            _isLoading = false;
             return null!;
         }
         

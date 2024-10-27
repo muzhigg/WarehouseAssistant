@@ -13,11 +13,15 @@
 			<MudTextField id="quantity-per-shelf-field" T="int?" @bind-Value="QuantityPerShelf"
 			              Label="Количество на полку"/>
 		</MudForm>
+
+		<MudOverlay Visible="@_isLoading" DarkBackground="true" Absolute="true" AutoClose="false">
+			<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true"/>
+		</MudOverlay>
 	</DialogContent>
 	<DialogActions>
 		<MudButton id="product-form-dialog-cancel-button" Color="Color.Secondary" OnClick="Cancel">Отмена</MudButton>
 		<MudButton id="product-form-dialog-submit-button" Color="Color.Primary" OnClick="Submit"
-		           ButtonType="ButtonType.Submit" Disabled="@(!_isValid)">
+		           Disabled="@(!_isValid)">
 			Добавить
 		</MudButton>
 	</DialogActions>
