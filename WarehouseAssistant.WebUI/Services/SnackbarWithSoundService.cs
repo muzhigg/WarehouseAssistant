@@ -1,12 +1,19 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace WarehouseAssistant.WebUI.Services;
 
-public class SnackbarWithSoundService(IJSRuntime jsRuntime, ISnackbar snackbarService) : IDisposable
+public sealed class SnackbarWithSoundService(
+    IJSRuntime                      jsRuntime,
+    NavigationManager               navigationManager,
+    IOptions<SnackbarConfiguration> configuration = null)
+    : ISnackbar
 {
+    private readonly SnackbarService _snackbarService = new(navigationManager, configuration);
+    
     private bool TryPlaySound(Severity severity)
     {
         string soundUrl = severity switch
@@ -26,11 +33,11 @@ public class SnackbarWithSoundService(IJSRuntime jsRuntime, ISnackbar snackbarSe
         return true;
     }
     
-    public virtual Snackbar? Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+    public Snackbar? Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         Dictionary<string, object> componentParameters = null, Severity severity = Severity.Normal,
         Action<SnackbarOptions>    configure           = null, string   key      = "") where T : IComponent
     {
-        var instance = snackbarService.Add<T>(componentParameters, severity, configure, key);
+        var instance = _snackbarService.Add<T>(componentParameters, severity, configure, key);
         
         if (instance is not null)
             TryPlaySound(instance.Severity);
@@ -38,11 +45,17 @@ public class SnackbarWithSoundService(IJSRuntime jsRuntime, ISnackbar snackbarSe
         return instance;
     }
     
-    public virtual Snackbar? Add(string message, Severity severity = Severity.Normal,
-        Action<SnackbarOptions>         configure = null,
-        string                          key       = "")
+    [Obsolete("Use Add instead.", true)]
+    public Snackbar AddNew(Severity severity, string message, Action<SnackbarOptions> configure)
     {
-        var instance = snackbarService.Add(message, severity, configure, key);
+        throw new NotImplementedException();
+    }
+    
+    public Snackbar? Add(string message, Severity severity = Severity.Normal,
+        Action<SnackbarOptions> configure = null,
+        string                  key       = "")
+    {
+        var instance = _snackbarService.Add(message, severity, configure, key);
         
         if (instance is not null)
             TryPlaySound(instance.Severity);
@@ -50,10 +63,10 @@ public class SnackbarWithSoundService(IJSRuntime jsRuntime, ISnackbar snackbarSe
         return instance;
     }
     
-    public virtual Snackbar? Add(RenderFragment message,          Severity severity = Severity.Normal,
-        Action<SnackbarOptions>                 configure = null, string   key      = "")
+    public Snackbar? Add(RenderFragment message,          Severity severity = Severity.Normal,
+        Action<SnackbarOptions>         configure = null, string   key      = "")
     {
-        var instance = snackbarService.Add(message, severity, configure, key);
+        var instance = _snackbarService.Add(message, severity, configure, key);
         
         if (instance is not null)
             TryPlaySound(instance.Severity);
@@ -61,23 +74,32 @@ public class SnackbarWithSoundService(IJSRuntime jsRuntime, ISnackbar snackbarSe
         return instance;
     }
     
-    public virtual void Clear()
+    public void Clear()
     {
-        snackbarService.Clear();
+        _snackbarService.Clear();
     }
     
-    public virtual void Remove(Snackbar snackbar)
+    public void Remove(Snackbar snackbar)
     {
-        snackbarService.Remove(snackbar);
+        _snackbarService.Remove(snackbar);
     }
     
-    public virtual void RemoveByKey(string key)
+    public void RemoveByKey(string key)
     {
-        snackbarService.RemoveByKey(key);
+        _snackbarService.RemoveByKey(key);
+    }
+    
+    public IEnumerable<Snackbar> ShownSnackbars => _snackbarService.ShownSnackbars;
+    public SnackbarConfiguration Configuration  => _snackbarService.Configuration;
+    
+    public event Action? OnSnackbarsUpdated
+    {
+        add => _snackbarService.OnSnackbarsUpdated += value;
+        remove => _snackbarService.OnSnackbarsUpdated -= value;
     }
     
     public void Dispose()
     {
-        snackbarService.Dispose();
+        _snackbarService.Dispose();
     }
 }

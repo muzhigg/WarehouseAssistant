@@ -15,8 +15,7 @@ namespace WarehouseAssistant.WebUI
         // ReSharper disable once InconsistentNaming
         public static IServiceCollection AddWebUIServices(this IServiceCollection services)
         {
-            // services.AddScoped<MarketingMaterialRepository>();
-            services.AddMudServices(config =>
+            AddMudBlazorServices(services, config =>
             {
                 config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 
@@ -34,6 +33,75 @@ namespace WarehouseAssistant.WebUI
             services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<IRepository<ReceivingItem>, ReceivingItemRepository>();
             services.AddScoped<SnackbarWithSoundService>();
+            return services;
+        }
+        
+        private static void AddMudBlazorServices(IServiceCollection services,
+            Action<MudServicesConfiguration>                        configuration)
+        {
+            var options = new MudServicesConfiguration();
+            configuration(options);
+            
+            services.AddMudBlazorDialog()
+                .AddSnackbar(snackBarConfiguration =>
+                {
+                    snackBarConfiguration.ClearAfterNavigation   = options.SnackbarConfiguration.ClearAfterNavigation;
+                    snackBarConfiguration.MaxDisplayedSnackbars  = options.SnackbarConfiguration.MaxDisplayedSnackbars;
+                    snackBarConfiguration.NewestOnTop            = options.SnackbarConfiguration.NewestOnTop;
+                    snackBarConfiguration.PositionClass          = options.SnackbarConfiguration.PositionClass;
+                    snackBarConfiguration.PreventDuplicates      = options.SnackbarConfiguration.PreventDuplicates;
+                    snackBarConfiguration.MaximumOpacity         = options.SnackbarConfiguration.MaximumOpacity;
+                    snackBarConfiguration.ShowTransitionDuration = options.SnackbarConfiguration.ShowTransitionDuration;
+                    snackBarConfiguration.VisibleStateDuration   = options.SnackbarConfiguration.VisibleStateDuration;
+                    snackBarConfiguration.HideTransitionDuration = options.SnackbarConfiguration.HideTransitionDuration;
+                    snackBarConfiguration.ShowCloseIcon          = options.SnackbarConfiguration.ShowCloseIcon;
+                    snackBarConfiguration.RequireInteraction     = options.SnackbarConfiguration.RequireInteraction;
+                    snackBarConfiguration.BackgroundBlurred      = options.SnackbarConfiguration.BackgroundBlurred;
+                    snackBarConfiguration.SnackbarVariant        = options.SnackbarConfiguration.SnackbarVariant;
+                }).AddMudBlazorResizeListener(resizeOptions =>
+                {
+                    resizeOptions.BreakpointDefinitions  = options.ResizeOptions.BreakpointDefinitions;
+                    resizeOptions.EnableLogging          = options.ResizeOptions.EnableLogging;
+                    resizeOptions.NotifyOnBreakpointOnly = options.ResizeOptions.NotifyOnBreakpointOnly;
+                    resizeOptions.ReportRate             = options.ResizeOptions.ReportRate;
+                    resizeOptions.SuppressInitEvent      = options.ResizeOptions.SuppressInitEvent;
+                })
+                .AddMudBlazorResizeObserver(observerOptions =>
+                {
+                    observerOptions.EnableLogging = options.ResizeObserverOptions.EnableLogging;
+                    observerOptions.ReportRate    = options.ResizeObserverOptions.ReportRate;
+                })
+                .AddMudBlazorResizeObserverFactory(observerOptions =>
+                {
+                    observerOptions.EnableLogging = options.ResizeObserverOptions.EnableLogging;
+                    observerOptions.ReportRate    = options.ResizeObserverOptions.ReportRate;
+                })
+                .AddMudBlazorKeyInterceptor()
+                .AddMudBlazorJsEvent()
+                .AddMudBlazorScrollManager()
+                .AddMudBlazorScrollListener()
+                .AddMudBlazorJsApi()
+                .AddMudPopoverService(popoverOptions =>
+                {
+                    popoverOptions.ContainerClass           = options.PopoverOptions.ContainerClass;
+                    popoverOptions.FlipMargin               = options.PopoverOptions.FlipMargin;
+                    popoverOptions.QueueDelay               = options.PopoverOptions.QueueDelay;
+                    popoverOptions.ThrowOnDuplicateProvider = options.PopoverOptions.ThrowOnDuplicateProvider;
+                    popoverOptions.Mode                     = options.PopoverOptions.Mode;
+                    popoverOptions.PoolSize                 = options.PopoverOptions.PoolSize;
+                    popoverOptions.PoolInitialFill          = options.PopoverOptions.PoolInitialFill;
+                })
+                .AddMudBlazorScrollSpy()
+                .AddMudEventManager()
+                .AddMudLocalization();
+        }
+        
+        private static IServiceCollection AddSnackbar(this IServiceCollection services,
+            Action<SnackbarConfiguration>                                     options)
+        {
+            services.AddScoped<ISnackbar, SnackbarWithSoundService>();
+            services.Configure(options);
+            
             return services;
         }
         
