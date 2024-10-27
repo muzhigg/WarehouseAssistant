@@ -2,6 +2,9 @@
 @using WarehouseAssistant.Shared.Models
 @using WarehouseAssistant.Shared.Models.Db
 @using WarehouseAssistant.WebUI.Components
+@using WarehouseAssistant.WebUI.ProductOrder
+
+@namespace WarehouseAssistant.WebUI.ProductOrderModule
 
 @code {
 
@@ -33,13 +36,11 @@
 
 }
 
-@namespace WarehouseAssistant.WebUI.ProductOrder
-
 <Table TItem="ProductTableItem" @ref="_table" RowStyleFunc="RowStyleFunc"
        RowClass="product-row" TableImported="RefreshProductsReferencesAsync">
 
 	<ToolBarTemplate>
-		<MudMenu hidden="@(!context.Items?.Any())" Label="Рассчитать выбранные"
+		<MudMenu hidden="@(!context.Items.Any())" Label="Рассчитать выбранные"
 		         Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Filled"
 		         Color="Color.Primary" Class="mr-2" StartIcon="@Icons.Material.Filled.Calculate">
 			<MudMenuItem OnClick="OpenCalculationDialog<DaysBasedCalculatorDialog>">На количество дней</MudMenuItem>
@@ -48,13 +49,13 @@
 			<MudMenuItem OnClick="OpenCalculationDialog<ShelfQuantityAdjustmentCalculatorDialog>">Добавить до количества на полке</MudMenuItem>
 			<MudMenuItem OnClick="OpenCalculationDialog<SubtractCurrentQuantityCalculator>">Вычесть текущее количество</MudMenuItem>
 		</MudMenu>
-		<MudButton id="export-table-button" hidden="@(!context.Items?.Any())"
+		<MudButton id="export-table-button" hidden="@(!context.Items.Any())"
 		           Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Outlined"
 		           Color="Color.Primary" Class="mx-2"
 		           OnClick="OpenExportTableDialog" StartIcon="@Icons.Material.Filled.ImportExport">
 			Экспорт таблицы
 		</MudButton>
-		<MudButton id="remove-products-button" hidden="@(!context.Items?.Any())"
+		<MudButton id="remove-products-button" hidden="@(!context.Items.Any())"
 		           Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Filled"
 		           Color="Color.Error" Class="ml-2"
 		           OnClick="RemoveSelectedProductsAsync" StartIcon="@Icons.Material.Filled.Delete">
