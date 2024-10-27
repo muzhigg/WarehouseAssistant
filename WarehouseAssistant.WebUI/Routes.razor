@@ -5,10 +5,19 @@
 			<FocusOnNavigate RouteData="@routeData" Selector="h1"/>
 			<AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)">
 				<NotAuthorized>
-					<div class="not-authorized">
-						<h1>Вы не авторизованы.</h1>
-						<p>Пожалуйста <a href="/">войдите</a> для доступа к странице.</p>
-					</div>
+					@if (context.User.Identity.IsAuthenticated)
+					{
+						<div class="not-authorized">
+							<h1>У вас нет доступа к этой странице.</h1>
+						</div>
+					}
+					else
+					{
+						<div class="not-authorized">
+							<h1>Вы не авторизованы.</h1>
+							<p>Пожалуйста <a href="/">войдите</a> для доступа к странице.</p>
+						</div>
+					}
 				</NotAuthorized>
 				<Authorizing>
 					<div>Authorizing...</div>
