@@ -8,6 +8,7 @@ using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Components;
+using WarehouseAssistant.WebUI.DatabaseModule;
 using WarehouseAssistant.WebUI.Dialogs;
 
 [assembly: InternalsVisibleTo("WarehouseAssistant.WebUI.Tests")]

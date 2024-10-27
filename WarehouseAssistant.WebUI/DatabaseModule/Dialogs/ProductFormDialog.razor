@@ -1,4 +1,6 @@
-﻿<MudDialog>
+﻿@namespace WarehouseAssistant.WebUI.DatabaseModule
+
+<MudDialog>
 	<DialogContent>
 		<MudForm @bind-IsValid="_isValid" @ref="_form">
 			<MudTextField id="article-field" Disabled="IsEditMode" T="string?" @bind-Value="Article" Label="Артикул"

@@ -6,6 +6,7 @@ using MudBlazor.Services;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
+using WarehouseAssistant.WebUI.DatabaseModule;
 using WarehouseAssistant.WebUI.Services;
 
 namespace WarehouseAssistant.WebUI
@@ -33,6 +34,7 @@ namespace WarehouseAssistant.WebUI
             services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<IRepository<ReceivingItem>, ReceivingItemRepository>();
             services.AddScoped<SnackbarWithSoundService>();
+            services.AddScoped<IProductFormDialogService, ProductFormDialogService>();
             return services;
         }
         

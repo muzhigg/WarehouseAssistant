@@ -9,6 +9,7 @@ using MudBlazor.Services;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
+using WarehouseAssistant.WebUI.DatabaseModule;
 using WarehouseAssistant.WebUI.Dialogs;
 using WarehouseAssistant.WebUI.ProductOrder;
 

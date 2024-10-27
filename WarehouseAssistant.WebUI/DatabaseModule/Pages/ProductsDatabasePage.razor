@@ -1,15 +1,15 @@
 ﻿@page "/database/products"
-@using Microsoft.AspNetCore.Authorization
 @using WarehouseAssistant.Shared.Models.Db
 @using WarehouseAssistant.WebUI.Components
-@attribute [Authorize]
+
+@namespace WarehouseAssistant.WebUI.DatabaseModule
 
 <DataGrid Items="_products" @ref="_dataGrid" T="Product"
           LoadingProgressColor="Color.Primary" FixedHeader="true" Hover="true" Bordered="true" Striped="true"
           Height="80vh" ColumnResizeMode="ResizeMode.None" QuickFilter="FilterFunc"
           FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
           Filterable="true" ShowColumnOptions="false" SortMode="SortMode.Multiple"
-          ReadOnly="false" CommittedItemChanges="OnProductChanged"
+          ReadOnly="false"
           MultiSelection="true" Class="db-products-grid" RowClass="db-products-grid-row">
 
 	<ToolBarContent>
