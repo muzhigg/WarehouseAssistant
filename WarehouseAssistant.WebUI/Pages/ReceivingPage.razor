@@ -2,9 +2,31 @@
 @using WarehouseAssistant.Shared.Models
 @using WarehouseAssistant.WebUI.Components
 
+@code {
+
+	private string RowStyleFunc(ReceivingItem arg1, int arg2)
+	{
+		string style = "";
+
+		if (arg1.ExpectedQuantity == arg1.ReceivedQuantity)
+		{
+			style += "background-color:var(--mud-palette-success);";
+			style += "color:var(--mud-palette-success-text);";
+		}
+		else if (arg1.ReceivedQuantity > arg1.ExpectedQuantity)
+		{
+			style += "background-color:var(--mud-palette-warning);";
+			style += "color:var(--mud-palette-warning-text);";
+		}
+
+		return style;
+	}
+
+}
+
 @attribute [Authorize]
 
-<Table TItem="ReceivingItem" @ref="_table" TableImported="OnTableImported">
+<Table TItem="ReceivingItem" @ref="_table" TableImported="OnTableImported" RowStyleFunc="RowStyleFunc">
 	<ToolBarTemplate>
 		<ReceivingInputForm Class="d-inline" hidden="@(!_table.Items?.Any())" OnInputSubmit="OnInputProvided"/>
 		<MudButton hidden="@(!_table.Items?.Any())" Variant="Variant.Outlined" Color="Color.Primary"
