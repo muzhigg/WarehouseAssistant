@@ -1,11 +1,8 @@
 @page "/receiving"
-@using Microsoft.AspNetCore.Authorization
 @using WarehouseAssistant.Shared.Models
 @using WarehouseAssistant.WebUI.Components
 
 @attribute [Authorize]
-
-<audio id="errorSfx" src="/sound/error.wav"></audio>
 
 <Table TItem="ReceivingItem" @ref="_table" TableImported="OnTableImported">
 	<ToolBarTemplate>
@@ -36,3 +33,12 @@
 <MudOverlay Visible="@_isBusy" DarkBackground="true" Absolute="true" AutoClose="false">
 	<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true"/>
 </MudOverlay>
+
+<MudMessageBox @ref="_articleInputBox" Title="Введите артикул" CancelText="Отмена">
+	<MessageContent>
+		<MudText Typo="Typo.body1">Возможно вы ввели штрих-код товара, который не был найден.</MudText>
+		<MudText Typo="Typo.body1">Введите артикул, если хотите добавить товар или внести штрих-код.</MudText>
+		<MudTextField T="string" @bind-Value="_articleInput" Label="Артикул" Variant="Variant.Outlined"
+		              Required="true"/>
+	</MessageContent>
+</MudMessageBox>
