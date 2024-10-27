@@ -1,19 +1,31 @@
-﻿using MudBlazor;
+﻿using System.Net.Http;
+using MudBlazor;
 using MudBlazor.Services;
-using System.Net.Http;
 
 namespace WarehouseAssistant.WebUI.Tests;
 
 public class MudBlazorTestContext : TestContext
 {
-    public MudBlazorTestContext()
+    protected MudBlazorTestContext()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         // Services.AddMudServices();
         Services.AddScoped(_ => new HttpClient());
         Services.AddOptions();
+        Services.AddMudBlazorResizeListener()
+            .AddMudBlazorResizeObserver()
+            .AddMudBlazorResizeObserverFactory()
+            .AddMudBlazorKeyInterceptor()
+            .AddMudBlazorJsEvent()
+            .AddMudBlazorScrollManager()
+            .AddMudBlazorScrollListener()
+            .AddMudBlazorJsApi()
+            .AddMudBlazorScrollSpy()
+            .AddMudPopoverService()
+            .AddMudEventManager()
+            .AddMudLocalization();
     }
-
+    
     protected IRenderedComponent<MudDialogProvider> RenderedDialogProvider(out DialogService? service)
     {
         IRenderedComponent<MudDialogProvider> provider = RenderComponent<MudDialogProvider>();
