@@ -9,7 +9,7 @@ using MudBlazor.Services;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
-using WarehouseAssistant.WebUI.Dialogs;
+using WarehouseAssistant.WebUI.DatabaseModule;
 
 namespace WarehouseAssistant.WebUI.Tests.Dialogs;
 

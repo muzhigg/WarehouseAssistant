@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using WarehouseAssistant.Core.Calculation;
 using WarehouseAssistant.Shared.Models;
-using WarehouseAssistant.WebUI.Dialogs;
+using WarehouseAssistant.WebUI.DatabaseModule;
 
 namespace WarehouseAssistant.WebUI.ProductOrder;
 

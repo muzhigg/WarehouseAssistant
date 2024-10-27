@@ -4,10 +4,11 @@ using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
 
-namespace WarehouseAssistant.WebUI.Dialogs
+namespace WarehouseAssistant.WebUI.DatabaseModule
 {
     public partial class ProductFormDialog : ComponentBase
     {
+        [Obsolete]
         public static async Task<bool> ShowAddDialogAsync(ProductTableItem productTableItem,
             IDialogService                                                 dialogService)
         {
@@ -25,6 +26,7 @@ namespace WarehouseAssistant.WebUI.Dialogs
             return success;
         }
         
+        [Obsolete]
         public static async Task<bool> ShowAddDialogAsync(Product product,
             IDialogService                                        dialogService)
         {
@@ -38,6 +40,7 @@ namespace WarehouseAssistant.WebUI.Dialogs
             return result.Canceled == false || result.Data is true;
         }
         
+        [Obsolete]
         public static async Task<Product?> ShowAddDialogAsync(IDialogService dialogService)
         {
             Product product = new();
@@ -47,6 +50,7 @@ namespace WarehouseAssistant.WebUI.Dialogs
             return success ? product : null;
         }
         
+        [Obsolete]
         public static async Task<bool> ShowEditDialogAsync(Product product, IDialogService dialogService)
         {
             DialogParameters<ProductFormDialog> parameters = [];

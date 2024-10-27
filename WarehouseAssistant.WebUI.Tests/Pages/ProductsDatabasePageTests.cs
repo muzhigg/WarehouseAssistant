@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AngleSharp.Dom;
 using FluentAssertions;
 using FluentAssertions.BUnit;
@@ -8,32 +9,21 @@ using MudBlazor;
 using MudBlazor.Services;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models.Db;
-using WarehouseAssistant.WebUI.Dialogs;
-using WarehouseAssistant.WebUI.Pages;
+using WarehouseAssistant.WebUI.Components;
+using WarehouseAssistant.WebUI.DatabaseModule;
 
 namespace WarehouseAssistant.WebUI.Tests.Pages;
 
 public sealed class ProductsDatabasePageTests : MudBlazorTestContext
 {
-    private readonly Mock<IRepository<Product>> _repositoryMock = new();
-    private readonly Mock<ISnackbar>            _snackbarMock   = new();
+    private readonly Mock<IRepository<Product>>      _repositoryMock               = new();
+    private readonly Mock<ISnackbar>                 _snackbarMock                 = new();
+    private readonly Mock<IProductFormDialogService> _productFormDialogServiceMock = new();
     
     public ProductsDatabasePageTests()
     {
-        Services.AddSingleton(_repositoryMock.Object).AddSingleton(_snackbarMock.Object);
-        
-        Services.AddMudBlazorResizeListener()
-            .AddMudBlazorResizeObserver()
-            .AddMudBlazorResizeObserverFactory()
-            .AddMudBlazorKeyInterceptor()
-            .AddMudBlazorJsEvent()
-            .AddMudBlazorScrollManager()
-            .AddMudBlazorScrollListener()
-            .AddMudBlazorJsApi()
-            .AddMudBlazorScrollSpy()
-            .AddMudPopoverService()
-            .AddMudEventManager()
-            .AddMudLocalization();
+        Services.AddSingleton(_repositoryMock.Object).AddSingleton(_snackbarMock.Object)
+            .AddSingleton(_productFormDialogServiceMock.Object);
     }
     
     [Fact]
@@ -73,30 +63,65 @@ public sealed class ProductsDatabasePageTests : MudBlazorTestContext
         firstRowCells[5].TextContent.Should().Be(products[0].QuantityPerShelf.ToString());
     }
     
+    
     [Fact]
-    public void ProductsDatabasePage_AddButton_ShouldInvokeProductFormDialog()
+    public void ShowAddProductDialog_ShouldCallProductFormDialog_AndRenderNewItem()
     {
         // Arrange
-        _repositoryMock.Setup(repo => repo.GetAllAsync()).ReturnsAsync(new List<Product>());
-        
-        var mockDialogService = new Mock<IDialogService>();
-        Services.AddSingleton(mockDialogService.Object);
-        var dialogReferenceMock = new Mock<IDialogReference>();
-        var dialogResult        = DialogResult.Ok(true);
-        dialogReferenceMock.Setup(d => d.Result).ReturnsAsync(dialogResult);
-        mockDialogService.Setup(service =>
-                service.ShowAsync<ProductFormDialog>(It.IsAny<string>(), It.IsAny<DialogParameters>()))
-            .ReturnsAsync(dialogReferenceMock.Object);
+        var newProduct = new Product
+        {
+            Article = "789", Name = "Product 3", Barcode = "333333", QuantityPerBox = 15, QuantityPerShelf = 7
+        };
+        Services.AddMudBlazorDialog();
+        _productFormDialogServiceMock.Setup(service => service.ShowAddDialogAsync())
+            .ReturnsAsync(newProduct);
         
         var page = RenderComponent<ProductsDatabasePage>();
         
         // Act
-        var addButton = page.Find("#db-grid-add-product-button");
-        addButton.Click();
+        page.InvokeAsync(() => page.Instance.ShowAddProductDialog());
         
         // Assert
-        mockDialogService.Verify(
-            service => service.ShowAsync<ProductFormDialog>(It.IsAny<string>(), It.IsAny<DialogParameters>()),
-            Times.Once);
+        page.FindAll(".db-products-grid-row").Count.Should().Be(1);
+        page.FindComponents<DataGrid<Product>>().First().Instance.Items.First().Should().BeEquivalentTo(newProduct);
+    }
+    
+    [Fact]
+    public void ShowAddProductDialog_ShouldCallProductFormDialog_AndHandleNullResult()
+    {
+        // Arrange
+        Services.AddMudBlazorDialog();
+        _productFormDialogServiceMock.Setup(service => service.ShowAddDialogAsync())
+            .ReturnsAsync((Product?)null);
+        var page = RenderComponent<ProductsDatabasePage>();
+        
+        // Act
+        page.InvokeAsync(() => page.Instance.ShowAddProductDialog());
+        
+        // Assert
+        page.FindAll(".db-products-grid-row").Count.Should().Be(0);
+    }
+    
+    [Fact]
+    public void DeleteItems_Should_CallRepositoryDeleteRange()
+    {
+        // Arrange
+        Services.AddMudBlazorDialog();
+        var productsToDelete = new List<Product>
+        {
+            new Product { Article = "123" },
+            new Product { Article = "456" }
+        };
+        _repositoryMock.Setup(repo => repo.GetAllAsync()).ReturnsAsync(productsToDelete);
+        _repositoryMock.Setup(repo => repo.DeleteRangeAsync(It.IsAny<IEnumerable<string>>()))
+            .Returns(Task.CompletedTask).Verifiable();
+        var page = RenderComponent<ProductsDatabasePage>();
+        
+        // Act
+        page.InvokeAsync(() => page.Instance.DeleteItems(productsToDelete));
+        
+        // Assert
+        _repositoryMock.Verify(repo => repo.DeleteRangeAsync(It.Is<IEnumerable<string>>(articles =>
+            articles.SequenceEqual(productsToDelete.Select(p => p.Article)))), Times.Once);
     }
 }
