@@ -80,7 +80,7 @@
 		                Title="Запас на количество дней" Resizable="false" IsEditable="false"/>
 		<PropertyColumn T="ProductTableItem" TProperty="double" Property="x => x.OrderCalculation"
 		                Title="Рекомендованное количество" Resizable="false" IsEditable="false"/>
-		<PropertyColumn T="ProductTableItem" TProperty="int" CellClass="quantity-to-order-cell" Filterable="false"
+		<PropertyColumn T="ProductTableItem" TProperty="int" CellClass="quantity-to-order-cell" Filterable="true"
 		                IsEditable="true" Property="x => x.QuantityToOrder" Resizable="false"
 		                Title="Количество для заказа" CellStyleFunc="QuantityToOrderCellStyleFunc">
 			<EditTemplate>
