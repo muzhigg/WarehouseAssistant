@@ -1,15 +1,20 @@
 using System.Diagnostics;
 using System.Net.Http.Json;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
-using WarehouseAssistant.WebUI.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 
-namespace WarehouseAssistant.WebUI.Pages;
+namespace WarehouseAssistant.WebUI.Auth;
 
+[UsedImplicitly]
 public partial class LoginForm : ComponentBase
 {
-    private readonly LoginModel _loginModel  = new();
-    private          bool       _loginFailed = false;
-    private          bool       _isBusy;
+    [Inject] private HttpClient                  HttpClient                  { get; set; } = null!;
+    [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
+    
+    private readonly         LoginModel _loginModel = new();
+    private                  bool       _loginFailed;
+    [UsedImplicitly] private bool       _isBusy;
     
     private async Task HandleLogin()
     {

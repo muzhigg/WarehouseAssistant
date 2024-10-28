@@ -4,7 +4,7 @@ using System.Security.Claims;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 
-namespace WarehouseAssistant.WebUI.Services;
+namespace WarehouseAssistant.WebUI.Auth;
 
 public class CustomAuthenticationStateProvider(ILocalStorageService localStorageService, HttpClient httpClient)
     : AuthenticationStateProvider
@@ -25,6 +25,7 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
         var claims = JwtParser.ParseClaimsFromJwt(token);
         Debug.WriteLine("Parsed claims from JWT.");
         
+        // ReSharper disable once PossibleMultipleEnumeration
         var expiryClaim = claims.FirstOrDefault(c => c.Type == "exp");
         if (expiryClaim != null && long.TryParse(expiryClaim.Value, out var exp))
         {
@@ -38,6 +39,7 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
             }
         }
         
+        // ReSharper disable once PossibleMultipleEnumeration
         var identity = new ClaimsIdentity(claims, "jwt");
         var user     = new ClaimsPrincipal(identity);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -46,7 +48,7 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
         return new AuthenticationState(user);
     }
     
-    public void MarkUserAsAuthenticated(string token)
+    internal void MarkUserAsAuthenticated(string token)
     {
         var claims   = JwtParser.ParseClaimsFromJwt(token);
         var identity = new ClaimsIdentity(claims, "jwt");
@@ -58,7 +60,7 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
         localStorageService.SetItemAsync(LocalStorageKey, token);
     }
     
-    public void MarkUserAsLoggedOut()
+    internal void MarkUserAsLoggedOut()
     {
         var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity());
         httpClient.DefaultRequestHeaders.Authorization = null;

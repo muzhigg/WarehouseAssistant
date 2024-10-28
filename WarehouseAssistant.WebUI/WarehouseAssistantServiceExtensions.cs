@@ -6,6 +6,7 @@ using MudBlazor.Services;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
+using WarehouseAssistant.WebUI.Auth;
 using WarehouseAssistant.WebUI.DatabaseModule;
 using WarehouseAssistant.WebUI.Services;
 
@@ -29,13 +30,18 @@ namespace WarehouseAssistant.WebUI
                 config.SnackbarConfiguration.SnackbarVariant        = Variant.Filled;
             });
             AddLocalStorage(services);
-            services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
-            services.AddAuthorizationCore();
+            AddAuthServices(services);
             services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<IRepository<ReceivingItem>, ReceivingItemRepository>();
             services.AddScoped<SnackbarWithSoundService>();
             services.AddScoped<IProductFormDialogService, ProductFormDialogService>();
             return services;
+        }
+        
+        private static void AddAuthServices(this IServiceCollection services)
+        {
+            services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+            services.AddAuthorizationCore();
         }
         
         private static void AddMudBlazorServices(IServiceCollection services,

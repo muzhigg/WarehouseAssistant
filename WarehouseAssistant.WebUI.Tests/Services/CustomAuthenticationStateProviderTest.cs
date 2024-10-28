@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using JetBrains.Annotations;
 using Moq;
-using WarehouseAssistant.WebUI.Services;
+using WarehouseAssistant.WebUI.Auth;
 
 namespace WarehouseAssistant.WebUI.Tests.Services;
 
