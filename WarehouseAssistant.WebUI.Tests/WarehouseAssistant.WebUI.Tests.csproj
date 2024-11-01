@@ -26,6 +26,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Moq.Contrib.HttpClient" Version="1.4.0"/>
 		<PackageReference Include="xunit" Version="2.9.0" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.4">
 			<PrivateAssets>all</PrivateAssets>
@@ -35,6 +36,10 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\WarehouseAssistant.WebUI\WarehouseAssistant.WebUI.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Auth\"/>
 	</ItemGroup>
 
 

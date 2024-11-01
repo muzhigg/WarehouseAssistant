@@ -14,49 +14,40 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var token = await localStorageService.GetItemAsync<string>(LocalStorageKey);
-        Debug.WriteLine("Retrieved token from local storage.");
+        Debug.WriteLine("Retrieved token from local storage.", nameof(CustomAuthenticationStateProvider));
         
         if (string.IsNullOrEmpty(token))
         {
-            Debug.WriteLine("Token is null or empty.");
+            Debug.WriteLine("Token is null or empty.", nameof(CustomAuthenticationStateProvider));
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
         
-        var claims = JwtParser.ParseClaimsFromJwt(token);
-        Debug.WriteLine("Parsed claims from JWT.");
+        var decodedToken = JwtToken.Parse(token);
+        Debug.WriteLine("Parsed claims from JWT.", nameof(CustomAuthenticationStateProvider));
         
-        // ReSharper disable once PossibleMultipleEnumeration
-        var expiryClaim = claims.FirstOrDefault(c => c.Type == "exp");
-        if (expiryClaim != null && long.TryParse(expiryClaim.Value, out var exp))
+        if (decodedToken.HasExpired() == false
+            || decodedToken.IsExpired())
         {
-            var expiryDate = DateTimeOffset.FromUnixTimeSeconds(exp).UtcDateTime;
-            Debug.WriteLine("Token expiry date: " + expiryDate);
-            
-            if (expiryDate < DateTime.UtcNow)
-            {
-                Debug.WriteLine("Token has expired.");
-                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-            }
+            Debug.WriteLine("Token expired.", nameof(CustomAuthenticationStateProvider));
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
         
-        // ReSharper disable once PossibleMultipleEnumeration
-        var identity = new ClaimsIdentity(claims, "jwt");
-        var user     = new ClaimsPrincipal(identity);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        Debug.WriteLine("User authenticated and HTTP client authorization header set.");
+        Debug.WriteLine("User authenticated and HTTP client authorization header set.",
+            nameof(CustomAuthenticationStateProvider));
         
-        return new AuthenticationState(user);
+        return decodedToken.GetAuthenticationState();
     }
     
     internal void MarkUserAsAuthenticated(string token)
     {
-        var claims   = JwtParser.ParseClaimsFromJwt(token);
-        var identity = new ClaimsIdentity(claims, "jwt");
-        
-        var user = new ClaimsPrincipal(identity);
+        JwtToken jwtToken = JwtToken.Parse(token);
+        Debug.WriteLine("User authenticated and JWT token parsed.", nameof(CustomAuthenticationStateProvider));
         
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+        Debug.WriteLine("HTTP client authorization header set.", nameof(CustomAuthenticationStateProvider));
+        
+        NotifyAuthenticationStateChanged(Task.FromResult(jwtToken.GetAuthenticationState()));
         localStorageService.SetItemAsync(LocalStorageKey, token);
     }
     
