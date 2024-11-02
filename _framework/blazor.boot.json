@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "WarehouseAssistant.WASM",
   "resources": {
-    "hash": "sha256-EC8A1xN/57oIerhNYmJOuluLMgY7yDXMSPXQRHz8QDI=",
+    "hash": "sha256-VWhQ5CcHZDxOzUQlPqsJtD/Dt+5WE1yEli0+GpO+4BI=",
     "jsModuleNative": {
       "dotnet.native.8.0.10.4xsnm8lwn6.js": "sha256-QVxMlY7ohmjgde/bZMA0dlWDAeuUP+tEfkiSdg4DFcE="
     },
@@ -81,7 +81,7 @@
       "System.Net.Security.wasm": "sha256-xeDGAEpgrzb6mVDGLcVVwURGDFO7JRqkxYEJBKaoyIc=",
       "System.Net.Sockets.wasm": "sha256-tqGNOK9JnURKypyHhDDzfGohCqL/8Rhs3Aix1oTyeHA=",
       "System.ObjectModel.wasm": "sha256-jpl9uQIY1pUUGrWFCJw3RrZakTMRrLL75YyNnw8mAIc=",
-      "System.Private.CoreLib.wasm": "sha256-tvi3AMGci0KKhHTSxCe3L+n7OoeLG/Td2COYLSLodys=",
+      "System.Private.CoreLib.wasm": "sha256-O967W8H7Wv4K+F+Q3hKdpL+6tiRRRG9E/w56Fh87xP0=",
       "System.Private.Uri.wasm": "sha256-4qNvFnTJn64aoxKr5yvSm9DBrboaEPDeUUEgE/xQHjE=",
       "System.Private.Xml.wasm": "sha256-26TxdLkKylZiUcluVM5CMW+xtk7AzhU6k8Tz1RMgBJ0=",
       "System.Runtime.InteropServices.JavaScript.wasm": "sha256-E+FgeuL3B/Fy37Dqx6rrZ4n6BCWfX36B+u5sE+PmAYA=",
@@ -99,11 +99,11 @@
       "System.Transactions.Local.wasm": "sha256-bTqdfuKiUSPHEz0w5P+YXj5jh1pnfWCQUpGfjkUDCRg=",
       "System.wasm": "sha256-JcsTT2TJcSMFsNmtqp1WKKlTstSbNLn3CY7K5UG19vQ=",
       "System.Xml.ReaderWriter.wasm": "sha256-25+3zv6gp7IinoN98TomXmPuvejL/Lfe7pLMngf/sys=",
-      "WarehouseAssistant.Core.wasm": "sha256-9ugBED285eqhsGDqgS3u1jEYPzFBthCg5xvXeOEdzvk=",
-      "WarehouseAssistant.Data.wasm": "sha256-+A9vEP6V63LaM8tqawqGGBRXiZh+JaspkN7QWPMRIUc=",
-      "WarehouseAssistant.Shared.Models.wasm": "sha256-/PLeXsw84IyoxB4RZ2R8xuBKSLKOCQOeoqTh6GHrHrQ=",
-      "WarehouseAssistant.WASM.wasm": "sha256-c+slGVl9rEtgAF/T6aNTIqzzR9eTrXBZ2qzdSDxf6Gs=",
-      "WarehouseAssistant.WebUI.wasm": "sha256-cvb9F4xUwaCXQvniC0Lu7V4VhBccx1JEFEp8Ucc3JtY="
+      "WarehouseAssistant.Core.wasm": "sha256-GIIlP8IwwpP5SAFnWfQolDQLyvIZ0zvrCUHf6yWttN4=",
+      "WarehouseAssistant.Data.wasm": "sha256-ovmWa/I0UNAdSrczy53VrI+ruHBFtVR+AY1YJ9ZD5aU=",
+      "WarehouseAssistant.Shared.Models.wasm": "sha256-cNlYy4qZmv42vdSNpnWkppPK7+5+8ZdO9nQzGSg/9Dw=",
+      "WarehouseAssistant.WASM.wasm": "sha256-AJc7yrYga7Nxw6CkmAEjG0BY11qOvPFr8S++QyaVQJs=",
+      "WarehouseAssistant.WebUI.wasm": "sha256-C7zKEiiF3/FMN/lMDr1BDocOglRRXwXMReiVvNVJkPo="
     }
   },
   "cacheBootResources": true,

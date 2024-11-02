@@ -53,7 +53,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-fXyCgiRHYwQkXMORzAudcwRnKJu0\/gVyDKQ2d5U\/cyM=",
+      "hash": "sha256-icOt+VN7cB3tcBu695YPVRxAAO4NEJNY0xZ5CceswHI=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -313,7 +313,7 @@
       "url": "_framework\/System.ObjectModel.wasm"
     },
     {
-      "hash": "sha256-tvi3AMGci0KKhHTSxCe3L+n7OoeLG\/Td2COYLSLodys=",
+      "hash": "sha256-O967W8H7Wv4K+F+Q3hKdpL+6tiRRRG9E\/w56Fh87xP0=",
       "url": "_framework\/System.Private.CoreLib.wasm"
     },
     {
@@ -385,23 +385,23 @@
       "url": "_framework\/System.Xml.ReaderWriter.wasm"
     },
     {
-      "hash": "sha256-9ugBED285eqhsGDqgS3u1jEYPzFBthCg5xvXeOEdzvk=",
+      "hash": "sha256-GIIlP8IwwpP5SAFnWfQolDQLyvIZ0zvrCUHf6yWttN4=",
       "url": "_framework\/WarehouseAssistant.Core.wasm"
     },
     {
-      "hash": "sha256-+A9vEP6V63LaM8tqawqGGBRXiZh+JaspkN7QWPMRIUc=",
+      "hash": "sha256-ovmWa\/I0UNAdSrczy53VrI+ruHBFtVR+AY1YJ9ZD5aU=",
       "url": "_framework\/WarehouseAssistant.Data.wasm"
     },
     {
-      "hash": "sha256-\/PLeXsw84IyoxB4RZ2R8xuBKSLKOCQOeoqTh6GHrHrQ=",
+      "hash": "sha256-cNlYy4qZmv42vdSNpnWkppPK7+5+8ZdO9nQzGSg\/9Dw=",
       "url": "_framework\/WarehouseAssistant.Shared.Models.wasm"
     },
     {
-      "hash": "sha256-c+slGVl9rEtgAF\/T6aNTIqzzR9eTrXBZ2qzdSDxf6Gs=",
+      "hash": "sha256-AJc7yrYga7Nxw6CkmAEjG0BY11qOvPFr8S++QyaVQJs=",
       "url": "_framework\/WarehouseAssistant.WASM.wasm"
     },
     {
-      "hash": "sha256-cvb9F4xUwaCXQvniC0Lu7V4VhBccx1JEFEp8Ucc3JtY=",
+      "hash": "sha256-C7zKEiiF3\/FMN\/lMDr1BDocOglRRXwXMReiVvNVJkPo=",
       "url": "_framework\/WarehouseAssistant.WebUI.wasm"
     },
     {
@@ -445,5 +445,5 @@
       "url": "_content\/WarehouseAssistant.WebUI\/sounds\/warning.mp3"
     }
   ],
-  "version": "927yJqMk"
+  "version": "MXicZzOL"
 };
