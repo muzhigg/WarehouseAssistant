@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using WarehouseAssistant.Data.Repositories;
@@ -76,19 +77,40 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
         
         [Inject] public AuthenticationStateProvider AuthenticationState { get; set; } = null!;
         
-        public string? Article { get; set; }
+        public string? Article
+        {
+            get => _model.Article;
+            set => _model.Article = value;
+        }
         
-        public string? ProductName { get; set; }
+        public string? ProductName
+        {
+            get => _model.Name;
+            set => _model.Name = value;
+        }
         
-        public string? Barcode { get; set; }
+        public string? Barcode
+        {
+            get => _model.Barcode;
+            set => _model.Barcode = value;
+        }
         
-        public int? QuantityPerBox { get; set; }
+        public int? QuantityPerBox
+        {
+            get => _model.QuantityPerBox;
+            set => _model.QuantityPerBox = value;
+        }
         
-        public int? QuantityPerShelf { get; set; }
+        public int? QuantityPerShelf
+        {
+            get => _model.QuantityPerShelf;
+            set => _model.QuantityPerShelf = value;
+        }
         
         private bool    _isValid;
         private MudForm _form = null!;
         private bool    _isLoading;
+        private Product _model = new();
         
         protected override async Task OnInitializedAsync()
         {
@@ -103,8 +125,10 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
             }
         }
         
-        protected override void OnParametersSet()
+        protected override async Task OnParametersSetAsync()
         {
+            await base.OnParametersSetAsync();
+            
             if (EditedProduct is null)
                 throw new ArgumentException("EditedProduct is null");
             
@@ -113,13 +137,9 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
             Barcode          = EditedProduct.Barcode;
             QuantityPerBox   = EditedProduct.QuantityPerBox;
             QuantityPerShelf = EditedProduct.QuantityPerShelf;
-        }
-        
-        protected override void OnAfterRender(bool firstRender)
-        {
-            base.OnAfterRender(firstRender);
-            if (firstRender)
-                _form.Validate();
+            
+            Debug.WriteLine($"Set parameters: {Article}, {ProductName}, {Barcode}, {QuantityPerBox}, {QuantityPerShelf}"
+                , nameof(ProductFormDialog));
         }
         
         // TODO Add log
@@ -161,7 +181,7 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
             MudDialog?.Close(DialogResult.Cancel());
         }
         
-        internal async Task<string> ArticleValidation(string arg)
+        internal async Task<string> ArticleValidation(string? arg)
         {
             if (IsEditMode) return null!;
             

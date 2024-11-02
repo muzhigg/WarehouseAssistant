@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using MudBlazor;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
@@ -45,6 +46,7 @@ public class ProductFormDialogService(IDialogService dialogService) : IProductFo
     
     public async Task<bool> ShowEditDialogAsync(Product product)
     {
+        Debug.WriteLine($"ShowEditDialogAsync({product.Article})", nameof(ProductFormDialogService));
         DialogParameters<ProductFormDialog> parameters = [];
         
         parameters.Add(productDialog => productDialog.IsEditMode, true);
@@ -54,6 +56,9 @@ public class ProductFormDialogService(IDialogService dialogService) : IProductFo
             await dialogService.ShowAsync<ProductFormDialog>("Редактировать товар", parameters);
         DialogResult? result = await dialog.Result;
         
-        return result.Canceled == false || (bool)result.Data;
+        if (result.Canceled)
+            return false;
+        
+        return (bool)result.Data;
     }
 }
