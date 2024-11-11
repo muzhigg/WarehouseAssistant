@@ -14,7 +14,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="bunit" Version="1.30.3" />
+		<PackageReference Include="bunit" Version="1.34.0"/>
 		<PackageReference Include="FluentAssertions.BUnit" Version="0.0.67" />
         <PackageReference Include="JetBrains.Annotations" Version="2024.2.0"/>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
@@ -39,7 +39,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Auth\"/>
+		<Folder Include="Auth\Utils\"/>
 	</ItemGroup>
 
 
