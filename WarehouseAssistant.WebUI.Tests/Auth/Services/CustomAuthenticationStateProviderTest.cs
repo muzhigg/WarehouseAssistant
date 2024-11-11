@@ -1,123 +1,270 @@
-using System.Net.Http;
+using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using FluentAssertions;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 using Moq;
-using Moq.Contrib.HttpClient;
-using Moq.Language.Flow;
+using Supabase.Gotrue;
+using Supabase.Gotrue.Exceptions;
+using Supabase.Gotrue.Interfaces;
 using WarehouseAssistant.WebUI.Auth;
 
 namespace WarehouseAssistant.WebUI.Tests.Services;
 
 [TestSubject(typeof(CustomAuthenticationStateProvider))]
-public class CustomAuthenticationStateProviderTest
+public class CustomAuthenticationStateProviderTest : MudBlazorTestContext
 {
-    private readonly Mock<ILocalStorageService> _localStorageMock;
+    private readonly Mock<ILocalStorageService>                       _localStorageMock;
+    private readonly Mock<ILogger<CustomAuthenticationStateProvider>> _loggerMock;
+    private readonly Mock<IGotrueClient<User, Session>>               _gotrueClientMock;
     
-    private const string ValidToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJUZXN0IiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiVmlld2VyIiwianRpIjoiNzRiNzJhYzktNWFlOC00YTI2LTkzOGYtNGE1MjA2YmY5ZWYxIiwiZXhwIjoxNzMyNjEwNzIyLCJpc3MiOiJodHRwczovL3dhcmVob3VzZWFzc2lzdGFudGRiYXBpLm9ucmVuZGVyLmNvbSIsImF1ZCI6Imh0dHBzOi8vd2FyZWhvdXNlYXNzaXN0YW50ZGJhcGkub25yZW5kZXIuY29tIn0.sht6-n9XuXjFudjI2IrmNcaict1M0lL1NgiKFl9pEro";
-    
-    private const string ExpiredToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJUZXN0IiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiVmlld2VyIiwianRpIjoiNzRiNzJhYzktNWFlOC00YTI2LTkzOGYtNGE1MjA2YmY5ZWYxIiwiZXhwIjoxNjA5MTU4MDAwLCJpc3MiOiJodHRwczovL3dhcmVob3VzZWFzc2lzdGFudGRiYXBpLm9ucmVuZGVyLmNvbSIsImF1ZCI6Imh0dHBzOi8vd2FyZWhvdXNlYXNzaXN0YW50ZGJhcGkub25yZW5kZXIuY29tIn0.sht6-n9XuXjFudjI2IrmNcaict1M0lL1NgiKFl9pEro";
-    
-    private readonly HttpClient                        _httpClientMock;
-    private readonly Mock<HttpMessageHandler>          _httpMessageHandlerMock;
-    private readonly CustomAuthenticationStateProvider _authStateProvider;
+    private CustomAuthenticationStateProvider _authStateProvider;
     
     public CustomAuthenticationStateProviderTest()
     {
-        _localStorageMock       = new Mock<ILocalStorageService>();
-        _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
-        _httpClientMock         = _httpMessageHandlerMock.CreateClient();
-        _authStateProvider      = new CustomAuthenticationStateProvider(_localStorageMock.Object, _httpClientMock);
+        _localStorageMock = new Mock<ILocalStorageService>();
+        _loggerMock       = new Mock<ILogger<CustomAuthenticationStateProvider>>();
+        _gotrueClientMock = new Mock<IGotrueClient<User, Session>>();
     }
     
     [Fact]
-    public async Task GetAuthenticationStateAsync_ShouldReturnAnonymous_WhenTokenIsNull()
+    public void AuthEventHandler_Should_CallLocalStorage_When_AuthStateIsTokenRefreshed()
     {
         // Arrange
-        _localStorageMock.Setup(ls => ls.GetItemAsync<string>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((string)null);
+        _gotrueClientMock.SetupGet(client => client.CurrentSession).Returns(new Session());
+        IGotrueClient<User, Session>.AuthEventHandler authEventHandler = null;
+        _gotrueClientMock.Setup(client =>
+                client.AddStateChangedListener(
+                    It.IsAny<IGotrueClient<User, Session>.AuthEventHandler>()))
+            .Callback((IGotrueClient<User, Session>.AuthEventHandler x) => authEventHandler = x);
+        
+        _authStateProvider = new CustomAuthenticationStateProvider(_localStorageMock.Object,
+            _loggerMock.Object, _gotrueClientMock.Object);
+        
+        // Act
+        Debug.Assert(authEventHandler != null, nameof(authEventHandler) + " != null");
+        authEventHandler(_gotrueClientMock.Object, Constants.AuthState.TokenRefreshed);
+        
+        // Assert
+        VerifyLogInfo(_loggerMock, s => s.Contains(Constants.AuthState.TokenRefreshed.ToString()),
+            Times.Once());
+        VerifyLogInfo(_loggerMock, s => s.Contains("Token refreshed"), Times.Once());
+        _localStorageMock.Verify(service =>
+                service.SetItemAsync(
+                    It.IsAny<string>(), It.IsAny<Session>(), It.IsAny<CancellationToken>()),
+            Times.Once());
+    }
+    
+    [Fact]
+    public async Task GetAuthenticationStateAsync_ShouldReturnAnonymous_WhenSessionIsNull()
+    {
+        // Arrange
+        _localStorageMock.Setup(ls => ls.GetItemAsync<Session>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Session)null!);
+        
+        _authStateProvider = new(_localStorageMock.Object, _loggerMock.Object, _gotrueClientMock.Object);
         
         // Act
         var authState = await _authStateProvider.GetAuthenticationStateAsync();
         
         // Assert
         authState.User.Identity.IsAuthenticated.Should().BeFalse();
-        _httpClientMock.DefaultRequestHeaders.Authorization.Should().BeNull();
     }
     
     [Fact]
-    public async Task GetAuthenticationStateAsync_ShouldReturnAnonymous_WhenTokenIsExpired()
+    public async Task GetAuthenticationStateAsync_ShouldReturnAuthenticated_HappyPath()
     {
         // Arrange
-        _localStorageMock.Setup(ls => ls.GetItemAsync<string>(It.IsAny<string>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ExpiredToken);
+        Session oldSession = new Session()
+        {
+            AccessToken =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+            RefreshToken = "refresh_token",
+            CreatedAt    = DateTime.Now,
+        };
+        Session newSession = new()
+        {
+            AccessToken =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+            RefreshToken = "new_refresh_token",
+            CreatedAt    = DateTime.Now.AddSeconds(10),
+        };
         
-        // Act
-        var authState = await _authStateProvider.GetAuthenticationStateAsync();
+        _localStorageMock.Setup(ls => ls.GetItemAsync<Session>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(oldSession);
+        _gotrueClientMock.Setup(
+                client =>
+                    client.SetSession(
+                        oldSession.AccessToken, oldSession.RefreshToken, It.IsAny<bool>()))
+            .ReturnsAsync(newSession);
         
-        // Assert
-        authState.User.Identity.IsAuthenticated.Should().BeFalse();
-    }
-    
-    [Fact]
-    public async Task GetAuthenticationStateAsync_ShouldReturnAuthenticated_WhenTokenIsValid()
-    {
-        // Arrange
-        _localStorageMock.Setup(ls => ls.GetItemAsync<string>(It.IsAny<string>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ValidToken);
+        _authStateProvider = new(
+            _localStorageMock.Object, _loggerMock.Object, _gotrueClientMock.Object);
         
         // Act
         var authState = await _authStateProvider.GetAuthenticationStateAsync();
         
         // Assert
         authState.User.Identity.IsAuthenticated.Should().BeTrue();
-        _httpClientMock.DefaultRequestHeaders.Authorization.Should().NotBeNull();
-    }
-    
-    [Fact]
-    public async Task MarkUserAsAuthenticated_ShouldSaveToken_WhenTokenIsValid()
-    {
-        // Arrange
-        _localStorageMock.Setup(ls => ls.GetItemAsync<string>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ValidToken);
-        
-        // Act
-        _authStateProvider.MarkUserAsAuthenticated(ValidToken);
-        
-        // Assert
-        AuthenticationState authState = await _authStateProvider.GetAuthenticationStateAsync();
-        authState.User.Identity.IsAuthenticated.Should().BeTrue();
-        _httpClientMock.DefaultRequestHeaders.Authorization.Should().NotBeNull();
-        _localStorageMock.Verify(ls => ls.SetItemAsync(It.IsAny<string>(), ValidToken, It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-    
-    [Fact]
-    public async Task MarkUserAsLoggedOut_ShouldRemoveToken()
-    {
-        // Arrange
-        ISetup<ILocalStorageService, ValueTask<string?>> setup = _localStorageMock.Setup(ls =>
-            ls.GetItemAsync<string>(It.IsAny<string>(),
-                It.IsAny<CancellationToken>()));
-        setup.ReturnsAsync(ValidToken);
-        await _authStateProvider.GetAuthenticationStateAsync();
-        
-        // Act
-        setup.ReturnsAsync(string.Empty);
-        
-        // Assert
-        var authState = await _authStateProvider.GetAuthenticationStateAsync();
-        _localStorageMock.Verify(ls => ls.RemoveItemAsync(It.IsAny<string>(),
+        _localStorageMock.Verify(ls => ls.GetItemAsync<Session>(It.IsAny<string>(),
                 It.IsAny<CancellationToken>()),
-            Times.Once);
+            Times.Once());
+        _localStorageMock.Verify(service => service.SetItemAsync(It.IsAny<string>(),
+                newSession,
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+    }
+    
+    [Fact]
+    public async Task GetAuthenticationStateAsync_Should_ReturnAnonymous_WhenExceptionIsThrown()
+    {
+        // Arrange
+        Session oldSession = new Session()
+        {
+            AccessToken =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+            RefreshToken = "refresh_token",
+            CreatedAt    = DateTime.Now,
+        };
+        _localStorageMock.Setup(ls => ls.GetItemAsync<Session>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(oldSession);
+        
+        _gotrueClientMock.Setup(client =>
+                client.SetSession(
+                    oldSession.AccessToken, oldSession.RefreshToken, It.IsAny<bool>()))
+            .Throws<GotrueException>(() => new GotrueException("Invalid token"));
+        
+        _authStateProvider = new(
+            _localStorageMock.Object, _loggerMock.Object, _gotrueClientMock.Object);
+        
+        // Act
+        var authState = await _authStateProvider.GetAuthenticationStateAsync();
+        
+        // Assert
         authState.User.Identity.IsAuthenticated.Should().BeFalse();
-        _httpClientMock.DefaultRequestHeaders.Authorization.Should().BeNull();
+        _localStorageMock.Verify(ls => ls.GetItemAsync<Session>(It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+        _localStorageMock.Verify(service => service.RemoveItemAsync(It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never());
+    }
+    
+    [Fact]
+    public async Task SignIn_Should_ReturnFalse_When_SessionIsNull()
+    {
+        // Arrange
+        _gotrueClientMock.Setup(
+                client =>
+                    client.SignIn(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((Session)null!);
+        
+        _authStateProvider = new(
+            _localStorageMock.Object, _loggerMock.Object, _gotrueClientMock.Object);
+        
+        // Act
+        var result = await _authStateProvider.SignIn("", "");
+        
+        // Assert
+        result.Should().BeFalse();
+    }
+    
+    [Fact]
+    public async Task SignIn_Should_ReturnTrue_When_SignInIsSuccessful()
+    {
+        // Arrange
+        _gotrueClientMock.Setup(
+                client =>
+                    client.SignIn(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new Session()
+            {
+                AccessToken =
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+            });
+        
+        _authStateProvider = new(
+            _localStorageMock.Object, _loggerMock.Object, _gotrueClientMock.Object);
+        int                 authStateChangedCount = 0;
+        AuthenticationState authenticationState   = null!;
+        _authStateProvider.AuthenticationStateChanged += task =>
+        {
+            authStateChangedCount++;
+            authenticationState = task.Result;
+        };
+        
+        // Act
+        var result = await _authStateProvider.SignIn("", "");
+        
+        // Assert
+        result.Should().BeTrue();
+        authStateChangedCount.Should().Be(1);
+        authenticationState.Should().NotBeNull();
+        authenticationState.User.Identity.IsAuthenticated.Should().BeTrue();
+        _localStorageMock.Verify(service => service.SetItemAsync(It.IsAny<string>(),
+            It.IsAny<Session>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+    
+    [Fact]
+    public async Task SignIn_Should_ReturnFalse_When_ExceptionIsThrown()
+    {
+        // Arrange
+        _gotrueClientMock.Setup(
+                client =>
+                    client.SignIn(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new Session());
+        
+        _authStateProvider = new(
+            _localStorageMock.Object, _loggerMock.Object, _gotrueClientMock.Object);
+        
+        // Act
+        var result = await _authStateProvider.SignIn("", "");
+        
+        // Assert
+        result.Should().BeFalse();
+    }
+    
+    [Fact]
+    public async Task SignOut_Should_SetAnon()
+    {
+        // Arrange
+        _authStateProvider = new(
+            _localStorageMock.Object, _loggerMock.Object, _gotrueClientMock.Object);
+        AuthenticationState authenticationState = null!;
+        _authStateProvider.AuthenticationStateChanged += task => { authenticationState = task.Result; };
+        
+        // Act
+        await _authStateProvider.SignOut();
+        
+        // Assert
+        _localStorageMock.Verify(service => service.RemoveItemAsync(It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+        authenticationState.User.Identity.IsAuthenticated.Should().BeFalse();
+    }
+    
+    [Fact]
+    public async Task SignOut_Should_SetAnon_When_ExceptionIsThrown()
+    {
+        // Arrange
+        _authStateProvider = new(
+            _localStorageMock.Object, _loggerMock.Object, _gotrueClientMock.Object);
+        AuthenticationState authenticationState = null!;
+        _authStateProvider.AuthenticationStateChanged += task => { authenticationState = task.Result; };
+        _gotrueClientMock.Setup(client =>
+                client.SignOut(It.IsAny<Constants.SignOutScope>()))
+            .Throws<Exception>();
+        
+        // Act
+        await _authStateProvider.SignOut();
+        
+        // Assert
+        _localStorageMock.Verify(service => service.RemoveItemAsync(It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+        authenticationState.User.Identity.IsAuthenticated.Should().BeFalse();
     }
 }

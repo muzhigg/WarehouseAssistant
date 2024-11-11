@@ -1,8 +1,11 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MudBlazor;
 using MudBlazor.Services;
+using Supabase.Gotrue;
+using Supabase.Gotrue.Interfaces;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
@@ -40,7 +43,32 @@ namespace WarehouseAssistant.WebUI
         
         private static void AddAuthServices(this IServiceCollection services)
         {
-            services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+            services.AddSingleton<IGotrueClient<User, Session>>(provider =>
+            {
+                var client = new Client(new ClientOptions()
+                {
+                    AllowUnconfirmedUserSessions = true,
+                    AutoRefreshToken             = true,
+                    Url                          = "https://utyigyrohwwrwprprgbu.supabase.co/auth/v1",
+                    Headers = new Dictionary<string, string>()
+                    {
+                        {
+                            "apiKey",
+                            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0eWlneXJvaHd3cndwcnByZ2J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk1NzYyNjMsImV4cCI6MjA0NTE1MjI2M30.cWEf0OZtYrcu6UHe_ewPB5eC53QbE0rupRO-VaZJUiQ"
+                        }
+                    }
+                });
+                var logger = provider.GetRequiredService<ILogger<Client>>();
+                client.AddDebugListener((s, exception) => logger.LogError(exception, s));
+                return client;
+            });
+            services.AddScoped<AuthenticationStateProvider>((provider =>
+            {
+                if (provider.GetRequiredService<IAuthService>() is CustomAuthenticationStateProvider s) return s;
+                
+                throw new InvalidOperationException("Authentication state provider not found");
+            }));
+            services.AddScoped<IAuthService, CustomAuthenticationStateProvider>();
             services.AddAuthorizationCore();
         }
         

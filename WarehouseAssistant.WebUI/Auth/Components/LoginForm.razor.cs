@@ -1,16 +1,15 @@
-using System.Diagnostics;
-using System.Net.Http.Json;
+using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace WarehouseAssistant.WebUI.Auth;
 
 [UsedImplicitly]
 public partial class LoginForm : ComponentBase
 {
-    [Inject] private HttpClient                  HttpClient                  { get; set; } = null!;
-    [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
+    [Inject] private IAuthService       AuthService { get; set; } = null!;
+    [Inject] private ILogger<LoginForm> Logger      { get; set; } = null!;
     
     private readonly         LoginModel _loginModel = new();
     private                  bool       _loginFailed;
@@ -21,53 +20,29 @@ public partial class LoginForm : ComponentBase
         _isBusy      = true;
         _loginFailed = false;
         
-        try
+        Logger.LogInformation("Attempting to login to Supabase with credentials: Email={Email}, Password=***",
+            _loginModel.Email);
+        
+        bool success = await AuthService.SignIn(_loginModel.Email, _loginModel.Password);
+        
+        Logger.LogInformation("Login result: {Success}", success);
+        
+        if (!success)
         {
-            Debug.WriteLine("Authenticating user...");
-            var response =
-                await HttpClient.PostAsJsonAsync("https://warehouseassistantdbapi.onrender.com/api/auth/login",
-                    _loginModel);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                string token = await response.Content.ReadAsStringAsync();
-                if (!string.IsNullOrEmpty(token))
-                {
-                    Debug.WriteLine("Authentication successful. Token received.");
-                    ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(token);
-                }
-                else
-                {
-                    Debug.WriteLine("Authentication failed. Token is empty.");
-                    _loginFailed = true;
-                }
-            }
-            else
-            {
-                Debug.WriteLine($"Authentication failed. Status code: {response.StatusCode}");
-                _loginFailed = true;
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.WriteLine($"Authentication failed. Exception: {e.Message}");
+            Logger.LogError("Login attempt failed for user {Email}", _loginModel.Email);
             _loginFailed = true;
         }
-        finally
-        {
-            Debug.WriteLine("Finished authenticating user.");
-            _isBusy = false;
-        }
-    }
-    
-    public void Dispose()
-    {
-        _loginFailed = false;
+        
+        _isBusy = false;
     }
     
     public class LoginModel
     {
-        public string Username { get; set; } = null!;
+        [Required(ErrorMessage = "Email не может быть пустым")]
+        [EmailAddress(ErrorMessage = "Неверный формат почты")]
+        public string Email { get; set; } = null!;
+        
+        [Required(ErrorMessage = "Пароль не может быть пустым")]
         public string Password { get; set; } = null!;
     }
 }

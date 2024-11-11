@@ -1,14 +1,14 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Text.Json;
 
 namespace WarehouseAssistant.WebUI.Auth;
 
-[ExcludeFromCodeCoverage]
 internal static class JwtParser
 {
     public static IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
     {
+        if (string.IsNullOrEmpty(jwt)) return [];
+        
         var                         payload       = jwt.Split('.')[1];
         byte[]                      jsonBytes     = ParseBase64WithoutPadding(payload);
         Dictionary<string, object>? keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);

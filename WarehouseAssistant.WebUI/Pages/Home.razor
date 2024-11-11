@@ -2,16 +2,16 @@
 @using WarehouseAssistant.WebUI.Auth
 @attribute [AllowAnonymous]
 
-@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthService AuthenticationStateProvider
 
 <AuthorizeView>
 	<Authorized>
 		<MudText Typo="Typo.h6"
 		         Class="font-italic font-weight-bold">
-			@($"Добро пожаловать, {context.User.FindFirst("sub")?.Value}")
+			@($"Вы, вошли как {context.User.FindFirst("email")?.Value}")
 		</MudText>
 		<MudButton Variant="Variant.Outlined"
-		           OnClick="() => ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsLoggedOut()">
+		           OnClick="() => AuthenticationStateProvider.SignOut()">
 			Выйти
 		</MudButton>
 	</Authorized>
