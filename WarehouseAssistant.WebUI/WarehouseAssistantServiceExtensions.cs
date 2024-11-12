@@ -37,10 +37,9 @@ namespace WarehouseAssistant.WebUI
             AddLocalStorage(services);
             AddAuthServices(services);
             AddSupabaseServices(services);
-            services.AddScoped<IRepository<Product>, ProductRepository>();
-            services.AddScoped<IRepository<ReceivingItem>, ReceivingItemRepository>();
+            AddDataServices(services);
             services.AddScoped<SnackbarWithSoundService>();
-            services.AddScoped<IProductFormDialogService, ProductFormDialogService>();
+            
             return services;
         }
         
@@ -72,8 +71,8 @@ namespace WarehouseAssistant.WebUI
             services.AddSingleton<IDbClient, DbClient>(provider =>
             {
                 var client =
-                    new DbClient(endpoint,
-                        "eyJhbGciOiJIJUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0eWlneXJvaHd3cndwcnByZ2J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk1NzYyNjMsImV4cCI6MjA0NTE1MjI2M30.cWEf0OZtYrcu6UHe_ewPB5eC53QbE0rupRO-VaZJUiQ",
+                    new DbClient($"{endpoint}/rest/v1",
+                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0eWlneXJvaHd3cndwcnByZ2J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk1NzYyNjMsImV4cCI6MjA0NTE1MjI2M30.cWEf0OZtYrcu6UHe_ewPB5eC53QbE0rupRO-VaZJUiQ",
                         provider.GetRequiredService<ILogger<DbClient>>());
                 
                 var authClient = provider.GetRequiredService<IGotrueClient<User, Session>>();
@@ -96,7 +95,12 @@ namespace WarehouseAssistant.WebUI
             });
         }
         
-        private static void AddDataServices(IServiceCollection services) { }
+        private static void AddDataServices(IServiceCollection services)
+        {
+            services.AddScoped<IRepository<Product>, ProductRepository>();
+            services.AddScoped<IRepository<ReceivingItem>, ReceivingItemRepository>();
+            services.AddScoped<IProductFormDialogService, ProductFormDialogService>();
+        }
         
         private static void AddAuthServices(this IServiceCollection services)
         {

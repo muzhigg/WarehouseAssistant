@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Supabase.Postgrest;
+using Supabase.Postgrest.Models;
 using WarehouseAssistant.Data.Interfaces;
+using WarehouseAssistant.Shared.Models;
 
 namespace WarehouseAssistant.Data.Services;
 
@@ -35,5 +37,23 @@ public class DbClient : IDbClient
             _client.Options.Headers["Authorization"] = $"Bearer {token}";
         else
             _client.Options.Headers.Add("Authorization", $"Bearer {token}");
+    }
+    
+    public async Task DeleteRange<T>(IEnumerable<string> articles) where T : BaseModel, ITableItem, new()
+    {
+        await _client.Table<T>().Where(item => articles.Any(i => i == item.Article)).Delete();
+    }
+    
+    public async Task<T?> Get<T>(string article) where T : BaseModel, ITableItem, new()
+    {
+        throw new NotImplementedException();
+    }
+    
+    public async Task<List<T>> GetAll<T>() where T : BaseModel, ITableItem, new()
+    {
+        var get = await _client.Table<T>().Select("*").Get();
+        get.ResponseMessage?.EnsureSuccessStatusCode();
+        
+        return get.Models;
     }
 }

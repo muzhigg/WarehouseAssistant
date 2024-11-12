@@ -1,12 +1,32 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Supabase.Postgrest.Attributes;
+using Supabase.Postgrest.Models;
 
 namespace WarehouseAssistant.Shared.Models.Db;
 
-public class Product
+[Table("Products")]
+public class Product : BaseModel, ITableItem
 {
-    [NotNull] public string? Article          { get; set; }
-    [NotNull] public string? Name             { get; set; }
-    public           string? Barcode          { get; set; }
-    public           int?    QuantityPerBox   { get; set; }
-    public           int?    QuantityPerShelf { get; set; }
+    [NotNull, PrimaryKey] public string? Article { get; set; }
+    
+    public bool HasValidName()
+    {
+        return true;
+    }
+    
+    public bool HasValidArticle()
+    {
+        return true;
+    }
+    
+    public bool MatchesSearchString(string searchString)
+    {
+        return Name.Contains(searchString, StringComparison.InvariantCultureIgnoreCase)
+               || Article.Contains(searchString, StringComparison.InvariantCultureIgnoreCase);
+    }
+    
+    [NotNull, Column] public string? Name             { get; set; }
+    [Column]          public string? Barcode          { get; set; }
+    [Column]          public int?    QuantityPerBox   { get; set; }
+    [Column]          public int?    QuantityPerShelf { get; set; }
 }

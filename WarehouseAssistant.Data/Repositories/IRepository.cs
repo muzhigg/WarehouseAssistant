@@ -1,6 +1,8 @@
-﻿namespace WarehouseAssistant.Data.Repositories;
+﻿using Supabase.Postgrest.Models;
 
-public interface IRepository<T> where T : class
+namespace WarehouseAssistant.Data.Repositories;
+
+public interface IRepository<T> where T : BaseModel
 {
     [Obsolete("This property is deprecated and will be removed in a future version.")]
     public bool CanWrite { get; }
