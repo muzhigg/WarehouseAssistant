@@ -38,6 +38,13 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider, IA
             _localStorageService.SetItemAsync(LocalStorageKey,
                     sender.CurrentSession)
                 .AndForget(true);
+            
+            // Parse the JWT access token
+            JwtToken jwtToken =
+                JwtToken.Parse(sender.CurrentSession!.AccessToken!);
+            
+            // Notify the authentication state has changed
+            NotifyAuthenticationStateChanged(Task.FromResult(jwtToken.GetAuthenticationState()));
         }
     }
     

@@ -6,7 +6,9 @@ using MudBlazor;
 using MudBlazor.Services;
 using Supabase.Gotrue;
 using Supabase.Gotrue.Interfaces;
+using WarehouseAssistant.Data.Interfaces;
 using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.Data.Services;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Auth;
@@ -34,6 +36,7 @@ namespace WarehouseAssistant.WebUI
             });
             AddLocalStorage(services);
             AddAuthServices(services);
+            AddSupabaseServices(services);
             services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<IRepository<ReceivingItem>, ReceivingItemRepository>();
             services.AddScoped<SnackbarWithSoundService>();
@@ -41,20 +44,23 @@ namespace WarehouseAssistant.WebUI
             return services;
         }
         
-        private static void AddAuthServices(this IServiceCollection services)
+        private static void AddSupabaseServices(IServiceCollection services)
         {
+            string apiKey =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0eWlneXJvaHd3cndwcnByZ2J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk1NzYyNjMsImV4cCI6MjA0NTE1MjI2M30.cWEf0OZtYrcu6UHe_ewPB5eC53QbE0rupRO-VaZJUiQ";
+            string endpoint = "https://utyigyrohwwrwprprgbu.supabase.co";
+            
             services.AddSingleton<IGotrueClient<User, Session>>(provider =>
             {
                 var client = new Client(new ClientOptions()
                 {
                     AllowUnconfirmedUserSessions = true,
                     AutoRefreshToken             = true,
-                    Url                          = "https://utyigyrohwwrwprprgbu.supabase.co/auth/v1",
+                    Url                          = $"{endpoint}/auth/v1",
                     Headers = new Dictionary<string, string>()
                     {
                         {
-                            "apiKey",
-                            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0eWlneXJvaHd3cndwcnByZ2J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk1NzYyNjMsImV4cCI6MjA0NTE1MjI2M30.cWEf0OZtYrcu6UHe_ewPB5eC53QbE0rupRO-VaZJUiQ"
+                            "apiKey", apiKey
                         }
                     }
                 });
@@ -62,6 +68,38 @@ namespace WarehouseAssistant.WebUI
                 client.AddDebugListener((s, exception) => logger.LogError(exception, s));
                 return client;
             });
+            
+            services.AddSingleton<IDbClient, DbClient>(provider =>
+            {
+                var client =
+                    new DbClient(endpoint,
+                        "eyJhbGciOiJIJUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0eWlneXJvaHd3cndwcnByZ2J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk1NzYyNjMsImV4cCI6MjA0NTE1MjI2M30.cWEf0OZtYrcu6UHe_ewPB5eC53QbE0rupRO-VaZJUiQ",
+                        provider.GetRequiredService<ILogger<DbClient>>());
+                
+                var authClient = provider.GetRequiredService<IGotrueClient<User, Session>>();
+                authClient.AddStateChangedListener((sender, changed) =>
+                {
+                    switch (changed)
+                    {
+                        case Constants.AuthState.SignedIn:
+                        case Constants.AuthState.UserUpdated:
+                        case Constants.AuthState.TokenRefreshed:
+                            client.SetAuthBearer(sender.CurrentSession.AccessToken);
+                            break;
+                        case Constants.AuthState.SignedOut:
+                            client.SetAuthBearer("");
+                            break;
+                    }
+                });
+                
+                return client;
+            });
+        }
+        
+        private static void AddDataServices(IServiceCollection services) { }
+        
+        private static void AddAuthServices(this IServiceCollection services)
+        {
             services.AddScoped<AuthenticationStateProvider>((provider =>
             {
                 if (provider.GetRequiredService<IAuthService>() is CustomAuthenticationStateProvider s) return s;
