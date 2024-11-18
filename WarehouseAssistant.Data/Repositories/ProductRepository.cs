@@ -5,5 +5,5 @@ namespace WarehouseAssistant.Data.Repositories;
 
 public sealed class ProductRepository(IDbClient client) : RepositoryBase<Product>(client)
 {
-    protected override string Uri => "https://warehouseassistantdbapi.onrender.com/api/products";
+    protected string Uri => "https://warehouseassistantdbapi.onrender.com/api/products";
 }

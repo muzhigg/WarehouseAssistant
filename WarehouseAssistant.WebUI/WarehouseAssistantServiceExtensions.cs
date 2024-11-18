@@ -91,6 +91,11 @@ namespace WarehouseAssistant.WebUI
                     }
                 });
                 
+                if (authClient.CurrentSession != null)
+                {
+                    client.SetAuthBearer(authClient.CurrentSession.AccessToken!);
+                }
+                
                 return client;
             });
         }

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Supabase.Postgrest;
 using Supabase.Postgrest.Models;
+using Supabase.Postgrest.Responses;
 using WarehouseAssistant.Data.Interfaces;
 using WarehouseAssistant.Shared.Models;
 
@@ -27,7 +28,7 @@ public class DbClient : IDbClient
             if (exception != null)
                 _logger.LogError(exception, message);
             else
-                _logger.LogDebug(message);
+                _logger.LogInformation(message);
         });
     }
     
@@ -39,21 +40,98 @@ public class DbClient : IDbClient
             _client.Options.Headers.Add("Authorization", $"Bearer {token}");
     }
     
-    public async Task DeleteRange<T>(IEnumerable<string> articles) where T : BaseModel, ITableItem, new()
+    public async Task<List<T>> Get<T>() where T : BaseModel, ITableItem, new()
     {
-        await _client.Table<T>().Where(item => articles.Any(i => i == item.Article)).Delete();
-    }
-    
-    public async Task<T?> Get<T>(string article) where T : BaseModel, ITableItem, new()
-    {
-        throw new NotImplementedException();
-    }
-    
-    public async Task<List<T>> GetAll<T>() where T : BaseModel, ITableItem, new()
-    {
-        var get = await _client.Table<T>().Select("*").Get();
+        ModeledResponse<T> get = await _client.Table<T>().Get();
         get.ResponseMessage?.EnsureSuccessStatusCode();
         
         return get.Models;
+    }
+    
+    public async Task<T?> Get<T>(string id) where T : BaseModel, ITableItem, new()
+    {
+        ModeledResponse<T> response = await _client.Table<T>().Where(item => item.Article == id).Get();
+        response.ResponseMessage?.EnsureSuccessStatusCode();
+        
+        return response.Model;
+    }
+    
+    public async Task<bool> Contains<T>(string id) where T : BaseModel, ITableItem, new()
+    {
+        ModeledResponse<T> response =
+            await _client.Table<T>().Select("Article").Where(item => item.Article == id).Get();
+        response.ResponseMessage?.EnsureSuccessStatusCode();
+        
+        return response.Models.Count > 0;
+    }
+    
+    public async Task Insert<T>(T item) where T : BaseModel, ITableItem, new()
+    {
+        ModeledResponse<T> response = await _client.Table<T>().Insert(item);
+        response.ResponseMessage?.EnsureSuccessStatusCode();
+    }
+    
+    public async Task Insert<T>(ICollection<T> items) where T : BaseModel, ITableItem, new()
+    {
+        ModeledResponse<T> response = await _client.Table<T>().Insert(items);
+        response.ResponseMessage?.EnsureSuccessStatusCode();
+    }
+    
+    public async Task Update<T>(T item) where T : BaseModel, ITableItem, new()
+    {
+        ModeledResponse<T> response = await _client.Table<T>().Update(item);
+        response.ResponseMessage?.EnsureSuccessStatusCode();
+    }
+    
+    public Task Update<T>(ICollection<T> items) where T : BaseModel, ITableItem, new()
+    {
+        return Upsert(items);
+    }
+    
+    public async Task Upsert<T>(T item) where T : BaseModel, ITableItem, new()
+    {
+        ModeledResponse<T> response = await _client.Table<T>().Upsert(item, new QueryOptions()
+        {
+            Upsert    = true,
+            Returning = QueryOptions.ReturnType.Minimal
+        });
+        
+        response.ResponseMessage?.EnsureSuccessStatusCode();
+    }
+    
+    public async Task Upsert<T>(ICollection<T> items) where T : BaseModel, ITableItem, new()
+    {
+        ModeledResponse<T> response = await _client.Table<T>().Upsert(items, new QueryOptions()
+        {
+            Upsert    = true,
+            Returning = QueryOptions.ReturnType.Minimal
+        });
+        
+        response.ResponseMessage?.EnsureSuccessStatusCode();
+    }
+    
+    public async Task Delete<T>(T item) where T : BaseModel, ITableItem, new()
+    {
+        ModeledResponse<T> response = await _client.Table<T>().Delete(item);
+        response.ResponseMessage?.EnsureSuccessStatusCode();
+    }
+    
+    public async Task Delete<T>(IEnumerable<T> items) where T : BaseModel, ITableItem, new()
+    {
+        Task delete = _client.Table<T>().Filter("Article", Constants.Operator.In,
+            items.Select(item => item.Article).ToList()).Delete();
+        await delete;
+        
+        if (delete is Task<BaseResponse> deleteResponse)
+            deleteResponse.Result.ResponseMessage?.EnsureSuccessStatusCode();
+    }
+    
+    public async Task Delete<T>(string id) where T : BaseModel, ITableItem, new()
+    {
+        Task delete = _client.Table<T>().Where(item => item.Article == id).Delete();
+        await delete;
+        
+        if (delete is Task<BaseResponse> deleteResponse)
+            deleteResponse.Result.ResponseMessage?.EnsureSuccessStatusCode();
     }
 }

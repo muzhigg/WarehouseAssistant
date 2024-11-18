@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using WarehouseAssistant.Data.Repositories;
@@ -90,18 +91,18 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
         private MudForm _form = null!;
         private bool    _isLoading;
         
-        protected override async Task OnInitializedAsync()
-        {
-            await base.OnInitializedAsync();
-            
-            var state = await AuthenticationState.GetAuthenticationStateAsync();
-            
-            if (!state.User.IsInRole("Admin") && !state.User.IsInRole("Editor"))
-            {
-                Snackbar.Add("Нет прав на добавление/редактирование товаров", Severity.Error);
-                MudDialog?.Cancel();
-            }
-        }
+        // protected override async Task OnInitializedAsync()
+        // {
+        //     await base.OnInitializedAsync();
+        //     
+        //     var state = await AuthenticationState.GetAuthenticationStateAsync();
+        //     
+        //     if (!state.User.IsInRole("Admin") && !state.User.IsInRole("Editor"))
+        //     {
+        //         Snackbar.Add("Нет прав на добавление/редактирование товаров", Severity.Error);
+        //         MudDialog?.Cancel();
+        //     }
+        // }
         
         protected override void OnParametersSet()
         {
@@ -173,6 +174,8 @@ namespace WarehouseAssistant.WebUI.DatabaseModule
             if (await Db.GetByArticleAsync(arg) != null)
             {
                 _isLoading = false;
+                Debug.Write(_isLoading);
+                StateHasChanged();
                 return "Товар с данным артикулом существует";
             }
             

@@ -6,13 +6,6 @@ namespace WarehouseAssistant.Data.Repositories;
 
 public abstract class RepositoryBase<T>(IDbClient client) : IRepository<T> where T : BaseModel, ITableItem, new()
 {
-    protected abstract string Uri { get; }
-    
-    public virtual async Task DeleteRangeAsync(IEnumerable<string> articles)
-    {
-        await client.DeleteRange<T>(articles);
-    }
-    
     private bool? _isAuthenticated;
     
     [Obsolete("This property is obsolete and will be removed in a future version.")]
@@ -20,6 +13,11 @@ public abstract class RepositoryBase<T>(IDbClient client) : IRepository<T> where
     
     [Obsolete]
     public void SetAccessKey(string accessKey) { }
+    
+    public virtual async Task DeleteRangeAsync(IEnumerable<T> objects)
+    {
+        await client.Delete<T>(objects);
+    }
     
     [Obsolete]
     public async Task<bool> ValidateAccessKeyAsync(string accessKey)
@@ -29,42 +27,46 @@ public abstract class RepositoryBase<T>(IDbClient client) : IRepository<T> where
     
     public virtual async Task<T?> GetByArticleAsync(string article)
     {
-        throw new NotImplementedException();
+        return await client.Get<T>(article);
     }
     
     public virtual async Task<List<T>?> GetAllAsync()
     {
-        return await client.GetAll<T>();
+        return await client.Get<T>();
+    }
+    
+    public virtual async Task<bool> ContainsAsync(string article)
+    {
+        return await client.Contains<T>(article);
     }
     
     public virtual async Task AddAsync(T obj)
     {
-        // var response = await httpClient.PostAsJsonAsync($"{Uri}/add", obj);
-        // response.EnsureSuccessStatusCode();
+        await client.Insert(obj);
     }
     
-    public virtual async Task AddRangeAsync(IEnumerable<T> objects)
+    public virtual async Task AddRangeAsync(ICollection<T> objects)
     {
-        // var response =
-        //     await httpClient.PostAsJsonAsync($"{Uri}/add-range", objects);
-        // response.EnsureSuccessStatusCode();
+        await client.Insert(objects);
     }
     
     public virtual async Task UpdateAsync(T obj)
     {
-        // var response = await httpClient.PutAsJsonAsync($"{Uri}/update", obj);
-        // response.EnsureSuccessStatusCode();
+        await client.Update(obj);
     }
     
-    public virtual async Task UpdateRangeAsync(IEnumerable<T> objects)
+    public virtual async Task UpdateRangeAsync(ICollection<T> objects)
     {
-        // var response = await httpClient.PutAsJsonAsync($"{Uri}/update-range", objects);
-        // response.EnsureSuccessStatusCode();
+        await client.Update(objects);
     }
     
     public virtual async Task DeleteAsync(string? article)
     {
-        // var response = await httpClient.DeleteAsync($"{Uri}/remove/{article}");
-        // response.EnsureSuccessStatusCode();
+        await client.Delete<T>(article);
+    }
+    
+    public virtual async Task DeleteAsync(T obj)
+    {
+        await client.Delete<T>(obj);
     }
 }
