@@ -71,13 +71,13 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider, IA
                 _logger.LogInformation("Attempting to set access token...");
                 
                 // Set the session and get the new one
-                Session newSession = await _client.SetSession(session.AccessToken, session.RefreshToken);
+                Session  newSession   = await _client.SetSession(session.AccessToken, session.RefreshToken);
+                JwtToken decodedToken = JwtToken.Parse(newSession.AccessToken);
                 
                 // If the new session has an access token, parse the JWT and return the authentication state
-                if (newSession.AccessToken != null)
+                if (newSession.AccessToken != session.AccessToken)
                 {
                     _logger.LogInformation("Access token refreshed, parsing JWT...");
-                    JwtToken decodedToken = JwtToken.Parse(newSession.AccessToken);
                     
                     if (session.CreatedAt != newSession.CreatedAt)
                     {
@@ -87,6 +87,8 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider, IA
                     
                     return decodedToken.GetAuthenticationState();
                 }
+                
+                return decodedToken.GetAuthenticationState();
             }
             catch (GotrueException exception)
             {
