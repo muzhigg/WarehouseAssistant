@@ -125,7 +125,7 @@ public partial class ProductsDatabasePage : ComponentBase
             try
             {
                 Debug.WriteLine("DeleteItems: Deleting selected items...");
-                await Repository.DeleteRangeAsync(items.Select(p => p.Article));
+                await Repository.DeleteRangeAsync(items);
                 Debug.WriteLine("DeleteItems: Selected items deleted.");
                 foreach (Product product in items)
                 {
