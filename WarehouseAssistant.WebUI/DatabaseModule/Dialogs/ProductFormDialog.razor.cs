@@ -1,193 +1,211 @@
-﻿using System.Diagnostics;
+﻿using System.Diagnostics.CodeAnalysis;
+using Blazored.FluentValidation;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 using MudBlazor;
+using Supabase.Postgrest.Exceptions;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
+using Severity = MudBlazor.Severity;
 
-namespace WarehouseAssistant.WebUI.DatabaseModule
+namespace WarehouseAssistant.WebUI.DatabaseModule;
+
+public partial class ProductFormDialog : ComponentBase, IDisposable
 {
-    public partial class ProductFormDialog : ComponentBase
+    [Obsolete, ExcludeFromCodeCoverage]
+    public static async Task<bool> ShowAddDialogAsync(ProductTableItem productTableItem,
+        IDialogService                                                 dialogService)
     {
-        [Obsolete]
-        public static async Task<bool> ShowAddDialogAsync(ProductTableItem productTableItem,
-            IDialogService                                                 dialogService)
+        Product product = new()
         {
-            Product product = new()
-            {
-                Article = productTableItem.Article,
-                Name    = productTableItem.Name,
-            };
-            
-            bool success = await ShowAddDialogAsync(product, dialogService);
-            
-            if (success)
-                productTableItem.DbReference = product;
-            
-            return success;
+            Article = productTableItem.Article,
+            Name    = productTableItem.Name,
+        };
+        
+        bool success = await ShowAddDialogAsync(product, dialogService);
+        
+        if (success)
+            productTableItem.DbReference = product;
+        
+        return success;
+    }
+    
+    [Obsolete, ExcludeFromCodeCoverage]
+    public static async Task<bool> ShowAddDialogAsync(Product product,
+        IDialogService                                        dialogService)
+    {
+        DialogParameters<ProductFormDialog> parameters = [];
+        parameters.Add(productDialog => productDialog.EditedProduct, product);
+        parameters.Add(productDialog => productDialog.IsEditMode, false);
+        
+        IDialogReference? dialog = await dialogService.ShowAsync<ProductFormDialog>("Добавить товар", parameters);
+        DialogResult?     result = await dialog.Result;
+        
+        return result.Canceled == false || result.Data is true;
+    }
+    
+    [Obsolete, ExcludeFromCodeCoverage]
+    public static async Task<bool> ShowEditDialogAsync(Product product, IDialogService dialogService)
+    {
+        DialogParameters<ProductFormDialog> parameters = [];
+        
+        parameters.Add(productDialog => productDialog.IsEditMode, true);
+        parameters.Add(productDialog => productDialog.EditedProduct, product);
+        
+        IDialogReference? dialog =
+            await dialogService.ShowAsync<ProductFormDialog>("Редактировать товар", parameters);
+        DialogResult? result = await dialog.Result;
+        
+        return result.Canceled == false || (bool)result.Data;
+    }
+    
+    [Inject]    private IRepository<Product>       Db         { get; set; } = null!;
+    [Inject]    private ISnackbar                  Snackbar   { get; set; } = null!;
+    [Inject]    private ILogger<ProductFormDialog> Logger     { get; set; } = null!;
+    [Parameter] public  bool                       IsEditMode { get; set; }
+    
+    [Parameter, EditorRequired] public Product EditedProduct { get; set; } = null!;
+    
+    [CascadingParameter] private MudDialogInstance? MudDialog { get; set; }
+    
+    public string? Article
+    {
+        get => _model.Article;
+        set => _model.Article = value;
+    }
+    
+    public string? ProductName
+    {
+        get => _model.Name;
+        set => _model.Name = value;
+    }
+    
+    public string? Barcode
+    {
+        get => _model.Barcode;
+        set => _model.Barcode = value;
+    }
+    
+    public int? QuantityPerBox
+    {
+        get => _model.QuantityPerBox;
+        set => _model.QuantityPerBox = value;
+    }
+    
+    public int? QuantityPerShelf
+    {
+        get => _model.QuantityPerShelf;
+        set => _model.QuantityPerShelf = value;
+    }
+    
+    private bool                      _isLoading;
+    private EditContext?              _editContext;
+    private Product                   _model                   = new();
+    private FluentValidationValidator _validator               = null!;
+    private CancellationTokenSource   _cancellationTokenSource = new();
+    
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_model);
+    }
+    
+    protected override void OnParametersSet()
+    {
+        if (EditedProduct is null)
+        {
+            Logger.LogError("EditedProduct is null");
+            throw new NullReferenceException("EditedProduct is null");
         }
         
-        [Obsolete]
-        public static async Task<bool> ShowAddDialogAsync(Product product,
-            IDialogService                                        dialogService)
+        Logger.LogInformation("Parameters set, copying edited product to local model");
+        
+        Article          = EditedProduct.Article;
+        ProductName      = EditedProduct.Name;
+        Barcode          = EditedProduct.Barcode;
+        QuantityPerBox   = EditedProduct.QuantityPerBox;
+        QuantityPerShelf = EditedProduct.QuantityPerShelf;
+    }
+    
+    private async Task Submit()
+    {
+        Logger.LogInformation("Submit button clicked");
+        
+        if (_isLoading || !await _validator.ValidateAsync())
         {
-            DialogParameters<ProductFormDialog> parameters = [];
-            parameters.Add(productDialog => productDialog.EditedProduct, product);
-            parameters.Add(productDialog => productDialog.IsEditMode, false);
-            
-            IDialogReference? dialog = await dialogService.ShowAsync<ProductFormDialog>("Добавить товар", parameters);
-            DialogResult?     result = await dialog.Result;
-            
-            return result.Canceled == false || result.Data is true;
+            Logger.LogInformation("Validation failed, returning");
+            return;
         }
         
-        [Obsolete]
-        public static async Task<Product?> ShowAddDialogAsync(IDialogService dialogService)
+        _isLoading = true;
+        
+        UpdateEditedProduct();
+        
+        try
         {
-            Product product = new();
+            Logger.LogInformation("Starting DB operation");
+            await (IsEditMode
+                ? Db.UpdateAsync(EditedProduct, _cancellationTokenSource.Token)
+                : Db.AddAsync(EditedProduct, _cancellationTokenSource.Token));
+            Logger.LogInformation("DB operation completed");
             
-            bool success = await ShowAddDialogAsync(product, dialogService);
-            
-            return success ? product : null;
+            Snackbar.Add($"Товар {(IsEditMode ? "обновлен" : "добавлен")}" +
+                         $"\n{EditedProduct.Article}" +
+                         $"\n{EditedProduct.Name}", Severity.Success);
+            MudDialog?.Close(true);
         }
-        
-        [Obsolete]
-        public static async Task<bool> ShowEditDialogAsync(Product product, IDialogService dialogService)
+        catch (PostgrestException e)
         {
-            DialogParameters<ProductFormDialog> parameters = [];
-            
-            parameters.Add(productDialog => productDialog.IsEditMode, true);
-            parameters.Add(productDialog => productDialog.EditedProduct, product);
-            
-            IDialogReference? dialog =
-                await dialogService.ShowAsync<ProductFormDialog>("Редактировать товар", parameters);
-            DialogResult? result = await dialog.Result;
-            
-            return result.Canceled == false || (bool)result.Data;
+            Logger.LogError(e, "PostgrestException occurred");
+            HandleError($"Ошибка при обращении к БД {e.Message}");
         }
-        
-        [Inject]    private IRepository<Product> Db         { get; set; } = null!;
-        [Inject]    private ISnackbar            Snackbar   { get; set; } = null!;
-        [Parameter] public  bool                 IsEditMode { get; set; }
-        
-        [Parameter] public Product EditedProduct { get; set; } = null!;
-        
-        [CascadingParameter] private MudDialogInstance? MudDialog { get; set; }
-        
-        [Inject] public AuthenticationStateProvider AuthenticationState { get; set; } = null!;
-        
-        public string? Article { get; set; }
-        
-        public string? ProductName { get; set; }
-        
-        public string? Barcode { get; set; }
-        
-        public int? QuantityPerBox { get; set; }
-        
-        public int? QuantityPerShelf { get; set; }
-        
-        private bool    _isValid;
-        private MudForm _form = null!;
-        private bool    _isLoading;
-        
-        // protected override async Task OnInitializedAsync()
-        // {
-        //     await base.OnInitializedAsync();
-        //     
-        //     var state = await AuthenticationState.GetAuthenticationStateAsync();
-        //     
-        //     if (!state.User.IsInRole("Admin") && !state.User.IsInRole("Editor"))
-        //     {
-        //         Snackbar.Add("Нет прав на добавление/редактирование товаров", Severity.Error);
-        //         MudDialog?.Cancel();
-        //     }
-        // }
-        
-        protected override void OnParametersSet()
+        catch (Exception ex)
         {
-            if (EditedProduct is null)
-                throw new ArgumentException("EditedProduct is null");
-            
-            Article          = EditedProduct.Article;
-            ProductName      = EditedProduct.Name;
-            Barcode          = EditedProduct.Barcode;
-            QuantityPerBox   = EditedProduct.QuantityPerBox;
-            QuantityPerShelf = EditedProduct.QuantityPerShelf;
+            Logger.LogError(ex, "Unknown exception");
+            HandleError($"Неизвестная ошибка: {ex.Message}");
         }
-        
-        protected override void OnAfterRender(bool firstRender)
+        finally
         {
-            base.OnAfterRender(firstRender);
-            if (firstRender)
-                _form.Validate();
-        }
-        
-        // TODO Add log
-        private async Task Submit()
-        {
-            _isLoading = true;
-            
-            EditedProduct.Article          = Article;
-            EditedProduct.Name             = ProductName;
-            EditedProduct.Barcode          = Barcode;
-            EditedProduct.QuantityPerBox   = QuantityPerBox;
-            EditedProduct.QuantityPerShelf = QuantityPerShelf;
-            
-            try
-            {
-                if (IsEditMode)
-                    await Db.UpdateAsync(EditedProduct);
-                else
-                    await Db.AddAsync(EditedProduct);
-                
-                Snackbar.Add($"Товар {(IsEditMode ? "обновлен" : "добавлен")}" +
-                             $"\n{EditedProduct.Article}" +
-                             $"\n{EditedProduct.Name}", Severity.Success);
-                MudDialog?.Close(true);
-            }
-            catch (HttpRequestException e)
-            {
-                Snackbar.Add($"Ошибка при сохранении товара {e.Message}", Severity.Error);
-                MudDialog?.Close(false);
-            }
-            finally
-            {
-                _isLoading = false;
-            }
-        }
-        
-        private void Cancel()
-        {
-            MudDialog?.Close(DialogResult.Cancel());
-        }
-        
-        internal async Task<string> ArticleValidation(string arg)
-        {
-            if (IsEditMode) return null!;
-            
-            if (string.IsNullOrEmpty(arg)) return "Артикул обязателен";
-            
-            if (StartsAndEndsWithNonWhitespaceChar(arg) == false) return "Артикул не должен содержать пробелы";
-            
-            _isLoading = true;
-            if (await Db.GetByArticleAsync(arg) != null)
-            {
-                _isLoading = false;
-                Debug.Write(_isLoading);
-                StateHasChanged();
-                return "Товар с данным артикулом существует";
-            }
-            
             _isLoading = false;
-            return null!;
+            Logger.LogInformation("Submit method finished");
         }
+    }
+    
+    private void HandleError(string message)
+    {
+        Snackbar.Add(message, Severity.Error);
+        MudDialog?.Close(false);
+    }
+    
+    private void UpdateEditedProduct()
+    {
+        Logger.LogInformation("Updating EditedProduct properties from form fields");
         
-        public static bool StartsAndEndsWithNonWhitespaceChar(string input)
-        {
-            if (string.IsNullOrEmpty(input)) return false;
-            
-            return !char.IsWhiteSpace(input[0]) && !char.IsWhiteSpace(input[^1]);
-        }
+        EditedProduct.Article = Article;
+        Logger.LogInformation("Updated Article: {Article}", Article);
+        
+        EditedProduct.Name = ProductName;
+        Logger.LogInformation("Updated Name: {ProductName}", ProductName);
+        
+        EditedProduct.Barcode = Barcode;
+        Logger.LogInformation("Updated Barcode: {Barcode}", Barcode);
+        
+        EditedProduct.QuantityPerBox = QuantityPerBox;
+        Logger.LogInformation("Updated QuantityPerBox: {QuantityPerBox}", QuantityPerBox);
+        
+        EditedProduct.QuantityPerShelf = QuantityPerShelf;
+        Logger.LogInformation("Updated QuantityPerShelf: {QuantityPerShelf}", QuantityPerShelf);
+    }
+    
+    private void Cancel()
+    {
+        _cancellationTokenSource.Cancel();
+        MudDialog?.Close(DialogResult.Cancel());
+    }
+    
+    public void Dispose()
+    {
+        _cancellationTokenSource.Dispose();
     }
 }

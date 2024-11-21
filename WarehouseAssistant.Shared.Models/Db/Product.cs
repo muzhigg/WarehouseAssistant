@@ -7,8 +7,7 @@ namespace WarehouseAssistant.Shared.Models.Db;
 [Table("Products")]
 public class Product : BaseModel, ITableItem
 {
-    [NotNull]
-    [PrimaryKey(shouldInsert: true)]
+    [NotNull, PrimaryKey(shouldInsert: true)]
     public string? Article { get; set; }
     
     public bool HasValidName()
@@ -27,8 +26,9 @@ public class Product : BaseModel, ITableItem
                || Article.Contains(searchString, StringComparison.InvariantCultureIgnoreCase);
     }
     
-    [NotNull] [Column] public string? Name             { get; set; }
-    [Column]           public string? Barcode          { get; set; }
-    [Column]           public int?    QuantityPerBox   { get; set; }
-    [Column]           public int?    QuantityPerShelf { get; set; }
+    [NotNull, Column] public string? Name { get; set; }
+    
+    [Column] public string? Barcode          { get; set; }
+    [Column] public int?    QuantityPerBox   { get; set; }
+    [Column] public int?    QuantityPerShelf { get; set; }
 }
