@@ -54,6 +54,9 @@ public class ProductFormDialogService(IDialogService dialogService) : IProductFo
             await dialogService.ShowAsync<ProductFormDialog>("Редактировать товар", parameters);
         DialogResult? result = await dialog.Result;
         
-        return result.Canceled == false || (bool)result.Data;
+        if (result.Canceled)
+            return false;
+        
+        return (bool)result.Data;
     }
 }
