@@ -6,67 +6,73 @@ namespace WarehouseAssistant.Data.Repositories;
 
 public abstract class RepositoryBase<T>(IDbClient client) : IRepository<T> where T : BaseModel, ITableItem, new()
 {
-    private bool? _isAuthenticated;
+    [Obsolete] private bool? _isAuthenticated;
     
     [Obsolete("This property is obsolete and will be removed in a future version.")]
     public bool CanWrite => _isAuthenticated.HasValue && _isAuthenticated.Value;
     
-    [Obsolete]
-    public void SetAccessKey(string accessKey) { }
-    
-    public virtual async Task DeleteRangeAsync(IEnumerable<T> objects)
+    public virtual async Task DeleteRangeAsync(IEnumerable<T> objects,
+        CancellationToken                                     cancellationToken = default)
     {
-        await client.Delete<T>(objects);
+        await client.Delete(objects, cancellationToken);
     }
     
     [Obsolete]
-    public async Task<bool> ValidateAccessKeyAsync(string accessKey)
+    public Task<bool> ValidateAccessKeyAsync(string accessKey)
     {
-        return true;
+        return Task.FromResult(true);
     }
     
-    public virtual async Task<T?> GetByArticleAsync(string article)
+    public virtual async Task<T?> GetByArticleAsync(string article,
+        CancellationToken                                  cancellationToken = default)
     {
-        return await client.Get<T>(article);
+        return await client.Get<T>(article, cancellationToken);
     }
     
-    public virtual async Task<List<T>?> GetAllAsync()
+    public virtual async Task<List<T>?> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await client.Get<T>();
+        return await client.Get<T>(cancellationToken);
     }
     
-    public virtual async Task<bool> ContainsAsync(string article)
+    public virtual async Task<bool> ContainsAsync(string article,
+        CancellationToken                                cancellationToken = default)
     {
-        return await client.Contains<T>(article);
+        return await client.Contains<T>(article, cancellationToken);
     }
     
-    public virtual async Task AddAsync(T obj)
+    public virtual async Task AddAsync(T obj,
+        CancellationToken                cancellationToken = default)
     {
-        await client.Insert(obj);
+        await client.Insert(obj, cancellationToken);
     }
     
-    public virtual async Task AddRangeAsync(ICollection<T> objects)
+    public virtual async Task AddRangeAsync(ICollection<T> objects,
+        CancellationToken                                  cancellationToken = default)
     {
-        await client.Insert(objects);
+        await client.Insert(objects, cancellationToken);
     }
     
-    public virtual async Task UpdateAsync(T obj)
+    public virtual async Task UpdateAsync(T obj,
+        CancellationToken                   cancellationToken = default)
     {
-        await client.Update(obj);
+        await client.Update(obj, cancellationToken);
     }
     
-    public virtual async Task UpdateRangeAsync(ICollection<T> objects)
+    public virtual async Task UpdateRangeAsync(ICollection<T> objects,
+        CancellationToken                                     cancellationToken = default)
     {
-        await client.Update(objects);
+        await client.Update(objects, cancellationToken);
     }
     
-    public virtual async Task DeleteAsync(string? article)
+    public virtual async Task DeleteAsync(string article,
+        CancellationToken                        cancellationToken = default)
     {
-        await client.Delete<T>(article);
+        await client.Delete<T>(article, cancellationToken);
     }
     
-    public virtual async Task DeleteAsync(T obj)
+    public virtual async Task DeleteAsync(T obj,
+        CancellationToken                   cancellationToken = default)
     {
-        await client.Delete<T>(obj);
+        await client.Delete(obj, cancellationToken);
     }
 }

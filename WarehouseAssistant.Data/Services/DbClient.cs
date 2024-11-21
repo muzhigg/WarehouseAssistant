@@ -40,95 +40,108 @@ public class DbClient : IDbClient
             _client.Options.Headers.Add("Authorization", $"Bearer {token}");
     }
     
-    public async Task<List<T>> Get<T>() where T : BaseModel, ITableItem, new()
+    public async Task<List<T>> Get<T>(CancellationToken cancellationToken = default)
+        where T : BaseModel, ITableItem, new()
     {
-        ModeledResponse<T> get = await _client.Table<T>().Get();
+        ModeledResponse<T> get = await _client.Table<T>().Get(cancellationToken);
+        
         get.ResponseMessage?.EnsureSuccessStatusCode();
         
         return get.Models;
     }
     
-    public async Task<T?> Get<T>(string id) where T : BaseModel, ITableItem, new()
+    public async Task<T?> Get<T>(string id, CancellationToken cancellationToken = default)
+        where T : BaseModel, ITableItem, new()
     {
-        ModeledResponse<T> response = await _client.Table<T>().Where(item => item.Article == id).Get();
+        ModeledResponse<T> response = await _client.Table<T>().Where(item => item.Article == id).Get(cancellationToken);
         response.ResponseMessage?.EnsureSuccessStatusCode();
         
         return response.Model;
     }
     
-    public async Task<bool> Contains<T>(string id) where T : BaseModel, ITableItem, new()
+    public async Task<bool> Contains<T>(string id, CancellationToken cancellationToken = default)
+        where T : BaseModel, ITableItem, new()
     {
         ModeledResponse<T> response =
-            await _client.Table<T>().Select("Article").Where(item => item.Article == id).Get();
+            await _client.Table<T>().Select("Article").Where(item => item.Article == id).Get(cancellationToken);
         response.ResponseMessage?.EnsureSuccessStatusCode();
         
         return response.Models.Count > 0;
     }
     
-    public async Task Insert<T>(T item) where T : BaseModel, ITableItem, new()
+    public async Task Insert<T>(T item, CancellationToken cancellationToken = default)
+        where T : BaseModel, ITableItem, new()
     {
-        ModeledResponse<T> response = await _client.Table<T>().Insert(item);
+        ModeledResponse<T> response = await _client.Table<T>().Insert(item, cancellationToken: cancellationToken);
         response.ResponseMessage?.EnsureSuccessStatusCode();
     }
     
-    public async Task Insert<T>(ICollection<T> items) where T : BaseModel, ITableItem, new()
+    public async Task Insert<T>(ICollection<T> items, CancellationToken cancellationToken = default)
+        where T : BaseModel, ITableItem, new()
     {
-        ModeledResponse<T> response = await _client.Table<T>().Insert(items);
+        ModeledResponse<T> response = await _client.Table<T>().Insert(items, cancellationToken: cancellationToken);
         response.ResponseMessage?.EnsureSuccessStatusCode();
     }
     
-    public async Task Update<T>(T item) where T : BaseModel, ITableItem, new()
+    public async Task Update<T>(T item, CancellationToken cancellationToken = default)
+        where T : BaseModel, ITableItem, new()
     {
-        ModeledResponse<T> response = await _client.Table<T>().Update(item);
+        ModeledResponse<T> response = await _client.Table<T>().Update(item, cancellationToken: cancellationToken);
         response.ResponseMessage?.EnsureSuccessStatusCode();
     }
     
-    public Task Update<T>(ICollection<T> items) where T : BaseModel, ITableItem, new()
+    public Task Update<T>(ICollection<T> items, CancellationToken cancellationToken = default)
+        where T : BaseModel, ITableItem, new()
     {
-        return Upsert(items);
+        return Upsert(items, cancellationToken);
     }
     
-    public async Task Upsert<T>(T item) where T : BaseModel, ITableItem, new()
+    public async Task Upsert<T>(T item, CancellationToken cancellationToken = default)
+        where T : BaseModel, ITableItem, new()
     {
         ModeledResponse<T> response = await _client.Table<T>().Upsert(item, new QueryOptions()
         {
             Upsert    = true,
             Returning = QueryOptions.ReturnType.Minimal
-        });
+        }, cancellationToken);
         
         response.ResponseMessage?.EnsureSuccessStatusCode();
     }
     
-    public async Task Upsert<T>(ICollection<T> items) where T : BaseModel, ITableItem, new()
+    public async Task Upsert<T>(ICollection<T> items, CancellationToken cancellationToken = default)
+        where T : BaseModel, ITableItem, new()
     {
         ModeledResponse<T> response = await _client.Table<T>().Upsert(items, new QueryOptions()
         {
             Upsert    = true,
             Returning = QueryOptions.ReturnType.Minimal
-        });
+        }, cancellationToken);
         
         response.ResponseMessage?.EnsureSuccessStatusCode();
     }
     
-    public async Task Delete<T>(T item) where T : BaseModel, ITableItem, new()
+    public async Task Delete<T>(T item, CancellationToken cancellationToken = default)
+        where T : BaseModel, ITableItem, new()
     {
-        ModeledResponse<T> response = await _client.Table<T>().Delete(item);
+        ModeledResponse<T> response = await _client.Table<T>().Delete(item, cancellationToken: cancellationToken);
         response.ResponseMessage?.EnsureSuccessStatusCode();
     }
     
-    public async Task Delete<T>(IEnumerable<T> items) where T : BaseModel, ITableItem, new()
+    public async Task Delete<T>(IEnumerable<T> items, CancellationToken cancellationToken = default)
+        where T : BaseModel, ITableItem, new()
     {
         Task delete = _client.Table<T>().Filter("Article", Constants.Operator.In,
-            items.Select(item => item.Article).ToList()).Delete();
+            items.Select(item => item.Article).ToList()).Delete(cancellationToken: cancellationToken);
         await delete;
         
         if (delete is Task<BaseResponse> deleteResponse)
             deleteResponse.Result.ResponseMessage?.EnsureSuccessStatusCode();
     }
     
-    public async Task Delete<T>(string id) where T : BaseModel, ITableItem, new()
+    public async Task Delete<T>(string id, CancellationToken cancellationToken = default)
+        where T : BaseModel, ITableItem, new()
     {
-        Task delete = _client.Table<T>().Where(item => item.Article == id).Delete();
+        Task delete = _client.Table<T>().Where(item => item.Article == id).Delete(cancellationToken: cancellationToken);
         await delete;
         
         if (delete is Task<BaseResponse> deleteResponse)

@@ -7,16 +7,14 @@ public interface IRepository<T> where T : BaseModel
     [Obsolete("This property is deprecated and will be removed in a future version.")]
     public bool CanWrite { get; }
     
-    Task<T?>       GetByArticleAsync(string article);
-    Task<List<T>?> GetAllAsync();
-    Task           AddAsync(T                      obj);
-    Task           AddRangeAsync(ICollection<T>    objects);
-    Task           UpdateAsync(T                   obj);
-    Task           UpdateRangeAsync(ICollection<T> objects);
-    Task           DeleteAsync(string              article);
-    Task           DeleteAsync(T                   obj);
-    Task           DeleteRangeAsync(IEnumerable<T> objects);
-    
-    [Obsolete("This method is deprecated and will be removed in a future version.")]
-    Task<bool> ValidateAccessKeyAsync(string accessKey);
+    Task<T?>       GetByArticleAsync(string        article, CancellationToken cancellationToken = default);
+    Task<List<T>?> GetAllAsync(CancellationToken   cancellationToken                            = default);
+    Task           AddAsync(T                      obj,     CancellationToken cancellationToken = default);
+    Task           AddRangeAsync(ICollection<T>    objects, CancellationToken cancellationToken = default);
+    Task           UpdateAsync(T                   obj,     CancellationToken cancellationToken = default);
+    Task           UpdateRangeAsync(ICollection<T> objects, CancellationToken cancellationToken = default);
+    Task           DeleteAsync(string              article, CancellationToken cancellationToken = default);
+    Task           DeleteAsync(T                   obj,     CancellationToken cancellationToken = default);
+    Task           DeleteRangeAsync(IEnumerable<T> objects, CancellationToken cancellationToken = default);
+    Task<bool>     ContainsAsync(string            article, CancellationToken cancellationToken = default);
 }
