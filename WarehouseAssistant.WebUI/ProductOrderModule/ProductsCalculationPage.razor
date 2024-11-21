@@ -120,7 +120,7 @@
 			<MudCardContent>
 				<MudText
 					Typo="Typo.body1">
-					@($"В наличии на БГЛЦ: {context.Item.AvailableQuantity}. Максимально доступно для заказа: {context.Item.MaxCanBeOrdered}")
+					@($"В наличии на БГЛЦ: {@context.Item.AvailableQuantity}. Максимально доступно для заказа: {context.Item.MaxCanBeOrdered}")
 				</MudText>
 				@if (context.Item.DbReference == null)
 				{
