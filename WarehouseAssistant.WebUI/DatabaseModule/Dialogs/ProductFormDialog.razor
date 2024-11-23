@@ -34,8 +34,7 @@
 		</MudOverlay>
 	</DialogContent>
 	<DialogActions>
-		<MudButton id="product-form-dialog-cancel-button" Color="Color.Secondary" OnClick="Cancel">Отмена</MudButton>
-		<MudButton id="product-form-dialog-submit-button" Color="Color.Primary" OnClick="Submit"
+		<MudButton id="product-form-dialog-submit-button" OnClick="Submit" Color="Color.Primary"
 		           Disabled="_isLoading">
 			@if (IsEditMode)
 			{

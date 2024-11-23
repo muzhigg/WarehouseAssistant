@@ -200,7 +200,6 @@ public partial class ProductFormDialog : ComponentBase, IDisposable
     
     private void Cancel()
     {
-        _cancellationTokenSource.Cancel();
         MudDialog?.Close(DialogResult.Cancel());
     }
     
