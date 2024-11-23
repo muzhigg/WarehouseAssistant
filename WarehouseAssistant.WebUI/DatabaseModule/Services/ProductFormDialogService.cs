@@ -28,10 +28,28 @@ public class ProductFormDialogService(IDialogService dialogService) : IProductFo
         parameters.Add(productDialog => productDialog.EditedProduct, product);
         parameters.Add(productDialog => productDialog.IsEditMode, false);
         
-        IDialogReference? dialog = await dialogService.ShowAsync<ProductFormDialog>("Добавить товар", parameters);
-        DialogResult?     result = await dialog.Result;
+        DialogOptions dialogOptions = CreateOptions(false);
+        IDialogReference? dialog =
+            await dialogService.ShowAsync<ProductFormDialog>("Добавить товар", parameters, dialogOptions);
+        DialogResult? result = await dialog.Result;
         
-        return result.Canceled == false || result.Data is true;
+        if (result.Canceled)
+            return false;
+        
+        return (bool)result.Data;
+    }
+    
+    private DialogOptions CreateOptions(bool fullscreen)
+    {
+        DialogOptions dialogOptions = new()
+        {
+            MaxWidth    = fullscreen ? MaxWidth.False : MaxWidth.Small,
+            FullWidth   = !fullscreen,
+            CloseButton = true,
+            FullScreen  = fullscreen,
+        };
+        
+        return dialogOptions;
     }
     
     public async Task<Product?> ShowAddDialogAsync()
@@ -50,8 +68,10 @@ public class ProductFormDialogService(IDialogService dialogService) : IProductFo
         parameters.Add(productDialog => productDialog.IsEditMode, true);
         parameters.Add(productDialog => productDialog.EditedProduct, product);
         
+        DialogOptions dialogOptions = CreateOptions(false);
+        
         IDialogReference? dialog =
-            await dialogService.ShowAsync<ProductFormDialog>("Редактировать товар", parameters);
+            await dialogService.ShowAsync<ProductFormDialog>("Редактировать товар", parameters, dialogOptions);
         DialogResult? result = await dialog.Result;
         
         if (result.Canceled)
