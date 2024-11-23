@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Components.Web;
 using MiniExcelLibs.Attributes;
 using MudBlazor;
 using WarehouseAssistant.Core.Services;
+using WarehouseAssistant.Shared.Models;
 
 namespace WarehouseAssistant.WebUI.Components;
 
 public partial class TableImportButton<TTableItem> : MudComponentBase
-    where TTableItem : class, Shared.Models.ITableItem, new()
+    where TTableItem : class, ITableItem, new()
 {
     private bool          _isDialogVisible;
     private IBrowserFile? _selectedFile;
@@ -192,10 +193,7 @@ public partial class TableImportButton<TTableItem> : MudComponentBase
         // Parse items using the selected column mapping
         var tableItems = new List<TTableItem>();
         foreach (TTableItem item in sheetLoader.ParseItems(selectedColumns))
-        {
-            if (item.HasValidName() && item.HasValidArticle())
-                tableItems.Add(item);
-        }
+            tableItems.Add(item);
         
         // Invoke the OnParsed event callback with the parsed items
         await OnParsed.InvokeAsync(tableItems);
