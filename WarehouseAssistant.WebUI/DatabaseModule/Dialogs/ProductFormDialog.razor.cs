@@ -46,21 +46,6 @@ public partial class ProductFormDialog : ComponentBase, IDisposable
         return result.Canceled == false || result.Data is true;
     }
     
-    [Obsolete, ExcludeFromCodeCoverage]
-    public static async Task<bool> ShowEditDialogAsync(Product product, IDialogService dialogService)
-    {
-        DialogParameters<ProductFormDialog> parameters = [];
-        
-        parameters.Add(productDialog => productDialog.IsEditMode, true);
-        parameters.Add(productDialog => productDialog.EditedProduct, product);
-        
-        IDialogReference? dialog =
-            await dialogService.ShowAsync<ProductFormDialog>("Редактировать товар", parameters);
-        DialogResult? result = await dialog.Result;
-        
-        return result.Canceled == false || (bool)result.Data;
-    }
-    
     [Inject]    private IRepository<Product>       Db         { get; set; } = null!;
     [Inject]    private ISnackbar                  Snackbar   { get; set; } = null!;
     [Inject]    private ILogger<ProductFormDialog> Logger     { get; set; } = null!;
@@ -150,9 +135,7 @@ public partial class ProductFormDialog : ComponentBase, IDisposable
                 : Db.AddAsync(EditedProduct, _cancellationTokenSource.Token));
             Logger.LogInformation("DB operation completed");
             
-            Snackbar.Add($"Товар {(IsEditMode ? "обновлен" : "добавлен")}" +
-                         $"\n{EditedProduct.Article}" +
-                         $"\n{EditedProduct.Name}", Severity.Success);
+            Snackbar.Add($"Товар {(IsEditMode ? "обновлен" : "добавлен")}", Severity.Success);
             MudDialog?.Close(true);
         }
         catch (PostgrestException e)

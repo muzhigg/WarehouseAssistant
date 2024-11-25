@@ -77,7 +77,7 @@ public class ProductFormDialogTest : MudBlazorTestContext
                 It.IsAny<CancellationToken>()), Times.Once);
         
         _snackbarMock.Verify(snackbar =>
-                snackbar.Add(It.Is<string>(s => s.Contains(editedProduct.Article)),
+                snackbar.Add(It.Is<string>(s => s.Contains("обновлен")),
                     Severity.Success, It.IsAny<Action<SnackbarOptions>>(), It.IsAny<string>()),
             Times.Once);
     }
@@ -94,7 +94,7 @@ public class ProductFormDialogTest : MudBlazorTestContext
                 It.IsAny<CancellationToken>()), Times.Once);
         
         _snackbarMock.Verify(snackbar =>
-                snackbar.Add(It.Is<string>(s => s.Contains(editedProduct.Article)),
+                snackbar.Add(It.Is<string>(s => s.Contains("добавлен")),
                     Severity.Success, It.IsAny<Action<SnackbarOptions>>(), It.IsAny<string>()),
             Times.Once);
     }
