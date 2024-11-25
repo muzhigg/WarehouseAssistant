@@ -91,29 +91,24 @@ public partial class ProductsDatabasePage : ComponentBase
         if (InProgress)
             return;
         
-        InProgress = true;
         Product? product = await ProductFormDialog.ShowAddDialogAsync();
         if (product != null)
             _products.Add(product);
         
-        InProgress = false;
         StateHasChanged();
     }
     
-    internal async Task ShowEditProductDialog(Product? product)
+    private async Task ShowEditProductDialog(Product? product)
     {
         if (product == null || InProgress)
             return;
         
-        InProgress = true;
-        
         await ProductFormDialog.ShowEditDialogAsync(product);
         
-        InProgress = false;
         StateHasChanged();
     }
     
-    internal async Task DeleteItems(ICollection<Product>? items)
+    private async Task DeleteItems(ICollection<Product>? items)
     {
         if (InProgress)
             return;
