@@ -10,11 +10,11 @@
 	{
 		return (__builder) =>
 		{
-			<MudIconButton Class="edit-product-button d-inline rounded-circle" Size="@Size.Small"
+			<MudIconButton Class="edit-product-button d-inline rounded-circle" Size="@Size.Medium"
 			               Icon="@Icons.Material.Outlined.Edit"
 			               OnClick="@(() => ShowEditProductDialog(context.Item))" Disabled="InProgress"
 			               Variant="Variant.Filled"/>
-			<MudIconButton Class="delete-product-button d-inline rounded-circle" Size="@Size.Small"
+			<MudIconButton Class="delete-product-button d-inline rounded-circle" Size="@Size.Medium"
 			               Icon="@Icons.Material.Outlined.Delete"
 			               OnClick="@(() => DeleteItem(context.Item))" Disabled="InProgress"
 			               Color="Color.Error" Variant="Variant.Filled"/>
