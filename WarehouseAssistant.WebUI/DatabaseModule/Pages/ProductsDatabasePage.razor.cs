@@ -151,4 +151,9 @@ public partial class ProductsDatabasePage : ComponentBase
         Debug.WriteLine("OnDeleteButtonClicked: Button clicked. Deleting selected items...");
         await DeleteItems(_dataGrid.SelectedItems);
     }
+    
+    private Task DeleteItem(Product contextItem)
+    {
+        throw new NotImplementedException();
+    }
 }
