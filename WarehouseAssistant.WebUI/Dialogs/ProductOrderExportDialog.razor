@@ -1,13 +1,12 @@
 <MudDialog>
 	<TitleContent>
-		<MudText Typo="Typo.h5">Экспорт таблицы</MudText>
+		<MudText Typo="Typo.h6">Экспорт таблицы</MudText>
 	</TitleContent>
 	<DialogContent>
-		<MudNumericField T="int" Label="Максимальное количество коробок на заказ" @bind-Value="_maxOrderSize"
+		<MudNumericField T="int" Label="Кол-во коробок на заказ" @bind-Value="_maxOrderSize"
 		                 Min="1"/>
 	</DialogContent>
 	<DialogActions>
-		<MudButton OnClick="Cancel" Color="Color.Secondary">Отмена</MudButton>
 		<MudButton OnClick="Export" Color="Color.Primary">Экспортировать</MudButton>
 	</DialogActions>
 </MudDialog>

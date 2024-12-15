@@ -61,6 +61,14 @@ public partial class ProductOrderExportDialog : ComponentBase
     [Parameter] public IEnumerable<ProductTableItem>? Products { get; set; }
     private            int                            _maxOrderSize = 20;
     
+    protected override void OnInitialized()
+    {
+        MudDialog.Options.CloseButton          = true;
+        MudDialog.Options.DisableBackdropClick = false;
+        MudDialog.Options.CloseOnEscapeKey     = true;
+        MudDialog.SetOptions(MudDialog.Options);
+    }
+    
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
