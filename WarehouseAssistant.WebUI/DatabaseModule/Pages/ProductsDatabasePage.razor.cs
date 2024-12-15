@@ -1,15 +1,12 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Net;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Logging;
 using MudBlazor;
 using WarehouseAssistant.Data.Repositories;
 using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Components;
 
-namespace WarehouseAssistant.WebUI.DatabaseModule;
+namespace WarehouseAssistant.WebUI.DatabaseModule.Pages;
 
 [UsedImplicitly]
 public partial class ProductsDatabasePage : ComponentBase
@@ -17,143 +14,117 @@ public partial class ProductsDatabasePage : ComponentBase
     public bool InProgress
     {
         get => _inProgress;
-        set
+        private set
         {
             _inProgress = value;
             _dataGrid?.SetLoading(value);
         }
     }
     
-    [Inject] private IRepository<Product>      Repository        { get; init; } = null!;
-    [Inject] private ISnackbar                 SnackBar          { get; set; }  = null!;
-    [Inject] private IProductFormDialogService ProductFormDialog { get; init; } = null!;
+    [Inject] private IRepository<Product>          Repository        { get; init; } = null!;
+    [Inject] private ISnackbar                     SnackBar          { get; set; }  = null!;
+    [Inject] private IProductFormDialogService     ProductFormDialog { get; init; } = null!;
+    [Inject] private ILogger<ProductsDatabasePage> Logger            { get; init; } = null!;
+    [Inject] private IDialogService                DialogService     { get; init; } = null!;
     
-    private          DataGrid<Product>?            _dataGrid;
-    private readonly ObservableCollection<Product> _products = [];
-    private          string?                       _searchString;
-    private          bool                          _inProgress;
+    private DataGrid<Product>? _dataGrid;
+    private List<Product>      _products = [];
+    private string?            _searchString;
+    private bool               _inProgress;
+    private bool               _hasErrorOnRefresh;
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender) await LoadProductsAsync();
+        if (firstRender)
+            await RefreshProductsAsync();
     }
     
-    private async Task LoadProductsAsync()
+    private async Task RefreshProductsAsync()
     {
-        InProgress = true;
+        _dataGrid?.SetLoading(true);
         
         try
         {
-            Debug.WriteLine("Loading products...");
-            IEnumerable<Product>? products = await Repository.GetAllAsync();
-            
-            if (products == null)
-            {
-                SnackBar.Add("Не удалось получить список продуктов.", Severity.Error);
-            }
-            else
-            {
-                foreach (Product product in products)
-                    _products.Add(product);
-                
-                Debug.WriteLine($"Loaded {products.Count()} products.");
-            }
+            _products = await Repository.GetAllAsync() ??
+                        throw new InvalidOperationException("Could not get the list of products.");
+            Logger.LogInformation("Got {Count} products from database.", _products.Count);
+            _hasErrorOnRefresh = false;
         }
         catch (HttpRequestException e)
         {
+            _hasErrorOnRefresh = true;
+            Logger.LogError(e, "Error getting products from database: {StatusCode}", e.StatusCode);
             SnackBar.Add($"Ошибка при получении списка продуктов: {e.StatusCode}", Severity.Error);
-            Debug.WriteLine($"HttpRequestException: {e.Message}");
         }
         catch (Exception ex)
         {
+            _hasErrorOnRefresh = true;
+            Logger.LogError(ex, "Error getting products from database: {Message}", ex.Message);
             SnackBar.Add($"Ошибка при получении списка продуктов: {ex.Message}", Severity.Error);
-            Debug.WriteLine($"Exception: {ex.Message}");
         }
         finally
         {
-            InProgress = false;
+            _dataGrid?.SetLoading(false);
             StateHasChanged();
-            Debug.WriteLine("Finished loading products.");
         }
     }
     
     private bool FilterFunc(Product arg)
     {
-        if (string.IsNullOrWhiteSpace(_searchString))
-            return true;
-        
-        return arg.Article.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
-               arg.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
+        return string.IsNullOrWhiteSpace(_searchString) || arg.MatchesSearchString(_searchString);
     }
     
-    internal async Task ShowAddProductDialog()
+    private async Task ShowAddProductDialogAsync()
     {
-        if (InProgress)
-            return;
-        
-        InProgress = true;
         Product? product = await ProductFormDialog.ShowAddDialogAsync();
         if (product != null)
+        {
             _products.Add(product);
-        
-        InProgress = false;
-        StateHasChanged();
+            StateHasChanged();
+        }
     }
     
-    internal async Task ShowEditProductDialog(Product? product)
+    private async Task ShowEditProductDialog(Product product)
     {
-        if (product == null || InProgress)
-            return;
-        
-        InProgress = true;
+        ArgumentNullException.ThrowIfNull(product);
         
         await ProductFormDialog.ShowEditDialogAsync(product);
         
-        InProgress = false;
         StateHasChanged();
     }
     
-    internal async Task DeleteItems(ICollection<Product>? items)
+    private async Task DeleteItem(Product contextItem)
     {
-        if (InProgress)
+        Logger.LogInformation("Attempting to delete product {Name}", contextItem.Name);
+        
+        bool? success = await DialogService.ShowMessageBox("Удаление товара",
+            $"Вы действительно хотите удалить товар {contextItem.Name}?",
+            "Да", "Нет");
+        
+        if (success is not true)
+        {
+            Logger.LogInformation("Deleting product {Name} was cancelled.", contextItem.Name);
             return;
+        }
         
         InProgress = true;
         
-        if (items is { Count: > 0 })
+        try
         {
-            try
-            {
-                Debug.WriteLine("DeleteItems: Deleting selected items...");
-                await Repository.DeleteRangeAsync(items.Select(p => p.Article));
-                Debug.WriteLine("DeleteItems: Selected items deleted.");
-                foreach (Product product in items)
-                {
-                    _products.Remove(product);
-                    Debug.WriteLine($"DeleteItems: Product {product.Article} removed from local collection.");
-                }
-            }
-            catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.Forbidden)
-            {
-                SnackBar.Add("Не удалось удалить выбранные продукты. У вас недостаточно прав.", Severity.Error);
-                Debug.WriteLine($"DeleteItems: Failed to delete selected items. Forbidden: {e.Message}");
-            }
-            catch (HttpRequestException e)
-            {
-                SnackBar.Add($"Не удалось удалить выбранные продукты. {e.StatusCode}", Severity.Error);
-                Debug.WriteLine($"DeleteItems: Failed to delete selected items. HttpRequestException: {e.Message}");
-            }
+            await Repository.DeleteAsync(contextItem);
+            Logger.LogInformation("Product {Name} deleted from database.", contextItem.Name);
+            _products.Remove(contextItem);
+            SnackBar.Add($"Товар {contextItem.Name} удален", Severity.Success);
         }
-        
-        InProgress = false;
-        StateHasChanged();
-    }
-    
-    private async Task OnDeleteButtonClicked(MouseEventArgs obj)
-    {
-        if (_dataGrid == null) return;
-        
-        Debug.WriteLine("OnDeleteButtonClicked: Button clicked. Deleting selected items...");
-        await DeleteItems(_dataGrid.SelectedItems);
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Error deleting product {Name}: {Message}", contextItem.Name, e.Message);
+            SnackBar.Add($"Ошибка при удалении товара: {e.Message}", Severity.Error);
+        }
+        finally
+        {
+            InProgress = false;
+            StateHasChanged();
+        }
     }
 }

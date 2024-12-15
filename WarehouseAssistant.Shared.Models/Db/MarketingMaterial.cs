@@ -1,6 +1,8 @@
-﻿namespace WarehouseAssistant.Shared.Models.Db;
+﻿using Supabase.Postgrest.Models;
 
-public class MarketingMaterial
+namespace WarehouseAssistant.Shared.Models.Db;
+
+public class MarketingMaterial : BaseModel
 {
     public string   Article      { get; set; } = null!;
     public string   Name         { get; set; } = null!;

@@ -1,8 +1,9 @@
+using WarehouseAssistant.Data.Interfaces;
 using WarehouseAssistant.Shared.Models;
 
 namespace WarehouseAssistant.Data.Repositories;
 
-public class ReceivingItemRepository(HttpClient httpClient) : RepositoryBase<ReceivingItem>(httpClient)
+public class ReceivingItemRepository(IDbClient client) : RepositoryBase<ReceivingItem>(client)
 {
-    protected override string Uri => "https://warehouseassistantdbapi.onrender.com/api/receivingitem";
+    protected virtual string Uri => "https://warehouseassistantdbapi.onrender.com/api/receivingitem";
 }

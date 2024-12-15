@@ -2,41 +2,104 @@
 @using WarehouseAssistant.Shared.Models.Db
 @using WarehouseAssistant.WebUI.Components
 
-@namespace WarehouseAssistant.WebUI.DatabaseModule
+@namespace WarehouseAssistant.WebUI.DatabaseModule.Pages
+
+@code
+{
+	private RenderFragment RenderActionButtons(CellContext<Product> context)
+	{
+		return (__builder) =>
+		{
+			<MudIconButton Class="edit-product-button d-inline rounded-circle" Size="@Size.Medium"
+			               Icon="@Icons.Material.Outlined.Edit"
+			               OnClick="@(() => ShowEditProductDialog(context.Item))" Disabled="InProgress"
+			               Variant="Variant.Filled"/>
+			<MudIconButton Class="delete-product-button d-inline rounded-circle" Size="@Size.Medium"
+			               Icon="@Icons.Material.Outlined.Delete"
+			               OnClick="@(() => DeleteItem(context.Item))" Disabled="InProgress"
+			               Color="Color.Error" Variant="Variant.Filled"/>
+		};
+	}
+}
 
 <DataGrid Items="_products" @ref="_dataGrid" T="Product"
           LoadingProgressColor="Color.Primary" FixedHeader="true" Hover="true" Bordered="true" Striped="true"
           Height="80vh" ColumnResizeMode="ResizeMode.None" QuickFilter="FilterFunc"
           FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
           Filterable="true" ShowColumnOptions="false" SortMode="SortMode.Multiple"
-          ReadOnly="false"
-          MultiSelection="true" Class="db-products-grid" RowClass="db-products-grid-row">
-
+          ReadOnly="false" Class="db-products-grid" RowClass="db-products-grid-row">
 	<ToolBarContent>
-		<MudButton id="db-grid-add-product-button" Color="Color.Primary" OnClick="ShowAddProductDialog" Disabled="InProgress">Добавить</MudButton>
-		<MudButton Color="Color.Secondary" Disabled="InProgress" OnClick="OnDeleteButtonClicked">Удалить</MudButton>
-		<MudSpacer></MudSpacer>
-		<MudTextField T="string" Disabled="InProgress" @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start"
+		<MudHidden Breakpoint="Breakpoint.Xs">
+			<MudButton id="db-grid-add-product-button" Color="Color.Primary" OnClick="ShowAddProductDialogAsync"
+			           Disabled="InProgress">
+				Добавить
+			</MudButton>
+			<MudSpacer/>
+		</MudHidden>
+		<MudTextField T="string" Disabled="InProgress" @bind-Value="_searchString" Placeholder="Найти..."
+		              Adornment="Adornment.Start"
 		              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0 search-field">
 		</MudTextField>
+		<MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+			<MudIconButton Icon="@Icons.Material.Filled.AddBox" Color="Color.Primary"
+			               OnClick="ShowAddProductDialogAsync"
+			               Disabled="InProgress"/>
+			<MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Class="pr-1"
+			               OnClick="() => _dataGrid?.ToggleFiltersMenu()"/>
+		</MudHidden>
 	</ToolBarContent>
-
+	<ChildRowContent>
+		@if (context.IsOpened)
+		{
+			<div class="xs-table-expand-container">
+				<MudTd Class="xs-table-expand-text" DataLabel="Название">@context.Item.Name</MudTd>
+				<MudTd Class="xs-table-expand-text" DataLabel="Штрихкод">@context.Item.Barcode</MudTd>
+				<MudTd Class="xs-table-expand-text" DataLabel="Кол-во на коробку">@context.Item.QuantityPerBox</MudTd>
+				<MudTd Class="xs-table-expand-text" DataLabel="Кол-во на полку">@context.Item.QuantityPerShelf</MudTd>
+				<MudTd Class="xs-table-expand-text" DataLabel="Действия">
+					<div class="d-flex gap-x-4">
+						@RenderActionButtons(context)
+					</div>
+				</MudTd>
+			</div>
+		}
+	</ChildRowContent>
 	<Columns>
-		<SelectColumn T="Product" ShowInFooter="false"/>
-		<PropertyColumn T="Product" TProperty="string" Property="arg => arg.Article" Title="Артикул"/>
-		<PropertyColumn T="Product" TProperty="string" Property="arg => arg.Name" Title="Название"/>
-		<PropertyColumn T="Product" TProperty="string?" Property="arg => arg.Barcode" Title="Штрихкод"/>
-		<PropertyColumn T="Product" TProperty="int?" Property="arg => arg.QuantityPerBox" Title="Кол-во на коробку"/>
-		<PropertyColumn T="Product" TProperty="int?" Property="arg => arg.QuantityPerShelf" Title="Кол-во на полку"/>
-		<TemplateColumn T="Product" Filterable="false">
+		<MudOverlay id="db-grid-refresh-overlay" DarkBackground="true" @bind-Visible="_hasErrorOnRefresh">
+			<MudIconButton Icon="@Icons.Material.Outlined.Refresh" OnClick="RefreshProductsAsync"
+			               Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+			               Class="rounded-circle"/>
+		</MudOverlay>
+
+		<TemplateColumn T="Product" Tag="@("hierarchy-column")" Sortable="false" Filterable="false" Class="d-sm-none"
+		                CellClass="d-sm-none">
 			<CellTemplate>
-				<MudIconButton Class="edit-product-button" Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit"
-				               OnClick="@(() => ShowEditProductDialog(context.Item))" Disabled="InProgress"/>
+				<MudIconButton Class="ml-n3 xs-table-expand-button"
+				               Icon="@(context.IsOpened ? Icons.Material.Filled.KeyboardArrowUp : Icons.Material.Filled.ExpandMore)"
+				               OnClick="context.Actions.ToggleHierarchyVisibilityForItemAsync"
+				               Size="@Size.Medium" Variant="Variant.Filled" Color="Color.Primary"/>
+				<MudText data-label="Артикул" Class="xs-table-data-cell mud-table-cell">@context.Item.Article</MudText>
 			</CellTemplate>
 		</TemplateColumn>
+
+		<PropertyColumn HideSmall="true" T="Product" TProperty="string" Property="arg => arg.Article" Title="Артикул"/>
+		<PropertyColumn HideSmall="true" T="Product" TProperty="string" Property="arg => arg.Name" Title="Название"/>
+		<PropertyColumn HideSmall="true" T="Product" TProperty="string?" Property="arg => arg.Barcode"
+		                Title="Штрихкод"/>
+		<PropertyColumn HideSmall="true" T="Product" TProperty="int?" Property="arg => arg.QuantityPerBox"
+		                Title="Кол-во на коробку"/>
+		<PropertyColumn HideSmall="true" T="Product" TProperty="int?" Property="arg => arg.QuantityPerShelf"
+		                Title="Кол-во на полку"/>
+		<TemplateColumn HideSmall="true" T="Product" Filterable="false" CellClass="icon-table-cell">
+			<CellTemplate>
+				@RenderActionButtons(context)
+			</CellTemplate>
+		</TemplateColumn>
+
 	</Columns>
 	<PagerContent>
-		<MudDataGridPager Disabled="InProgress" T="Product" PageSizeOptions="new[] { 10, 25, 50, 100 }" RowsPerPageString="Количество на странице"></MudDataGridPager>
+		<MudDataGridPager Disabled="InProgress" T="Product" PageSizeOptions="new[] { 10, 25, 50, 100 }"
+		                  RowsPerPageString="Количество на странице"/>
 	</PagerContent>
 
 </DataGrid>

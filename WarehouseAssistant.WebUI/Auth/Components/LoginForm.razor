@@ -1,0 +1,28 @@
+@namespace WarehouseAssistant.WebUI.Auth
+
+<h3>Войти</h3>
+
+<EditForm Model="_loginModel" OnValidSubmit="HandleLogin">
+	<DataAnnotationsValidator/>
+
+	<MudTextField @bind-Value="_loginModel.Email" Label="Email" Required="true" Variant="Variant.Outlined"
+	              Margin="Margin.Dense" InputMode="InputMode.email" InputType="InputType.Email"
+	              id="login-email-input" For="() => _loginModel.Email" Class="mt-3"/>
+	<MudTextField @bind-Value="_loginModel.Password" Label="Пароль" InputType="InputType.Password" Required="true"
+	              Variant="Variant.Outlined" Margin="Margin.Dense" id="login-password-input"
+	              For="() => _loginModel.Password" Class="mt-3"/>
+
+	<MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled"
+	           Class="mt-3" id="login-signin-button">
+		Войти
+	</MudButton>
+</EditForm>
+
+<MudOverlay @bind-Visible="_isBusy" AutoClose="false" DarkBackground="true">
+	<MudProgressCircular Size="Size.Large" Indeterminate="true"></MudProgressCircular>
+</MudOverlay>
+
+@if (_loginFailed)
+{
+	<MudText id="auth-error-message" Color="Color.Error">Неправильный логин или пароль</MudText>
+}

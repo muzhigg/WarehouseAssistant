@@ -1,31 +1,49 @@
-﻿@namespace WarehouseAssistant.WebUI.DatabaseModule
+﻿@using Blazored.FluentValidation
+@using FluentValidation.Internal
+
+@code {
+
+	private void SetValidationOptions(ValidationStrategy<object> obj)
+	{
+		obj.IncludeRuleSets(IsEditMode ? "Edit" : "Add")
+			.IncludeRulesNotInRuleSet();
+	}
+
+}
+
+@namespace WarehouseAssistant.WebUI.DatabaseModule
 
 <MudDialog>
 	<DialogContent>
-		<MudForm @bind-IsValid="_isValid" @ref="_form" Model="_model">
-			<MudTextField id="article-field" Disabled="IsEditMode" T="string?" @bind-Value="_model.Article"
-			              Label="Артикул"
-			              Required="true" Validation="@(new Func<string?, Task<string>>(ArticleValidation))"
-			              For="() => _model.Article"/>
-			<MudTextField id="product-name-field" T="string?" @bind-Value="_model.Name" Label="Название"
-			              Required="true" For="() => _model.Name"/>
-			<MudTextField id="barcode-field" T="string?" @bind-Value="_model.Barcode" Label="Штрих-код"
-			              For="() => _model.Barcode"/>
-			<MudTextField id="quantity-per-box-field" T="int?" @bind-Value="_model.QuantityPerBox"
+		<EditForm EditContext="_editContext" OnValidSubmit="Submit">
+			<FluentValidationValidator Options="SetValidationOptions" @ref="_validator"/>
+			<MudTextField id="article-field" Disabled="IsEditMode" T="string?" @bind-Value="Article"
+			              Label="Артикул" For="() => _model.Article" Required="true"/>
+			<MudTextField id="product-name-field" T="string?" @bind-Value="ProductName" Label="Название"
+			              For="() => _model.Name" Required="true"/>
+			<MudTextField id="barcode-field" T="string?" @bind-Value="Barcode" Label="Штрих-код"/>
+			<MudTextField id="quantity-per-box-field" T="int?" @bind-Value="QuantityPerBox"
 			              Label="Количество на коробку" For="() => _model.QuantityPerBox"/>
-			<MudTextField id="quantity-per-shelf-field" T="int?" @bind-Value="_model.QuantityPerShelf"
+			<MudTextField id="quantity-per-shelf-field" T="int?" @bind-Value="QuantityPerShelf"
 			              Label="Количество на полку" For="() => _model.QuantityPerShelf"/>
-		</MudForm>
+			<button hidden="hidden" type="submit"></button>
+		</EditForm>
 
 		<MudOverlay Visible="@_isLoading" DarkBackground="true" Absolute="true" AutoClose="false">
 			<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true"/>
 		</MudOverlay>
 	</DialogContent>
 	<DialogActions>
-		<MudButton id="product-form-dialog-cancel-button" Color="Color.Secondary" OnClick="Cancel">Отмена</MudButton>
-		<MudButton id="product-form-dialog-submit-button" Color="Color.Primary" OnClick="Submit"
-		           Disabled="@(!_isValid && !_isLoading)">
-			Добавить
+		<MudButton id="product-form-dialog-submit-button" OnClick="Submit" Color="Color.Primary"
+		           Disabled="_isLoading">
+			@if (IsEditMode)
+			{
+				<text>Обновить</text>
+			}
+			else
+			{
+				<text>Добавить</text>
+			}
 		</MudButton>
 	</DialogActions>
 </MudDialog>

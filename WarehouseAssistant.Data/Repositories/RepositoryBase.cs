@@ -1,112 +1,78 @@
-using System.Diagnostics;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
+using Supabase.Postgrest.Models;
+using WarehouseAssistant.Data.Interfaces;
+using WarehouseAssistant.Shared.Models;
 
 namespace WarehouseAssistant.Data.Repositories;
 
-public abstract class RepositoryBase<T>(HttpClient httpClient) : IRepository<T> where T : class
+public abstract class RepositoryBase<T>(IDbClient client) : IRepository<T> where T : BaseModel, ITableItem, new()
 {
-    protected abstract string Uri { get; }
-    
-    public virtual async Task DeleteRangeAsync(IEnumerable<string> articles)
-    {
-        var request = new HttpRequestMessage(HttpMethod.Delete, $"{Uri}/remove-range")
-        {
-            Content = JsonContent.Create(articles)
-        };
-        
-        request.Headers.Authorization =
-            new AuthenticationHeaderValue("Bearer", httpClient.DefaultRequestHeaders.Authorization.Parameter);
-        
-        Debug.WriteLine(request.Headers.Authorization.Scheme);
-        Debug.WriteLine(request.Headers.Authorization.Parameter);
-        var response = await httpClient.SendAsync(request);
-        response.EnsureSuccessStatusCode();
-        
-        
-        // var response = await httpClient.PostAsJsonAsync($"{Uri}/remove-range", articles);
-        // await httpClient.DeleteFromJsonAsync($"{Uri}/remove-range", articles);
-        // response.EnsureSuccessStatusCode();
-    }
-    
-    private bool? _isAuthenticated;
+    [Obsolete] private bool? _isAuthenticated;
     
     [Obsolete("This property is obsolete and will be removed in a future version.")]
     public bool CanWrite => _isAuthenticated.HasValue && _isAuthenticated.Value;
     
+    public virtual async Task DeleteRangeAsync(IEnumerable<T> objects,
+        CancellationToken                                     cancellationToken = default)
+    {
+        await client.Delete(objects, cancellationToken);
+    }
+    
     [Obsolete]
-    public void SetAccessKey(string accessKey) { }
-    
-    [Obsolete]
-    public async Task<bool> ValidateAccessKeyAsync(string accessKey)
+    public Task<bool> ValidateAccessKeyAsync(string accessKey)
     {
-        try
-        {
-            if (_isAuthenticated.HasValue)
-                return _isAuthenticated.Value;
-            
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"{Uri}/validate-key");
-            request.Headers.Add("AccessKey", accessKey);
-            
-            HttpResponseMessage response = await httpClient.SendAsync(request);
-            
-            _isAuthenticated = response.IsSuccessStatusCode;
-            return _isAuthenticated.Value;
-        }
-        catch
-        {
-            return false;
-        }
+        return Task.FromResult(true);
     }
     
-    public virtual async Task<T?> GetByArticleAsync(string article)
+    public virtual async Task<T?> GetByArticleAsync(string article,
+        CancellationToken                                  cancellationToken = default)
     {
-        try
-        {
-            return string.IsNullOrEmpty(article)
-                ? null
-                : await httpClient.GetFromJsonAsync<T>($"{Uri}/{article}");
-        }
-        catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
+        return await client.Get<T>(article, cancellationToken);
     }
     
-    public virtual async Task<List<T>?> GetAllAsync()
+    public virtual async Task<List<T>?> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await httpClient.GetFromJsonAsync<List<T>>($"{Uri}/all");
+        return await client.Get<T>(cancellationToken);
     }
     
-    public virtual async Task AddAsync(T obj)
+    public virtual async Task<bool> ContainsAsync(string article,
+        CancellationToken                                cancellationToken = default)
     {
-        var response = await httpClient.PostAsJsonAsync($"{Uri}/add", obj);
-        response.EnsureSuccessStatusCode();
+        return await client.Contains<T>(article, cancellationToken);
     }
     
-    public virtual async Task AddRangeAsync(IEnumerable<T> objects)
+    public virtual async Task AddAsync(T obj,
+        CancellationToken                cancellationToken = default)
     {
-        var response =
-            await httpClient.PostAsJsonAsync($"{Uri}/add-range", objects);
-        response.EnsureSuccessStatusCode();
+        await client.Insert(obj, cancellationToken);
     }
     
-    public virtual async Task UpdateAsync(T obj)
+    public virtual async Task AddRangeAsync(ICollection<T> objects,
+        CancellationToken                                  cancellationToken = default)
     {
-        var response = await httpClient.PutAsJsonAsync($"{Uri}/update", obj);
-        response.EnsureSuccessStatusCode();
+        await client.Insert(objects, cancellationToken);
     }
     
-    public virtual async Task UpdateRangeAsync(IEnumerable<T> objects)
+    public virtual async Task UpdateAsync(T obj,
+        CancellationToken                   cancellationToken = default)
     {
-        var response = await httpClient.PutAsJsonAsync($"{Uri}/update-range", objects);
-        response.EnsureSuccessStatusCode();
+        await client.Update(obj, cancellationToken);
     }
     
-    public virtual async Task DeleteAsync(string? article)
+    public virtual async Task UpdateRangeAsync(ICollection<T> objects,
+        CancellationToken                                     cancellationToken = default)
     {
-        var response = await httpClient.DeleteAsync($"{Uri}/remove/{article}");
-        response.EnsureSuccessStatusCode();
+        await client.Update(objects, cancellationToken);
+    }
+    
+    public virtual async Task DeleteAsync(string article,
+        CancellationToken                        cancellationToken = default)
+    {
+        await client.Delete<T>(article, cancellationToken);
+    }
+    
+    public virtual async Task DeleteAsync(T obj,
+        CancellationToken                   cancellationToken = default)
+    {
+        await client.Delete(obj, cancellationToken);
     }
 }

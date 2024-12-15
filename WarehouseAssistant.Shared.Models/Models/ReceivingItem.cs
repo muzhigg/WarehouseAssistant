@@ -1,17 +1,23 @@
 using System.Diagnostics.CodeAnalysis;
 using MiniExcelLibs.Attributes;
+using Supabase.Postgrest.Attributes;
+using Supabase.Postgrest.Models;
 
 namespace WarehouseAssistant.Shared.Models;
 
-public class ReceivingItem : ITableItem
+[Table("ReceivingItems")]
+public class ReceivingItem : BaseModel, ITableItem
 {
-    [NotNull, ExcelColumn(Name = "Товар")] public string Name { get; set; } = string.Empty;
+    [NotNull, ExcelColumn(Name = "Товар"), Column]
+    public string Name { get; set; } = string.Empty;
     
-    [NotNull, ExcelColumn(Name = "Артикул")]
+    [NotNull, ExcelColumn(Name = "Артикул"), PrimaryKey]
     public string Article { get; set; } = string.Empty;
     
-    [ExcelColumn(Name = "Количество")] public int ExpectedQuantity { get; set; }
-    [ExcelIgnore]                      public int ReceivedQuantity { get; set; }
+    [ExcelColumn(Name = "Количество"), Column]
+    public int ExpectedQuantity { get; set; }
+    
+    [ExcelIgnore, Column] public int ReceivedQuantity { get; set; }
     
     public bool HasValidName()
     {

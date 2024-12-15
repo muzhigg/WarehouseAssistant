@@ -1,11 +1,17 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MudBlazor;
 using MudBlazor.Services;
+using Supabase.Gotrue;
+using Supabase.Gotrue.Interfaces;
+using WarehouseAssistant.Data.Interfaces;
 using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.Data.Services;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
+using WarehouseAssistant.WebUI.Auth;
 using WarehouseAssistant.WebUI.DatabaseModule;
 using WarehouseAssistant.WebUI.Services;
 
@@ -29,13 +35,88 @@ namespace WarehouseAssistant.WebUI
                 config.SnackbarConfiguration.SnackbarVariant        = Variant.Filled;
             });
             AddLocalStorage(services);
-            services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
-            services.AddAuthorizationCore();
+            AddAuthServices(services);
+            AddSupabaseServices(services);
+            AddDataServices(services);
+            services.AddScoped<SnackbarWithSoundService>();
+            
+            return services;
+        }
+        
+        private static void AddSupabaseServices(IServiceCollection services)
+        {
+            string apiKey =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0eWlneXJvaHd3cndwcnByZ2J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk1NzYyNjMsImV4cCI6MjA0NTE1MjI2M30.cWEf0OZtYrcu6UHe_ewPB5eC53QbE0rupRO-VaZJUiQ";
+            string endpoint = "https://utyigyrohwwrwprprgbu.supabase.co";
+            
+            services.AddSingleton<IGotrueClient<User, Session>>(provider =>
+            {
+                var client = new Client(new ClientOptions()
+                {
+                    AllowUnconfirmedUserSessions = true,
+                    AutoRefreshToken             = true,
+                    Url                          = $"{endpoint}/auth/v1",
+                    Headers = new Dictionary<string, string>()
+                    {
+                        {
+                            "apiKey", apiKey
+                        }
+                    }
+                });
+                var logger = provider.GetRequiredService<ILogger<Client>>();
+                client.AddDebugListener((s, exception) => logger.LogError(exception, s));
+                return client;
+            });
+            
+            services.AddSingleton<IDbClient, DbClient>(provider =>
+            {
+                var client =
+                    new DbClient($"{endpoint}/rest/v1",
+                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0eWlneXJvaHd3cndwcnByZ2J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk1NzYyNjMsImV4cCI6MjA0NTE1MjI2M30.cWEf0OZtYrcu6UHe_ewPB5eC53QbE0rupRO-VaZJUiQ",
+                        provider.GetRequiredService<ILogger<DbClient>>());
+                
+                var authClient = provider.GetRequiredService<IGotrueClient<User, Session>>();
+                authClient.AddStateChangedListener((sender, changed) =>
+                {
+                    switch (changed)
+                    {
+                        case Constants.AuthState.SignedIn:
+                        case Constants.AuthState.UserUpdated:
+                        case Constants.AuthState.TokenRefreshed:
+                            client.SetAuthBearer(sender.CurrentSession.AccessToken);
+                            break;
+                        case Constants.AuthState.SignedOut:
+                            client.SetAuthBearer("");
+                            break;
+                    }
+                });
+                
+                if (authClient.CurrentSession != null)
+                {
+                    client.SetAuthBearer(authClient.CurrentSession.AccessToken!);
+                }
+                
+                return client;
+            });
+        }
+        
+        private static void AddDataServices(IServiceCollection services)
+        {
             services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<IRepository<ReceivingItem>, ReceivingItemRepository>();
-            services.AddScoped<SnackbarWithSoundService>();
             services.AddScoped<IProductFormDialogService, ProductFormDialogService>();
-            return services;
+        }
+        
+        private static void AddAuthServices(this IServiceCollection services)
+        {
+            services.AddScoped<AuthenticationStateProvider>((provider =>
+            {
+                if (provider.GetRequiredService<IAuthService>() is CustomAuthenticationStateProvider s) return s;
+                
+                throw new InvalidOperationException("Authentication state provider not found");
+            }));
+            services.AddScoped<IAuthService, CustomAuthenticationStateProvider>();
+            services.AddAuthorizationCore();
         }
         
         private static void AddMudBlazorServices(IServiceCollection services,

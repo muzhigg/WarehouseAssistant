@@ -1,6 +1,7 @@
-﻿using System.Net.Http;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using System;
+using System.Linq.Expressions;
+using System.Net.Http;
+using Microsoft.Extensions.Logging;
 using Moq;
 using MudBlazor;
 using MudBlazor.Services;
@@ -9,12 +10,10 @@ namespace WarehouseAssistant.WebUI.Tests;
 
 public class MudBlazorTestContext : TestContext
 {
-    private Mock<AuthenticationStateProvider> _authenticationStateProvider = new Mock<AuthenticationStateProvider>();
-    
     protected MudBlazorTestContext()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        // Services.AddMudServices();
+        
         Services.AddScoped(_ => new HttpClient());
         Services.AddOptions();
         Services.AddMudBlazorResizeListener()
@@ -29,11 +28,12 @@ public class MudBlazorTestContext : TestContext
             .AddMudPopoverService()
             .AddMudEventManager()
             .AddMudLocalization();
-        Services.AddSingleton(_authenticationStateProvider.Object);
-        
-        _authenticationStateProvider.Setup(provider => provider.GetAuthenticationStateAsync())
-            .ReturnsAsync(new AuthenticationState(
-                new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Admin") }, "jwt"))));
+    }
+    
+    protected void SetupDesktopWindowSize()
+    {
+        JSInterop.Setup<BrowserWindowSize>("mudResizeListener.getBrowserWindowSize")
+            .SetResult(new BrowserWindowSize { Width = 1920, Height = 1080 });
     }
     
     protected IRenderedComponent<MudDialogProvider> RenderedDialogProvider(out DialogService? service)
@@ -48,5 +48,43 @@ public class MudBlazorTestContext : TestContext
         IRenderedComponent<MudSnackbarProvider> provider = RenderComponent<MudSnackbarProvider>();
         service = Services.GetService<ISnackbar>() as SnackbarService;
         return provider;
+    }
+    
+    protected void VerifyLogInfo<T>(Mock<ILogger<T>> loggerMock,
+        Expression<Func<string, bool>>               match,
+        Times                                        times)
+    {
+        loggerMock.Verify(x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((o, t) => match.Compile().Invoke(o.ToString()!)),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            times);
+    }
+    
+    protected void VerifyLogError<T>(Mock<ILogger<T>> loggerMock,
+        Times                                         times)
+    {
+        loggerMock.Verify(x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            times);
+    }
+    
+    protected void VerifyLogError<T>(Mock<ILogger<T>> loggerMock,
+        Expression<Func<string, bool>>                match,
+        Times                                         times)
+    {
+        loggerMock.Verify(x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((o, t) => match.Compile().Invoke(o.ToString()!)),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            times);
     }
 }

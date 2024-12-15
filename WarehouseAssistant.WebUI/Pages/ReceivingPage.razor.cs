@@ -195,7 +195,7 @@ public partial class ReceivingPage : ComponentBase, IDisposable
         try
         {
             _isBusy = true;
-            await Repository.DeleteRangeAsync(_table.Items.Select(item => item.Article));
+            await Repository.DeleteRangeAsync(_table.Items);
             Snackbar.Add("Данные удалены.", Severity.Success);
         }
         catch (Exception e)
