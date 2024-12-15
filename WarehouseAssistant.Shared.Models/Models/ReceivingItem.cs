@@ -5,7 +5,7 @@ using Supabase.Postgrest.Models;
 
 namespace WarehouseAssistant.Shared.Models;
 
-[Table("ReceivingItem")]
+[Table("ReceivingItems")]
 public class ReceivingItem : BaseModel, ITableItem
 {
     [NotNull, ExcelColumn(Name = "Товар"), Column]
