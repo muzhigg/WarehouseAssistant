@@ -183,7 +183,7 @@ public partial class ProductFormDialog : ComponentBase, IDisposable
     
     private void Cancel()
     {
-        MudDialog?.Close(DialogResult.Cancel());
+        MudDialog?.Cancel();
     }
     
     public void Dispose()

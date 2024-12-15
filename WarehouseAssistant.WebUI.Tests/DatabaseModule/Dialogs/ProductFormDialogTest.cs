@@ -134,10 +134,6 @@ public class ProductFormDialogTest : MudBlazorTestContext
         
         // Act
         var dialogRef = SetupDialog(editedProduct, false);
-        // var dialog = RenderDialog(new()
-        // {
-        //     { dialog => dialog.EditedProduct, editedProduct }
-        // });
         
         // Assert
         dialogRef.component.Find("input#article-field")
@@ -291,5 +287,35 @@ public class ProductFormDialogTest : MudBlazorTestContext
         _snackbarMock.Verify(s => s.Add(It.IsAny<string>(), Severity.Error,
             It.IsAny<Action<SnackbarOptions>>(), It.IsAny<string>()), Times.Once);
         dialogRef.taskRef.Result.Result.Result.Data.Should().Be(false);
+    }
+    
+    
+    [Fact]
+    public void ProductFormDialogService_ShowAddDialogAsync_With_Product_Should_ReturnTrue()
+    {
+        // Arrange
+        Product product = new()
+        {
+            Article = "123",
+            Name    = "Test Product",
+            Barcode = "1234",
+        };
+        
+        Services.AddMudBlazorDialog();
+        var                      dialogProvider = RenderComponent<MudDialogProvider>();
+        var                      dialogService = Services.GetRequiredService<IDialogService>() as DialogService;
+        ProductFormDialogService productFormDialogService = new(dialogService);
+        
+        // Act
+        dialogProvider.InvokeAsync(() => productFormDialogService.ShowAddDialogAsync(product));
+        
+        // Assert
+        var dialogRef = dialogProvider.FindComponent<ProductFormDialog>();
+        dialogRef.Find("input#article-field")
+            .GetAttribute("value").Should().Be(product.Article);
+        dialogRef.Find("input#product-name-field")
+            .GetAttribute("value").Should().Be(product.Name);
+        dialogRef.Find("input#barcode-field")
+            .GetAttribute("value").Should().Be(product.Barcode);
     }
 }
