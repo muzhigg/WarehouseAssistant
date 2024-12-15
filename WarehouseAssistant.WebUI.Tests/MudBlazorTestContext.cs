@@ -13,6 +13,7 @@ public class MudBlazorTestContext : TestContext
     protected MudBlazorTestContext()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
+        
         Services.AddScoped(_ => new HttpClient());
         Services.AddOptions();
         Services.AddMudBlazorResizeListener()
@@ -27,6 +28,12 @@ public class MudBlazorTestContext : TestContext
             .AddMudPopoverService()
             .AddMudEventManager()
             .AddMudLocalization();
+    }
+    
+    protected void SetupDesktopWindowSize()
+    {
+        JSInterop.Setup<BrowserWindowSize>("mudResizeListener.getBrowserWindowSize")
+            .SetResult(new BrowserWindowSize { Width = 1920, Height = 1080 });
     }
     
     protected IRenderedComponent<MudDialogProvider> RenderedDialogProvider(out DialogService? service)

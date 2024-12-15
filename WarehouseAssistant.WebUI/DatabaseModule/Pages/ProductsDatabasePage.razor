@@ -2,7 +2,7 @@
 @using WarehouseAssistant.Shared.Models.Db
 @using WarehouseAssistant.WebUI.Components
 
-@namespace WarehouseAssistant.WebUI.DatabaseModule
+@namespace WarehouseAssistant.WebUI.DatabaseModule.Pages
 
 @code
 {
@@ -30,7 +30,7 @@
           ReadOnly="false" Class="db-products-grid" RowClass="db-products-grid-row">
 	<ToolBarContent>
 		<MudHidden Breakpoint="Breakpoint.Xs">
-			<MudButton id="db-grid-add-product-button" Color="Color.Primary" OnClick="ShowAddProductDialog"
+			<MudButton id="db-grid-add-product-button" Color="Color.Primary" OnClick="ShowAddProductDialogAsync"
 			           Disabled="InProgress">
 				Добавить
 			</MudButton>
@@ -41,7 +41,8 @@
 		              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0 search-field">
 		</MudTextField>
 		<MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
-			<MudIconButton Icon="@Icons.Material.Filled.AddBox" Color="Color.Primary" OnClick="ShowAddProductDialog"
+			<MudIconButton Icon="@Icons.Material.Filled.AddBox" Color="Color.Primary"
+			               OnClick="ShowAddProductDialogAsync"
 			               Disabled="InProgress"/>
 			<MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Class="pr-1"
 			               OnClick="() => _dataGrid?.ToggleFiltersMenu()"/>
@@ -64,6 +65,11 @@
 		}
 	</ChildRowContent>
 	<Columns>
+		<MudOverlay id="db-grid-refresh-overlay" DarkBackground="true" @bind-Visible="_hasErrorOnRefresh">
+			<MudIconButton Icon="@Icons.Material.Outlined.Refresh" OnClick="RefreshProductsAsync"
+			               Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+			               Class="rounded-circle"/>
+		</MudOverlay>
 
 		<TemplateColumn T="Product" Tag="@("hierarchy-column")" Sortable="false" Filterable="false" Class="d-sm-none"
 		                CellClass="d-sm-none">
@@ -95,4 +101,5 @@
 		<MudDataGridPager Disabled="InProgress" T="Product" PageSizeOptions="new[] { 10, 25, 50, 100 }"
 		                  RowsPerPageString="Количество на странице"/>
 	</PagerContent>
+
 </DataGrid>
