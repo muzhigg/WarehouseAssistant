@@ -11,3 +11,36 @@
 .mud-tooltip-root {
     width: auto;
 }
+
+.icon-table-cell {
+    place-items: center;
+}
+
+@media (max-width: 600px) {
+    .filters-panel {
+        width: auto !important;
+    }
+}
+
+.xs-table-data-cell {
+    padding-right: 0 !important;
+    border-bottom-color: transparent !important;
+    flex-grow: 1;
+}
+
+.xs-table-expand-button {
+    border-radius: 50% !important;
+}
+
+.xs-table-expand-text {
+    border-bottom-color: transparent !important;
+    align-self: stretch;
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+}
+
+.xs-table-expand-container {
+    display: flex;
+    flex-direction: column;
+    margin-left: -16px;
+}
