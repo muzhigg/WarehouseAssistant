@@ -6,6 +6,10 @@ public class SubtractFromTableStrategy : ICalculationStrategy<ProductTableItem, 
 {
     public void CalculateQuantity(ProductTableItem data, SubtractFromTableOptions opt)
     {
-        throw new NotImplementedException();
+        var orderItems = opt.OrderItems.Where(item => item.Article == data.Article);
+        foreach (var orderItem in orderItems)
+        {
+            data.QuantityToOrder -= orderItem.Quantity;
+        }
     }
 }

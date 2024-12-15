@@ -3,6 +3,7 @@
 @using WarehouseAssistant.Shared.Models.Db
 @using WarehouseAssistant.WebUI.Components
 @using WarehouseAssistant.WebUI.ProductOrder
+@using WarehouseAssistant.WebUI.ProductOrderModule.Dialogs
 
 @namespace WarehouseAssistant.WebUI.ProductOrderModule
 
@@ -48,7 +49,10 @@
 			<MudMenuItem OnClick="OpenCalculationDialog<QuantityPerBoxRoundDialog>">Округление в коробки</MudMenuItem>
 			<MudMenuItem OnClick="OpenCalculationDialog<ShelfQuantityAdjustmentCalculatorDialog>">Добавить до количества на полке</MudMenuItem>
 			<MudMenuItem OnClick="OpenCalculationDialog<SubtractCurrentQuantityCalculator>">Вычесть текущее количество</MudMenuItem>
-			<MudMenuItem>Вычесть из табличного документа</MudMenuItem>
+			<MudMenuItem OnClick="OpenCalculationDialog<SubtractFromTableStrategyDialog>">
+				Вычесть из табличного
+				документа
+			</MudMenuItem>
 		</MudMenu>
 		<MudButton id="export-table-button" hidden="@(!context.Items.Any())"
 		           Disabled="@(context.Loading || context.SelectedCount == 0)" Variant="Variant.Outlined"

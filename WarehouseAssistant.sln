@@ -26,6 +26,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workbooks", "workbooks", "{
 		samples\workbooks\BaseWorkbook.xlsx = samples\workbooks\BaseWorkbook.xlsx
 		samples\workbooks\EmptyWorkbook.xlsx = samples\workbooks\EmptyWorkbook.xlsx
 		samples\workbooks\товары 17.07.xlsx = samples\workbooks\товары 17.07.xlsx
+		samples\workbooks\Order .xlsx = samples\workbooks\Order .xlsx
+		samples\workbooks\Order2.xlsx = samples\workbooks\Order2.xlsx
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarehouseAssistant.Data.Tests", "tests\WarehouseAssistant.Data.Tests\WarehouseAssistant.Data.Tests.csproj", "{9DE69C90-43E4-41F4-B32C-26A8AAD6CD51}"

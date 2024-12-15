@@ -1,30 +1,26 @@
 using Microsoft.AspNetCore.Components.Forms;
+using MiniExcelLibs;
 using WarehouseAssistant.Core.Calculation;
 using WarehouseAssistant.WebUI.ProductOrder;
+using WarehouseAssistant.WebUI.Utils;
 
 namespace WarehouseAssistant.WebUI.ProductOrderModule.Dialogs;
 
 public partial class
     SubtractFromTableStrategyDialog : BaseProductCalculatorDialog<SubtractFromTableStrategy, SubtractFromTableOptions>
 {
-    private IBrowserFile? _selectedFile;
-    
     private async Task OnFilesChanged(IReadOnlyList<IBrowserFile>? files)
     {
-        // Options.ClearTables();
-        //
-        // foreach (IBrowserFile browserFile in files)
-        // {
-        //     await Options.AddTableAsync(CopyFileToMemoryStream(browserFile));
-        // }
-    }
-    
-    private async Task<MemoryStream> CopyFileToMemoryStream(IBrowserFile file)
-    {
-        var             memoryStream = new MemoryStream();
-        await using var fileStream   = file.OpenReadStream();
-        await fileStream.CopyToAsync(memoryStream);
-        memoryStream.Position = 0;
-        return memoryStream;
+        if (files == null)
+            return;
+        
+        Options.OrderItems.Clear();
+        
+        foreach (IBrowserFile browserFile in files)
+        {
+            using var memoryStream = await browserFile.ConvertBrowserFileToMemoryStream();
+            foreach (string sheetName in memoryStream.GetSheetNames())
+                Options.OrderItems.AddRange(await memoryStream.QueryAsync<OrderItem>(sheetName, ExcelType.XLSX));
+        }
     }
 }

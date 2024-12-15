@@ -1,10 +1,10 @@
+using System.Text.Json.Serialization;
+
 namespace WarehouseAssistant.Core.Calculation;
 
 public class SubtractFromTableOptions : ICalculationOptions
 {
     public bool ConsiderCurrentQuantity { get; set; }
     
-    public List<OrderItem> OrderItems { get; set; } = new();
+    [JsonIgnore] public List<OrderItem> OrderItems { get; set; } = [];
 }
-
-public class OrderItem { }
