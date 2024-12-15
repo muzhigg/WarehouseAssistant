@@ -1,0 +1,29 @@
+@inherits WarehouseAssistant.WebUI.ProductOrder.BaseProductCalculatorDialog<WarehouseAssistant.Core.Calculation.SubtractFromTableStrategy, WarehouseAssistant.Core.Calculation.SubtractFromTableOptions>
+
+@{
+	base.BuildRenderTree(__builder);
+}
+
+@code
+{
+	protected override RenderFragment? ChildContent => __builder =>
+	{
+		<MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".xlsx" FilesChanged="OnFilesChanged">
+			<ButtonTemplate>
+				<MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" for="@context.Id"
+				           StartIcon="@Icons.Material.Filled.CloudUpload">
+					Выбрать таблицы для вычитания
+				</MudButton>
+			</ButtonTemplate>
+			<SelectedTemplate>
+				@if (context != null)
+				{
+					foreach (IBrowserFile file in context)
+					{
+						<MudText>@file.Name</MudText>
+					}
+				}
+			</SelectedTemplate>
+		</MudFileUpload>
+	};
+}
