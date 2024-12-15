@@ -20,25 +20,29 @@ public partial class ProductOrderExportDialog : ComponentBase
     
     internal record OrderItem
     {
+        public OrderItem() { }
+        
         public OrderItem(ProductTableItem product, Product? dbProduct)
         {
-            Name    = product.Name;
-            Article = product.Article;
-            BoxSize = dbProduct?.QuantityPerBox ?? 54;
-            
-#if DEBUG
+            Name                  = product.Name;
+            Article               = product.Article;
             AvailableQuantity     = product.AvailableQuantity;
+            CurrentQuantity       = product.CurrentQuantity;
             AverageTurnoverPerDay = product.AverageTurnover;
             StockDays             = product.StockDays;
-#endif
+            OrderCalculation      = product.OrderCalculation;
+            BoxSize               = dbProduct?.QuantityPerBox ?? 54;
         }
         
+        public double OrderCalculation { get; set; }
+        
+        public int CurrentQuantity { get; set; }
+        
         [ExcelColumn(Name = "Название", Width = 50)]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
         
-        [ExcelColumn(Name = "Артикул")] public string Article { get; set; }
+        [ExcelColumn(Name = "Артикул")] public string Article { get; set; } = null!;
         
-#if DEBUG
         [ExcelColumn(Name = "Доступное количество")]
         public int AvailableQuantity { get; set; }
         
@@ -47,7 +51,6 @@ public partial class ProductOrderExportDialog : ComponentBase
         
         [ExcelColumn(Name = "Запас на кол-во дней")]
         public double StockDays { get; set; }
-#endif
         
         [ExcelColumn(Name = "Количество")] public int Quantity { get; set; }
         [ExcelIgnore]                      public int BoxSize  { get; set; }
@@ -60,6 +63,7 @@ public partial class ProductOrderExportDialog : ComponentBase
     
     [Parameter] public IEnumerable<ProductTableItem>? Products { get; set; }
     private            int                            _maxOrderSize = 20;
+    private            bool                           _fullExport;
     
     protected override void OnInitialized()
     {
@@ -76,14 +80,14 @@ public partial class ProductOrderExportDialog : ComponentBase
         if (Products is null)
         {
             Snackbar.Add("Нет данных для экспорта", Severity.Error);
-            Cancel();
+            MudDialog.Cancel();
             return;
         }
         
         if (Products.All(p => p.QuantityToOrder == 0))
         {
             Snackbar.Add("Нет данных для экспорта", Severity.Error);
-            Cancel();
+            MudDialog.Cancel();
         }
     }
     
@@ -180,11 +184,6 @@ public partial class ProductOrderExportDialog : ComponentBase
             order.Products.Add(item with { Quantity = quantity });
         
         order.BoxCount += (double)quantity / item.BoxSize;
-    }
-    
-    private void Cancel()
-    {
-        MudDialog.Cancel();
     }
     
     private async Task Export()

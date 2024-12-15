@@ -5,6 +5,7 @@
 	<DialogContent>
 		<MudNumericField T="int" Label="Кол-во коробок на заказ" @bind-Value="_maxOrderSize"
 		                 Min="1"/>
+		<MudSwitch T="bool" @bind-Value="_fullExport">Полная таблица</MudSwitch>
 	</DialogContent>
 	<DialogActions>
 		<MudButton OnClick="Export" Color="Color.Primary">Экспортировать</MudButton>
