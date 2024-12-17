@@ -85,4 +85,9 @@ public sealed class ProductTableItem : ICalculatedTableItem
         return Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
                Article.Contains(searchString, StringComparison.OrdinalIgnoreCase);
     }
+    
+    public void SetQuantityToOrderUnsafe(int quantity)
+    {
+        _quantityToOrder = Math.Clamp(quantity, 0, AvailableQuantity);
+    }
 }
