@@ -43,11 +43,6 @@ public partial class ProductsCalculationPage : ComponentBase
         }
     }
     
-    private async Task ShowAddToDbDialog(ProductTableItem contextItem)
-    {
-        await ProductFormDialog.ShowAddDialogAsync(contextItem);
-    }
-    
     private async Task ShowEditDbDialog(Product contextItem)
     {
         await ProductFormDialog.ShowEditDialogAsync(contextItem);
