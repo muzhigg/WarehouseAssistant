@@ -36,6 +36,14 @@ public class MudBlazorTestContext : TestContext
             .SetResult(new BrowserWindowSize { Width = 1920, Height = 1080 });
     }
     
+    protected IRenderedComponent<MudDialogProvider> SetupDialog(out IDialogService service)
+    {
+        Services.AddMudBlazorDialog();
+        IRenderedComponent<MudDialogProvider> provider = RenderComponent<MudDialogProvider>();
+        service = Services.GetService<IDialogService>();
+        return provider;
+    }
+    
     protected IRenderedComponent<MudDialogProvider> RenderedDialogProvider(out DialogService? service)
     {
         IRenderedComponent<MudDialogProvider> provider = RenderComponent<MudDialogProvider>();
