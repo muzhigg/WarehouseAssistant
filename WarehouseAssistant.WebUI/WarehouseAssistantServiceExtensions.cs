@@ -64,7 +64,14 @@ namespace WarehouseAssistant.WebUI
                     }
                 });
                 var logger = provider.GetRequiredService<ILogger<Client>>();
-                client.AddDebugListener((s, exception) => logger.LogError(exception, s));
+                client.AddDebugListener((s, exception) =>
+                {
+                    if (exception != null)
+                        logger.LogInformation(exception, s);
+                    else
+                        logger.LogInformation(s);
+                });
+                
                 return client;
             });
             

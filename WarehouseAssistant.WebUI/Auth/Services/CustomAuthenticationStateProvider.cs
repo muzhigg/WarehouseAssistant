@@ -32,19 +32,38 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider, IA
     {
         _logger.LogInformation("Received auth event: {AuthState}", statechanged);
         
-        if (statechanged == Constants.AuthState.TokenRefreshed)
+        switch (statechanged)
         {
-            _logger.LogInformation("Token refreshed, saving session to local storage");
-            _localStorageService.SetItemAsync(LocalStorageKey,
-                    sender.CurrentSession)
-                .AndForget(true);
-            
-            // Parse the JWT access token
-            JwtToken jwtToken =
-                JwtToken.Parse(sender.CurrentSession!.AccessToken!);
-            
-            // Notify the authentication state has changed
-            NotifyAuthenticationStateChanged(Task.FromResult(jwtToken.GetAuthenticationState()));
+            case Constants.AuthState.SignedOut:
+            {
+                // Fixing Supabase client bug
+                // When from hibernation exit token is not updated
+                if (_client.CurrentSession != null)
+                {
+                    Session? session = _client.CurrentSession;
+                    if (!string.IsNullOrEmpty(session.AccessToken) && !string.IsNullOrEmpty(session.RefreshToken))
+                        _client.SetSession(session.AccessToken, session.RefreshToken);
+                    else
+                        _ = SignOut();
+                }
+                
+                break;
+            }
+            case Constants.AuthState.TokenRefreshed:
+            {
+                _logger.LogInformation("Token refreshed, saving session to local storage");
+                _localStorageService.SetItemAsync(LocalStorageKey,
+                        sender.CurrentSession)
+                    .AndForget(true);
+                
+                // Parse the JWT access token
+                JwtToken jwtToken =
+                    JwtToken.Parse(sender.CurrentSession!.AccessToken!);
+                
+                // Notify the authentication state has changed
+                NotifyAuthenticationStateChanged(Task.FromResult(jwtToken.GetAuthenticationState()));
+                break;
+            }
         }
     }
     
