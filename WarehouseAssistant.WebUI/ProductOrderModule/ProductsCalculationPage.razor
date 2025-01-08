@@ -73,8 +73,12 @@
 		<SelectColumn T="ProductTableItem"/>
 		<PropertyColumn T="ProductTableItem" TProperty="string" Property="x => x.Name" Title="Название" Sortable="false"
 		                Resizable="false" IsEditable="false"/>
-		<PropertyColumn T="ProductTableItem" TProperty="string" Property="x => x.Article" Title="Артикул"
-		                Sortable="false" Resizable="false" IsEditable="false"/>
+		<PropertyColumn T="ProductTableItem" TProperty="string" Title="Артикул"
+		                Sortable="false" Resizable="false" IsEditable="false">
+			<CellTemplate>
+				<CopyableLabel Text="@context.Item.Article"/>
+			</CellTemplate>
+		</PropertyColumn>
 		<PropertyColumn T="ProductTableItem" TProperty="int" Property="x => x.AvailableQuantity"
 		                Title="Доступное количество на БГЛЦ" Sortable="false" Resizable="false" IsEditable="false"/>
 		<PropertyColumn T="ProductTableItem" TProperty="int" Property="x => x.CurrentQuantity"
