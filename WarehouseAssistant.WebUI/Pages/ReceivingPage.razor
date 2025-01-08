@@ -26,12 +26,18 @@
 
 @attribute [Authorize]
 
-<Table TItem="ReceivingItem" @ref="_table" TableImported="OnTableImported" RowStyleFunc="RowStyleFunc">
+<Table TItem="ReceivingItem" @ref="_table" RowStyleFunc="RowStyleFunc">
 	<ToolBarTemplate>
 		<ReceivingInputForm Class="d-inline" hidden="@(!_table.Items?.Any())" OnInputSubmit="OnInputProvided"/>
 		<MudButton hidden="@(!_table.Items?.Any())" Variant="Variant.Outlined" Color="Color.Primary"
-		           OnClick="CompleteReceiving" Class="pl-2 pr-2">
+		           OnClick="CompleteReceiving" Size="Size.Small">
 			Завершить
+		</MudButton>
+		<MudSpacer/>
+		<MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="SaveTableState"
+		           Color="Color.Primary" EndIcon="@Icons.Material.Filled.Save"
+		           hidden="@(!_table.Items?.Any())">
+			Сохранить
 		</MudButton>
 	</ToolBarTemplate>
 	<ColumnsTemplate>
