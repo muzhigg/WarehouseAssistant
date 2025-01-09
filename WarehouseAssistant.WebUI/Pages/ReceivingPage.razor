@@ -22,6 +22,14 @@
 		return style;
 	}
 
+	private void ShowToastWithTooltip(string message, string tooltip, Severity severity)
+	{
+		Snackbar.Add(
+				@
+			< TextWithTooltip Text = "@message" Tooltip = "@tooltip" ></TextWithTooltip >
+			, severity);
+	}
+
 }
 
 @attribute [Authorize]
