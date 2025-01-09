@@ -133,7 +133,7 @@
 				{
 					<MudText Typo="Typo.body2" Color="Color.Secondary">Товар не найден в базе данных</MudText>
 					<MudButton Variant="Variant.Filled" Color="Color.Primary"
-					           OnClick="() => ShowAddToDbDialog(context.Item)">
+					           OnClick="() => ProductFormDialog.ShowAddDialogAsync(context.Item)">
 						Добавить в базу данных
 					</MudButton>
 				}

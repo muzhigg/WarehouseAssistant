@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using WarehouseAssistant.Data.Repositories;
+using WarehouseAssistant.ProductOrderModule;
 using WarehouseAssistant.Shared.Models;
 using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Components;
 using WarehouseAssistant.WebUI.DatabaseModule;
-using WarehouseAssistant.WebUI.Dialogs;
 using WarehouseAssistant.WebUI.ProductOrder;
 
 [assembly: InternalsVisibleTo("WarehouseAssistant.WebUI.Tests")]
@@ -43,11 +43,6 @@ public partial class ProductsCalculationPage : ComponentBase
         }
     }
     
-    private async Task ShowAddToDbDialog(ProductTableItem contextItem)
-    {
-        await ProductFormDialog.ShowAddDialogAsync(contextItem);
-    }
-    
     private async Task ShowEditDbDialog(Product contextItem)
     {
         await ProductFormDialog.ShowEditDialogAsync(contextItem);
@@ -56,7 +51,7 @@ public partial class ProductsCalculationPage : ComponentBase
     private async Task OpenExportTableDialog()
     {
         DialogParameters<ProductOrderExportDialog> parameters = [];
-        parameters.Add(dialog => dialog.Products, _table.SelectedItems);
+        parameters.Add(dialog => dialog.Products, _table.Items);
         
         IDialogReference dialog =
             await DialogService.ShowAsync<ProductOrderExportDialog>("Экспорт заказов", parameters);
