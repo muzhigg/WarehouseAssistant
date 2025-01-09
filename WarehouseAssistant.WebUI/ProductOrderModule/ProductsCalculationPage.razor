@@ -9,27 +9,29 @@
 
 @code {
 
-	private string QuantityToOrderCellStyleFunc(ProductTableItem arg)
+	private string QuantityToOrderCellClassFunc(ProductTableItem arg)
 	{
-		string style = "";
+		string classString = "";
 
-		if (arg.QuantityToOrder > 0)
+		if (arg.QuantityToOrder > arg.MaxCanBeOrdered)
 		{
-			style += "background-color:var(--mud-palette-success);";
-			style += "color:var(--mud-palette-success-text);";
+			classString += "mud-error mud-error-text";
+		}
+		else if (arg.QuantityToOrder > 0)
+		{
+			classString += "mud-info mud-info-text";
 		}
 
-		return style;
+		return classString;
 	}
 
-	private string RowStyleFunc(ProductTableItem arg1, int arg2)
+	private string RowClassFunc(ProductTableItem arg1, int arg2)
 	{
 		string style = "";
 
-		if (arg1.QuantityToOrder == arg1.MaxCanBeOrdered && arg1.QuantityToOrder != 0)
+		if (arg1.QuantityToOrder >= arg1.MaxCanBeOrdered && arg1.QuantityToOrder != 0)
 		{
-			style += "background-color:var(--mud-palette-warning);";
-			style += "color:var(--mud-palette-warning-text);";
+			style += "mud-warning mud-warning-text";
 		}
 
 		return style;
@@ -37,7 +39,7 @@
 
 }
 
-<Table TItem="ProductTableItem" @ref="_table" RowStyleFunc="RowStyleFunc"
+<Table TItem="ProductTableItem" @ref="_table" RowClassFunc="RowClassFunc"
        RowClass="product-row" TableImported="RefreshProductsReferencesAsync">
 
 	<ToolBarTemplate>
@@ -87,12 +89,12 @@
 		                Title="Рекомендованное количество" Resizable="false" IsEditable="false"/>
 		<PropertyColumn T="ProductTableItem" TProperty="int" CellClass="quantity-to-order-cell" Filterable="true"
 		                IsEditable="true" Property="x => x.QuantityToOrder" Resizable="false"
-		                Title="Количество для заказа" CellStyleFunc="QuantityToOrderCellStyleFunc">
+		                Title="Количество для заказа" CellClassFunc="QuantityToOrderCellClassFunc">
 			<EditTemplate>
 				<MudNumericField Value="@context.Item.QuantityToOrder"
-				                 ValueChanged="@(i => { context.Item.QuantityToOrder = i; context.Actions.CancelEditingItemAsync(); return Task.CompletedTask; })"
+				                 ValueChanged="@(context.Item.SetQuantityToOrderUnsafe)"
 				                 Class="quantity-to-order-input" T="int"
-				                 Min="0" Max="@context.Item.MaxCanBeOrdered" ErrorText="Недопустимое значение"/>
+				                 Min="0" ErrorText="Недопустимое значение"/>
 			</EditTemplate>
 			<FooterTemplate>
 				@{

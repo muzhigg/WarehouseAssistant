@@ -6,7 +6,7 @@
           QuickFilter="SearchFunc" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
           MultiSelection="true" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick"
           ReadOnly="@ReadOnly" RowClass="@RowClass" CanceledEditingItem="@OnCanceledEditingItem"
-          SelectedItemsChanged="@OnSelectedItemsChanged" RowStyleFunc="@RowStyleFunc">
+          SelectedItemsChanged="@OnSelectedItemsChanged" RowStyleFunc="@RowStyleFunc" RowClassFunc="@RowClassFunc">
 	<ToolBarContent>
 		<TableImportButton hidden="@(Items?.Any())" TTableItem="TItem" Disabled="DataGridRef.Loading"
 		                   OnParsed="OnTableImported"/>

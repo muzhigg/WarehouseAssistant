@@ -20,6 +20,7 @@ public partial class Table<TItem> : ComponentBase
     [Parameter] public string                              RowClass               { get; set; }
     [Parameter] public EventCallback<List<TItem>>          TableImported          { get; set; }
     [Parameter] public Func<TItem, int, string>            RowStyleFunc           { get; set; }
+    [Parameter] public Func<TItem, int, string>            RowClassFunc           { get; set; }
     
     private DataGrid<TItem> DataGridRef { get; set; } = null!;
     
