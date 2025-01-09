@@ -1,7 +1,6 @@
-using System.Diagnostics;
-using System.Timers;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using MudBlazor;
 using WarehouseAssistant.Data.Repositories;
@@ -10,12 +9,11 @@ using WarehouseAssistant.Shared.Models.Db;
 using WarehouseAssistant.WebUI.Components;
 using WarehouseAssistant.WebUI.DatabaseModule;
 using WarehouseAssistant.WebUI.Models;
-using Timer = System.Timers.Timer;
 
 namespace WarehouseAssistant.WebUI.Pages;
 
 [UsedImplicitly]
-public partial class ReceivingPage : ComponentBase, IDisposable
+public partial class ReceivingPage : ComponentBase
 {
     [Inject] private IRepository<ReceivingItem> Repository        { get; set; } = null!;
     [Inject] private IRepository<Product>       ProductRepository { get; set; } = null!;
@@ -23,20 +21,17 @@ public partial class ReceivingPage : ComponentBase, IDisposable
     [Inject] private IJSRuntime                 JsRuntime         { get; set; } = null!;
     [Inject] private IDialogService             DialogService     { get; set; } = null!;
     [Inject] private IProductFormDialogService  ProductFormDialog { get; set; } = null!;
+    [Inject] private ILogger<ReceivingPage>     Logger            { get; set; } = null!;
     
     private Table<ReceivingItem> _table = null!;
     private bool                 _isBusy;
     
-    private          List<Product>? _dbProducts;
-    private readonly Timer          _timer           = new(300000);
-    private          MudMessageBox  _articleInputBox = null!;
-    private          string?        _articleInput;
+    private List<Product>? _dbProducts;
+    private MudMessageBox  _articleInputBox = null!;
+    private string?        _articleInput;
     
     protected override async Task OnInitializedAsync()
     {
-        _timer.Elapsed   += TimerOnElapsed;
-        _timer.AutoReset =  true;
-        
         try
         {
             _isBusy     = true;
@@ -44,27 +39,17 @@ public partial class ReceivingPage : ComponentBase, IDisposable
             
             var items = await Repository.GetAllAsync();
             
-            if (items?.Count > 0)
-            {
-                _table.Items   = items;
-                _timer.Enabled = true;
-            }
+            if (items?.Count > 0) _table.Items = items;
         }
         catch (HttpRequestException e)
         {
             Snackbar.Add($"Ошибка при обращении к базе данных: {e.Message}", Severity.Error);
-            Debug.WriteLine(e);
+            Logger.LogError(e, e.Message);
         }
         finally
         {
             _isBusy = false;
         }
-    }
-    
-    private void TimerOnElapsed(object? sender, ElapsedEventArgs e)
-    {
-        Repository.UpdateRangeAsync(_table.Items);
-        Snackbar.Add("Данные сохранены.", Severity.Success);
     }
     
     private async Task OnInputProvided(ReceivingInputData obj)
@@ -91,7 +76,7 @@ public partial class ReceivingPage : ComponentBase, IDisposable
                 catch (HttpRequestException e)
                 {
                     Snackbar.Add($"Ошибка при обращении к базе данных: {e.Message}", Severity.Error);
-                    Debug.WriteLine(e);
+                    Logger.LogError(e, e.Message);
                 }
                 
                 tableItem = _table.Items.FirstOrDefault(item => item.Article == _articleInput);
@@ -119,7 +104,7 @@ public partial class ReceivingPage : ComponentBase, IDisposable
         return tableItem;
     }
     
-    internal async Task Receive(ReceivingInputData obj)
+    private async Task Receive(ReceivingInputData obj)
     {
         ReceivingItem? tableItem = null;
         
@@ -190,42 +175,17 @@ public partial class ReceivingPage : ComponentBase, IDisposable
         if (confirmed == false)
             return;
         
-        Snackbar.Add("Приёмка завершена.", Severity.Success);
-        
         try
         {
             _isBusy = true;
             await Repository.DeleteRangeAsync(_table.Items);
-            Snackbar.Add("Данные удалены.", Severity.Success);
+            _table.Items.Clear();
+            Snackbar.Add("Приёмка завершена и данные удалены.", Severity.Success);
         }
         catch (Exception e)
         {
             Snackbar.Add($"Ошибка при обращении к базе данных: {e.Message}", Severity.Error);
-            Debug.WriteLine(e);
-        }
-        finally
-        {
-            _isBusy        = false;
-            _timer.Enabled = false;
-        }
-        
-        _table.Items.Clear();
-    }
-    
-    private async Task OnTableImported(List<ReceivingItem> obj)
-    {
-        _isBusy        = true;
-        _timer.Enabled = true;
-        
-        try
-        {
-            await Repository.AddRangeAsync(obj);
-            Snackbar.Add("Данные сохранены.", Severity.Success);
-        }
-        catch (Exception e)
-        {
-            Snackbar.Add($"Ошибка при обращении к базе данных: {e.Message}", Severity.Error);
-            Debug.WriteLine(e);
+            Logger.LogError(e, e.Message);
         }
         finally
         {
@@ -233,8 +193,17 @@ public partial class ReceivingPage : ComponentBase, IDisposable
         }
     }
     
-    public void Dispose()
+    private async Task SaveTableState()
     {
-        _timer.Dispose();
+        try
+        {
+            await Repository.UpdateRangeAsync(_table.Items);
+            Snackbar.Add("Данные сохранены.", Severity.Info);
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add($"Ошибка при сохранении состояния таблицы: {e.Message}", Severity.Error);
+            Logger.LogError(e, e.Message);
+        }
     }
 }
