@@ -37,8 +37,12 @@
 	<ColumnsTemplate>
 		<PropertyColumn T="ReceivingItem" TProperty="string" Property="x => x.Name"
 		                Title="Название" Sortable="true" Resizable="false" IsEditable="false"/>
-		<PropertyColumn T="ReceivingItem" TProperty="string" Property="x => x.Article"
-		                Title="Артикул" Sortable="false" Resizable="false" IsEditable="false"/>
+		<PropertyColumn T="ReceivingItem" TProperty="string"
+		                Title="Артикул" Sortable="false" Resizable="false" IsEditable="false">
+			<CellTemplate>
+				<CopyableLabel Text="@context.Item.Article"/>
+			</CellTemplate>
+		</PropertyColumn>
 		<PropertyColumn T="ReceivingItem" TProperty="int" Property="x => x.ExpectedQuantity"
 		                Title="Ожидаемое количество" Sortable="false" Resizable="false" IsEditable="false"
 		                Filterable="false"/>

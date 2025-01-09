@@ -82,7 +82,11 @@
 			</CellTemplate>
 		</TemplateColumn>
 
-		<PropertyColumn HideSmall="true" T="Product" TProperty="string" Property="arg => arg.Article" Title="Артикул"/>
+		<PropertyColumn HideSmall="true" T="Product" TProperty="string" Title="Артикул">
+			<CellTemplate>
+				<CopyableLabel Text="@context.Item.Article"/>
+			</CellTemplate>
+		</PropertyColumn>
 		<PropertyColumn HideSmall="true" T="Product" TProperty="string" Property="arg => arg.Name" Title="Название"/>
 		<PropertyColumn HideSmall="true" T="Product" TProperty="string?" Property="arg => arg.Barcode"
 		                Title="Штрихкод"/>

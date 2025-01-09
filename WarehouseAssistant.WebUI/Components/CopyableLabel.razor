@@ -1,0 +1,20 @@
+@using Microsoft.JSInterop
+
+@code {
+	[Inject]                    private         IJSRuntime JsRuntime { get; set; } = null!;
+	[Parameter, EditorRequired] public required string     Text      { get; set; }
+	[Parameter]                 public          Color      Color     { get; set; } = Color.Default;
+	[Parameter]                 public          Variant    Variant   { get; set; } = Variant.Text;
+	[Parameter]                 public          Size       Size      { get; set; } = Size.Small;
+
+	private async Task Copy()
+	{
+		await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", Text);
+	}
+
+}
+
+<MudButton EndIcon="@Icons.Material.Filled.ContentCopy" Color="@Color" OnClick="Copy"
+           Variant="@Variant" Size="@Size">
+	@Text
+</MudButton>
