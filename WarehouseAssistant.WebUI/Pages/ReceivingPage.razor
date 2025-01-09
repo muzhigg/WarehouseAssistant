@@ -24,10 +24,11 @@
 
 	private void ShowToastWithTooltip(string message, string tooltip, Severity severity)
 	{
+// @formatter:off
 		Snackbar.Add(
-				@
-			< TextWithTooltip Text = "@message" Tooltip = "@tooltip" / >
+				@<TextWithTooltip Text="@message" Tooltip="@tooltip"/>
 			, severity);
+		// @formatter:on
 	}
 
 }
