@@ -145,18 +145,24 @@ public partial class ReceivingPage : ComponentBase, IDisposable
         
         if (tableItem.ReceivedQuantity < tableItem.ExpectedQuantity)
         {
-            Snackbar.Add(
+            ShowToastWithTooltip(
                 $"Товар {tableItem.Article} получено {obj.Quantity} шт. Осталось {tableItem.ExpectedQuantity - tableItem.ReceivedQuantity} шт.",
+                tableItem.Name,
                 Severity.Info);
         }
         else if (tableItem.ReceivedQuantity > tableItem.ExpectedQuantity)
         {
-            Snackbar.Add($"Товар {tableItem.Article} получено больше, чем ожидалось. Превышение количества.",
+            ShowToastWithTooltip(
+                $"Товар {tableItem.Article} получено больше, чем ожидалось. Превышение количества.",
+                tableItem.Name,
                 Severity.Warning);
         }
         else
         {
-            Snackbar.Add($"Товар {tableItem.Article} получен полностью.", Severity.Success);
+            ShowToastWithTooltip(
+                $"Товар {tableItem.Article} получен полностью.",
+                tableItem.Name,
+                Severity.Success);
         }
     }
     

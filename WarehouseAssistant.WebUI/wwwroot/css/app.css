@@ -44,3 +44,7 @@
     flex-direction: column;
     margin-left: -16px;
 }
+
+.mud-tooltip {
+    --mud-zindex-popover: 1601;
+}
